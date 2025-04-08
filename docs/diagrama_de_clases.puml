@@ -1,0 +1,110 @@
+/*
+Alcance:
+    Fuentes estáticas.
+    Colecciones.
+    Hechos: listado, filtrado y búsqueda.
+    Visualizadores y Contribuyentes de hechos.
+    Solicitudes de eliminación.
+*/
+
+@startuml
+'https://plantuml.com/class-diagram
+
+Multimedia --> Formato
+
+Hecho --> Categoria
+Hecho --> Ubicacion
+Hecho --> Origen
+Hecho --> Multimedia
+
+Zona --> " * " Ubicacion
+
+Filtro --> Zona
+Filtro --> Categoria
+Filtro ..> Hecho
+
+Coleccion --> " * " Hecho
+Coleccion --> Filtro
+
+Solicitud --> Hecho
+Solicitud --> Estado
+
+class Categoria {
+    - nombre: String
+}
+
+class Ubicacion {
+    - latitud: Integer
+    - longitud: Integer
+}
+
+enum Origen {
+    MANUAL
+    DATASET
+    CONTRIBUYENTE
+}
+
+enum Formato {
+    TEXTO
+    IMAGEN
+    AUDIO
+    VIDEO
+}
+
+class Multimedia {
+    - nombre: String
+    - ruta: String
+    - formato: Formato
+}
+
+class Hecho {
+    - titulo: String
+    - descripcion: String
+    - categoria: Categoria
+    - ubicacion: Ubicacion
+    - fechaAcontecimiento: LocalDate
+    - fechaCarga: LocalDate
+    - origen: Origen
+    - multimedia: Multimedia
+    - eliminado: Boolean
+    + eliminar(): Boolean
+}
+
+class Zona {
+    - nombre: String,
+    - perimetro: Set<Ubicacion>
+    + perteneceAZona(ubicacion: Ubicacion): Boolean
+}
+
+class Filtro {
+    - categoria: Categoria
+    - zona: Zona
+    - fechaInicio: LocalDateTime
+    - fechaFin: LocalDateTime
+    + cumpleFiltro(hecho Hecho): Boolean
+}
+
+class Coleccion {
+    - titulo: String
+    - descripcion: String
+    - hechos: Set<Hecho>
+    - criterio: Filtro
+    + cargarCriterio(): Boolean
+    + cargarColeccion(fuente: Set<Hecho>): Boolean
+}
+
+enum Estado {
+    PENDIENTE
+    ACEPTADA
+    RECHAZADA
+}
+
+class Solicitud {
+   - titulo: String
+   - texto: String
+   - hecho: Hecho
+   - estado: Estado
+   + estaFundado(): Boolean
+}
+
+@enduml
