@@ -14,9 +14,4 @@ public class Hecho {
     private Origen origen;
     private Multimedia multimedia;
     private Boolean eliminado;
-
-    public Boolean eliminar(){
-        //TODO
-        return true;
-    }
 }

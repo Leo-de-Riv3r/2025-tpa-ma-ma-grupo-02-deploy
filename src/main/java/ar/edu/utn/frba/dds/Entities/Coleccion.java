@@ -6,12 +6,12 @@ public class Coleccion {
     private Set<Hecho> hechos;
     private Filtro criterio;
 
-    public Boolean cargarCriterio() {
+    public Boolean agregarHechos(Set<Hecho> hechos) {
     //TODO
     return true;
     }
 
-    public Boolean cargarColeccion(Set<Hecho> fuente){
+    public Boolean eliminarHechos(List<String> hechos){
         //TODO
         return true;
     }
