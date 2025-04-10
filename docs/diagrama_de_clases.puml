@@ -29,6 +29,8 @@ Coleccion --> Filtro
 Solicitud --> Hecho
 Solicitud --> Estado
 
+ImportadorHechos ..> Coleccion
+
 class Categoria {
     - nombre: String
 }
@@ -62,12 +64,11 @@ class Hecho {
     - descripcion: String
     - categoria: Categoria
     - ubicacion: Ubicacion
-    - fechaAcontecimiento: LocalDate
-    - fechaCarga: LocalDate
+    - fechaAcontecimiento: LocalDateTime
+    - fechaCarga: LocalDateTime
     - origen: Origen
     - multimedia: Multimedia
     - eliminado: Boolean
-    + eliminar(): Boolean
 }
 
 class Zona {
@@ -81,7 +82,7 @@ class Filtro {
     - zona: Zona
     - fechaInicio: LocalDateTime
     - fechaFin: LocalDateTime
-    + cumpleFiltro(hecho Hecho): Boolean
+    + cumpleFiltro(hecho: Hecho): Boolean
 }
 
 class Coleccion {
@@ -89,8 +90,8 @@ class Coleccion {
     - descripcion: String
     - hechos: Set<Hecho>
     - criterio: Filtro
-    + cargarCriterio(): Boolean
-    + cargarColeccion(fuente: Set<Hecho>): Boolean
+    + eliminarHechos(hechos: List<String>): Boolean
+    + agregarHechos(hechos: Set<Hecho>): Boolean
 }
 
 enum Estado {
@@ -105,6 +106,12 @@ class Solicitud {
    - hecho: Hecho
    - estado: Estado
    + estaFundado(): Boolean
+}
+
+class ImportadorHechos {
+    - rutaArchivo: String
+    - separadorColumna: String
+    + cargarColeccion(coleccion: Colecccion): Boolean
 }
 
 @enduml
