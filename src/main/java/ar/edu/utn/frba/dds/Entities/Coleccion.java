@@ -8,11 +8,15 @@ public class Coleccion {
 
     public Boolean agregarHechos(Set<Hecho> hechos) {
     //TODO
-    return true;
+    //tira error porque solo puede agregar hechos individualmente
+        this.hechos.add(hechos);
+        return true;
     }
 
     public Boolean eliminarHechos(List<String> hechos){
         //TODO
+        //seria mejor este metodo para evitar acoplamiento
+        hechos.removeIf(hecho -> hechos.coincideTitulo(titulo));
         return true;
     }
 }
