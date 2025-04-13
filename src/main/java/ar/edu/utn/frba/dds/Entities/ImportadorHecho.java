@@ -32,13 +32,13 @@ public class ImportadorHecho {
                 String titulo = fila[0];
                 String descripcion = fila[1];
                 Categoria categoria = fila[2];
-                Integer latitud = fila[3];
-                Integer longitud = fila[4];
+                Integer latitud = Integer.valueOf(fila[3]);
+                Integer longitud = Integer.valueOf(fila[4]);
                 Ubicacion ubicacion = new Ubicacion(latitud, longitud);
                 LocalDateTime fechaAcontecimiento = LocalDateTime.parse(fila[5]);
                 LocalDateTime fechaCarga = LocalDateTime.now();
                 //TODO falta los otros datos y probar si carga bien las filas
-                coleccion.agregarHechos(Set.of(new Hecho(titulo, descripcion, categoria, ubicacion, fechaAcontecimiento, fechaCarga)));
+                coleccion.agregarHechos(new Hecho(titulo, descripcion, categoria, ubicacion, fechaAcontecimiento, fechaCarga));
             }
     }
 }

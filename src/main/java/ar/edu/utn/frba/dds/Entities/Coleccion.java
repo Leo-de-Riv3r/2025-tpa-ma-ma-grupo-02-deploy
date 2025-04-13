@@ -6,17 +6,18 @@ public class Coleccion {
     private Set<Hecho> hechos;
     private Filtro criterio;
 
-    public Boolean agregarHechos(Set<Hecho> hechos) {
+    public Boolean agregarHechos(Hecho hecho) {
     //TODO
-    //tira error porque solo puede agregar hechos individualmente
-        this.hechos.add(hechos);
+    //lo cambie porque solo puede agregar hechos individualmente
+        this.hechos.add(hecho);
         return true;
     }
 
-    public Boolean eliminarHechos(List<String> hechos){
+    public Boolean eliminarHechos(String tituloHecho){
         //TODO
-        //seria mejor este metodo para evitar acoplamiento
-        hechos.removeIf(hecho -> hechos.coincideTitulo(titulo));
+        //seria medio raro que busque mas de un titulo, mejor seria buscar un titulo por cada llamada al metodo
+        //agregue coincideTitulo() para evitar acoplamiento
+        hechos.removeIf(hecho -> hecho.coincideTitulo(tituloHecho));
         return true;
     }
 }

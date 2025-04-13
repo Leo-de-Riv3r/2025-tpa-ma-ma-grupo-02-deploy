@@ -14,4 +14,8 @@ public class Hecho {
     private Origen origen;
     private Multimedia multimedia;
     private Boolean eliminado;
+
+    public Boolean coincideTitulo(String titulo){
+        return this.titulo.equals(titulo);
+    }
 }

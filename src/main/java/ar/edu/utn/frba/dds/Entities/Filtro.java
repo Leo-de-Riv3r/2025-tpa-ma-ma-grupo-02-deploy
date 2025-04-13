@@ -10,6 +10,11 @@ public class Filtro {
 
     public Boolean cumpleFiltro(Hecho hecho){
         //TODO
+        //categoria podria ser solo un string
+        //falta zona
+        this.categoria.equals(hecho.getCategoria());
+        this.fechaInicio == hecho.getFechaInicio();
+        this.fechaFin == hecho.getFechaFin();
         return true;
     }
 }

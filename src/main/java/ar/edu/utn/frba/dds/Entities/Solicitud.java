@@ -10,6 +10,6 @@ public class Solicitud {
 
     public Boolean estaFundado() {
         //TODO
-        return true;
+        return texto.length() >= 500;
     }
 }

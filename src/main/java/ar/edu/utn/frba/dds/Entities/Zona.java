@@ -7,7 +7,6 @@ public class Zona {
     private Set<Ubicacion> perimetro;
     public Boolean perteneceAZona(Ubicacion ubicacion) {
         //TODO
-
         return true;
     }
 }
