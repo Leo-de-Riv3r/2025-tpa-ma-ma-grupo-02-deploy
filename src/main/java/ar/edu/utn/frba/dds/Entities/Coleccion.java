@@ -1,24 +1,24 @@
 package ar.edu.utn.frba.dds.Entities;
-import ar.edu.utn.frba.dds.Entities.Filtros.IFiltroAdapter;
+import ar.edu.utn.frba.dds.Entities.Filtros.FiltroStrategy;
 
 import java.util.*;
 
-public class Coleccion {
-    private String titulo;
-    private String descripcion;
-    private Set<Hecho> hechos;
-    private Set<IFiltroAdapter> criterios;
+        public class Coleccion {
+            private String titulo;
+            private String descripcion;
+            private Set<Hecho> hechos;
+            private Set<FiltroStrategy> criterios;
 
-    public Coleccion(String titulo, String descripcion) {
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-    }
+            public Coleccion(String titulo, String descripcion) {
+                this.titulo = titulo;
+                this.descripcion = descripcion;
+            }
 
-    public Boolean agregarHechos(Hecho nuevoHecho) {
-    //TODO
-    //lo cambie porque solo puede agregar hechos individualmente
-        Boolean repetido = this.hechos.stream()
-                .anyMatch(hecho -> Objects.equals(hecho.getTitulo(), nuevoHecho.getTitulo()));
+            public Boolean agregarHechos(Hecho nuevoHecho) {
+                //TODO
+                //lo cambie porque solo puede agregar hechos individualmente
+                Boolean repetido = this.hechos.stream()
+                        .anyMatch(hecho -> Objects.equals(hecho.getTitulo(), nuevoHecho.getTitulo()));
 
         if(repetido){
             this.eliminarHechos(nuevoHecho.getTitulo());
@@ -35,7 +35,7 @@ public class Coleccion {
         return true;
     }
 
-    public void agregarCriterio(IFiltroAdapter filtro) {
+    public void agregarCriterio(FiltroStrategy filtro) {
         this.criterios.add(filtro);
         this.filtrarHechos();
     }

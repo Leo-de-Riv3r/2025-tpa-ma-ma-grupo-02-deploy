@@ -2,10 +2,10 @@ package ar.edu.utn.frba.dds.Entities.Filtros;
 
 import ar.edu.utn.frba.dds.Entities.Hecho;
 
-public class FiltroCategoria implements IFiltroAdapter {
+public class FiltroCategoriaStrategy implements FiltroStrategy {
     private String categoria;
 
-    public FiltroCategoria(String categoria) {
+    public FiltroCategoriaStrategy(String categoria) {
         this.categoria = categoria;
     }
 

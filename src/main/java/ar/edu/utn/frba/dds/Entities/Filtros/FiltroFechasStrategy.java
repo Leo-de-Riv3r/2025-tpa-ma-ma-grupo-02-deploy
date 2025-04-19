@@ -4,11 +4,11 @@ import ar.edu.utn.frba.dds.Entities.Hecho;
 
 import java.time.LocalDateTime;
 
-public class FiltroFechas implements IFiltroAdapter {
+public class FiltroFechasStrategy implements FiltroStrategy {
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;
 
-    public FiltroFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+    public FiltroFechasStrategy(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
     }

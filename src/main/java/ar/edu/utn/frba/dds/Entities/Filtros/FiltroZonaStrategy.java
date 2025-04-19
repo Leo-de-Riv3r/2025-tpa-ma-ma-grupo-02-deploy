@@ -3,10 +3,10 @@ package ar.edu.utn.frba.dds.Entities.Filtros;
 import ar.edu.utn.frba.dds.Entities.Hecho;
 import ar.edu.utn.frba.dds.Entities.Zona;
 
-public class FiltroZona implements IFiltroAdapter {
+public class FiltroZonaStrategy implements FiltroStrategy {
     private Zona zona;
 
-    public FiltroZona(Zona zona) {
+    public FiltroZonaStrategy(Zona zona) {
         this.zona = zona;
     }
 
