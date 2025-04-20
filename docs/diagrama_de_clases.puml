@@ -19,6 +19,8 @@ Hecho --> Multimedia
 
 Zona --> " * " Ubicacion
 
+Origen --> TipoOrigen
+
 Filtro --> Zona
 Filtro --> Categoria
 Filtro ..> Hecho
@@ -29,7 +31,8 @@ Coleccion --> Filtro
 Solicitud --> Hecho
 Solicitud --> Estado
 
-ImportadorHechos ..> Coleccion
+ImportadorHechos ..> Hecho
+ImportadorHechos --> CSVReaderAdapter
 
 class Categoria {
     - nombre: String
@@ -40,7 +43,14 @@ class Ubicacion {
     - longitud: Integer
 }
 
-enum Origen {
+class Origen {
+    - tipo: TipoOrigen
+    - nombre: String
+    - apellido: String
+    - edad: Integer
+}
+
+enum TipoOrigen {
     MANUAL
     DATASET
     CONTRIBUYENTE
@@ -64,8 +74,8 @@ class Hecho {
     - descripcion: String
     - categoria: Categoria
     - ubicacion: Ubicacion
-    - fechaAcontecimiento: LocalDateTime
-    - fechaCarga: LocalDateTime
+    - fechaAcontecimiento: LocalDate
+    - fechaCarga: LocalDate
     - origen: Origen
     - multimedia: Multimedia
     - eliminado: Boolean
@@ -80,8 +90,8 @@ class Zona {
 class Filtro {
     - categoria: Categoria
     - zona: Zona
-    - fechaInicio: LocalDateTime
-    - fechaFin: LocalDateTime
+    - fechaInicio: LocalDate
+    - fechaFin: LocalDate
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
@@ -89,7 +99,7 @@ class Coleccion {
     - titulo: String
     - descripcion: String
     - hechos: Set<Hecho>
-    - criterio: Filtro
+    - criterio: Set<Filtro>
     + eliminarHechos(hechos: List<String>): Boolean
     + agregarHechos(hechos: Set<Hecho>): Boolean
 }
@@ -105,13 +115,25 @@ class Solicitud {
    - texto: String
    - hecho: Hecho
    - estado: Estado
+   - fechaSolicitud: LocalDate
+   - responsableSolicitud: String
+   - supervisorSolicitud: String
    + estaFundado(): Boolean
 }
 
+class LectorCSV implements CSVReaderAdapter {
+    + readCSV(path: String, separator: String): List<Object>
+}
+
+interface CSVReaderAdapter {
+    + readCSV(path: String, separator: String): List<Object>
+}
+
 class ImportadorHechos {
+    - CSVReader: CSVReaderAdapter
     - rutaArchivo: String
     - separadorColumna: String
-    + cargarColeccion(coleccion: Colecccion): Boolean
+    + importarHechos(): Set<Hecho>
 }
 
 @enduml
