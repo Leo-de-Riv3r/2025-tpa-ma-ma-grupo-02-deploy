@@ -13,6 +13,7 @@ Alcance:
 Multimedia --> Formato
 
 Hecho --> Categoria
+Hecho --> " * " Etiqueta
 Hecho --> Ubicacion
 Hecho --> Origen
 Hecho --> Multimedia
@@ -32,9 +33,13 @@ Solicitud --> Hecho
 Solicitud --> Estado
 
 ImportadorHechos ..> Hecho
-ImportadorHechos --> CSVReaderAdapter
+ImportadorHechos --> CsvReaderAdapter
 
 class Categoria {
+    - nombre: String
+}
+
+class Etiqueta {
     - nombre: String
 }
 
@@ -45,9 +50,9 @@ class Ubicacion {
 
 class Origen {
     - tipo: TipoOrigen
-    - nombre: String
-    - apellido: String
-    - edad: Integer
+    - nombreAutor: String
+    - apellidoAutor: String
+    - edadAutor: Integer
 }
 
 enum TipoOrigen {
@@ -73,21 +78,24 @@ class Hecho {
     - titulo: String
     - descripcion: String
     - categoria: Categoria
+    - etiquetas: Set<Etiqueta>
     - ubicacion: Ubicacion
     - fechaAcontecimiento: LocalDate
     - fechaCarga: LocalDate
     - origen: Origen
     - multimedia: Multimedia
     - eliminado: Boolean
+    + agregar(etiqueta: Etiqueta): Boolean
 }
 
 class Zona {
     - nombre: String,
     - perimetro: Set<Ubicacion>
-    + perteneceAZona(ubicacion: Ubicacion): Boolean
+    + pertenece(ubicacion: Ubicacion): Boolean
 }
 
 class Filtro {
+    - titulo: 
     - categoria: Categoria
     - zona: Zona
     - fechaInicio: LocalDate
@@ -99,9 +107,9 @@ class Coleccion {
     - titulo: String
     - descripcion: String
     - hechos: Set<Hecho>
-    - criterio: Set<Filtro>
-    + eliminarHechos(hechos: List<String>): Boolean
+    - criterios: Set<Filtro>
     + agregarHechos(hechos: Set<Hecho>): Boolean
+    + eliminarHechos(titulos: List<String>): Boolean
 }
 
 enum Estado {
@@ -115,22 +123,22 @@ class Solicitud {
    - texto: String
    - hecho: Hecho
    - estado: Estado
-   - fechaSolicitud: LocalDate
-   - responsableSolicitud: String
-   - supervisorSolicitud: String
+   - fecha: LocalDateTime
+   - responsable: String
+   - supervisor: String
    + estaFundado(): Boolean
 }
 
-class LectorCSV implements CSVReaderAdapter {
-    + readCSV(path: String, separator: String): List<Object>
+class LectorCsv implements CsvReaderAdapter {
+    + readCsv(path: String, separator: String): List<Object>
 }
 
-interface CSVReaderAdapter {
-    + readCSV(path: String, separator: String): List<Object>
+interface CsvReaderAdapter {
+    + readCsv(path: String, separator: String): List<Object>
 }
 
 class ImportadorHechos {
-    - CSVReader: CSVReaderAdapter
+    - csvReader: CsvReaderAdapter
     - rutaArchivo: String
     - separadorColumna: String
     + importarHechos(): Set<Hecho>
