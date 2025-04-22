@@ -31,10 +31,6 @@ public class Hecho {
   }
 
   public boolean agregar(Etiqueta etiqueta) {
-    boolean etiquetaAgregada = false;
-    if(this.etiquetas.add(etiqueta)) {
-        etiquetaAgregada = true;
-    }
-    return etiquetaAgregada;
+    return this.etiquetas.add(etiqueta);
   }
 }
