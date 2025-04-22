@@ -89,13 +89,12 @@ class Hecho {
 }
 
 class Zona {
-    - nombre: String,
+    - nombre: String
     - perimetro: Set<Ubicacion>
     + pertenece(ubicacion: Ubicacion): Boolean
 }
 
 class Filtro {
-    - titulo: 
     - categoria: Categoria
     - zona: Zona
     - fechaInicio: LocalDate
