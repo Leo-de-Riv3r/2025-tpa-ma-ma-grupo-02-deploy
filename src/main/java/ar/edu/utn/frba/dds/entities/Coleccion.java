@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.entities;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,6 +18,8 @@ public class Coleccion {
   public Coleccion(String titulo, String descripcion) {
     this.titulo = titulo;
     this.descripcion = descripcion;
+    this.hechos = new HashSet<>();
+    this.criterios = new HashSet<>();
   }
 
   public boolean agregarHechos(Set<Hecho> hechos) {
@@ -33,7 +36,7 @@ public class Coleccion {
     boolean alMenosUnoEliminado = false;
     for (Hecho hecho : hechos) {
       if (titulos.contains(hecho.getTitulo()) && !hecho.getEliminado()) {
-        hecho.setEliminado(true);
+        hecho.setEliminado(Boolean.TRUE);
         alMenosUnoEliminado = true;
       }
     }
@@ -41,7 +44,13 @@ public class Coleccion {
   }
 
   public Set<Hecho> getHechos() {
-    return hechos.stream().filter(hecho -> !hecho.getEliminado() && criterios.stream().allMatch(c -> c.cumpleFiltro(hecho))).collect(Collectors.toSet());
+    return hechos
+            .stream()
+            .filter(hecho ->
+                    !hecho.getEliminado() && criterios
+                            .stream()
+                            .allMatch(c -> c.cumpleFiltro(hecho)))
+            .collect(Collectors.toSet());
   }
 
   public void agregarCriterio(Filtro filtro) {

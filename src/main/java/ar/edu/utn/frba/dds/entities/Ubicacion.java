@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public class Ubicacion {
-  private Integer latitud;
-  private Integer longitud;
+  private Double latitud;
+  private Double longitud;
 
-  public Ubicacion(Integer latitud, Integer longitud) {
+  public Ubicacion(Double latitud, Double longitud) {
     this.latitud = latitud;
     this.longitud = longitud;
   }

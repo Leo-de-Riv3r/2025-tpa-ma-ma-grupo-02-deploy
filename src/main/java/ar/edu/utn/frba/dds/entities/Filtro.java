@@ -1,11 +1,14 @@
 package ar.edu.utn.frba.dds.entities;
 
 import java.time.LocalDate;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Filtro {
   private Categoria categoria;
   private Zona zona;

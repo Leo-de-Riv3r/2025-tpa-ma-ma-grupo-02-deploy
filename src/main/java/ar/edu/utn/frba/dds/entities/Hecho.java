@@ -2,11 +2,14 @@ package ar.edu.utn.frba.dds.entities;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Hecho {
   private String titulo;
   private String descripcion;
@@ -17,7 +20,8 @@ public class Hecho {
   private LocalDateTime fechaCarga;
   private Origen origen;
   private Multimedia multimedia;
-  private Boolean eliminado;
+  @Builder.Default
+  private Boolean eliminado = Boolean.FALSE;
 
   @Override
   public boolean equals(Object o) {
