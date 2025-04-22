@@ -29,4 +29,6 @@ public class Hecho {
     }
     return titulo.equals(hecho.titulo);
   }
+
+  public void agregar(Etiqueta etiqueta){ this.etiquetas.add(etiqueta); }
 }
