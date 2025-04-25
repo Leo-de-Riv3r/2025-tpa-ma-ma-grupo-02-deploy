@@ -12,15 +12,17 @@ import lombok.Setter;
 public class Coleccion {
   private String titulo;
   private String descripcion;
-  private Set<Hecho> hechos;
-  private Set<Filtro> criterios;
+  private Set<FiltroStrategy> criterios;
+  private Set<FuenteDeDatos> fuentes; // Esto no deberia ser un strategy entonces?
 
   public Coleccion(String titulo, String descripcion) {
     this.titulo = titulo;
     this.descripcion = descripcion;
-    this.hechos = new HashSet<>();
     this.criterios = new HashSet<>();
+    this.fuentes = new HashSet<>();
   }
+
+  // ------ Esto habia que sacarlo, no?
 
   public boolean agregarHechos(Set<Hecho> hechos) {
     boolean alMenosUnoAgregado = false;
@@ -43,21 +45,20 @@ public class Coleccion {
     return alMenosUnoEliminado;
   }
 
-  public Set<Hecho> getHechos() {
-    return hechos
-            .stream()
-            .filter(hecho ->
-                    !hecho.getEliminado() && criterios
-                            .stream()
-                            .allMatch(c -> c.cumpleFiltro(hecho)))
-            .collect(Collectors.toSet());
+  // ------
+
+  public Set<Hecho> obtenerHechos() {
+    return fuentes.stream()
+        .flatMap(fuente -> fuente.obtenerHechos().stream())
+        .filter(hecho -> !hecho.getEliminado() && criterios.stream().allMatch(filtro -> filtro.cumpleFiltro(hecho)))
+        .collect(Collectors.toSet());
   }
 
-  public void agregarCriterio(Filtro filtro) {
+  public void agregarCriterio(FiltroStrategy filtro) {
     this.criterios.add(filtro);
   }
 
-  public void eliminarCriterio(Filtro filtro) {
+  public void eliminarCriterio(FiltroStrategy filtro) {
     this.criterios.remove(filtro);
   }
 }

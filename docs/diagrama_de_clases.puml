@@ -22,18 +22,23 @@ Zona --> " * " Ubicacion
 
 Origen --> TipoOrigen
 
-Filtro --> Zona
-Filtro --> Categoria
-Filtro ..> Hecho
+FiltroStrategy --> Zona
+FiltroStrategy --> Categoria
+FiltroStrategy ..> Hecho
+
+FiltroCategoria ..> Hecho
+FiltroFecha ..> Hecho
+FiltroZona ..> Hecho
 
 Coleccion --> " * " Hecho
-Coleccion --> Filtro
+Coleccion --> FiltroStrategy
+Coleccion --> " * " FuenteDeDatos
 
 Solicitud --> Hecho
 Solicitud --> Estado
 
-ImportadorHechos ..> Hecho
-ImportadorHechos --> CsvReaderAdapter
+FuenteEstaticaCsv ..> Hecho
+FuenteEstaticaCsv --> CsvReaderAdapter
 
 class Categoria {
     - nombre: String
@@ -94,9 +99,32 @@ class Zona {
     + pertenece(ubicacion: Ubicacion): Boolean
 }
 
-class Filtro {
+interface FuenteDeDatos {
+    Set<Hechos> obtenerHechos()
+}
+
+class FuenteEstaticaCsv implements FuenteDeDatos {
+    - csvReader: csvReaderAdapter
+    - rutaArchivo: String
+    - separadorColumna: String
+    + obtenerHechos(): Set<Hecho>
+}
+
+interface FiltroStrategy {
+    + cumpleFiltro(hecho: Hecho): Boolean
+}
+
+class FiltroCategoria implements FiltroStrategy {
     - categoria: Categoria
+    + cumpleFiltro(hecho: Hecho): Boolean
+}
+
+class FiltroZona implements FiltroStrategy {
     - zona: Zona
+    + cumpleFiltro(hecho: Hecho): Boolean
+}
+
+class FiltroFecha implements FiltroStrategy {
     - fechaInicio: LocalDate
     - fechaFin: LocalDate
     + cumpleFiltro(hecho: Hecho): Boolean
@@ -105,10 +133,8 @@ class Filtro {
 class Coleccion {
     - titulo: String
     - descripcion: String
-    - hechos: Set<Hecho>
-    - criterios: Set<Filtro>
-    + agregarHechos(hechos: Set<Hecho>): Boolean
-    + eliminarHechos(titulos: List<String>): Boolean
+    - criterios: Set<FiltroStrategy>
+    - fuentes: Set<FuenteDeDatos>
 }
 
 enum Estado {
@@ -134,13 +160,6 @@ class LectorCsv implements CsvReaderAdapter {
 
 interface CsvReaderAdapter {
     + readCsv(path: String, separator: String): List<Object>
-}
-
-class ImportadorHechos {
-    - csvReader: CsvReaderAdapter
-    - rutaArchivo: String
-    - separadorColumna: String
-    + importarHechos(): Set<Hecho>
 }
 
 @enduml
