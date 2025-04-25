@@ -22,22 +22,19 @@ Zona --> " * " Ubicacion
 
 Origen --> TipoOrigen
 
-FiltroStrategy --> Zona
-FiltroStrategy --> Categoria
-FiltroStrategy ..> Hecho
+FiltroZonaStrategy --> Zona
+FiltroCategoriaStrategy --> Categoria
 
-FiltroCategoria ..> Hecho
-FiltroFecha ..> Hecho
-FiltroZona ..> Hecho
+FiltroCategoriaStrategy ..> Hecho
+FiltroFechaStrategy ..> Hecho
+FiltroZonaStrategy ..> Hecho
 
-Coleccion --> " * " Hecho
-Coleccion --> FiltroStrategy
+Coleccion --> " * " FiltroStrategy
 Coleccion --> " * " FuenteDeDatos
 
 Solicitud --> Hecho
 Solicitud --> Estado
 
-FuenteEstaticaCsv ..> Hecho
 FuenteEstaticaCsv --> CsvReaderAdapter
 
 class Categoria {
@@ -100,7 +97,7 @@ class Zona {
 }
 
 interface FuenteDeDatos {
-    Set<Hechos> obtenerHechos()
+    + obtenerHechos(): Set<Hechos>
 }
 
 class FuenteEstaticaCsv implements FuenteDeDatos {
@@ -114,17 +111,17 @@ interface FiltroStrategy {
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
-class FiltroCategoria implements FiltroStrategy {
+class FiltroCategoriaStrategy implements FiltroStrategy {
     - categoria: Categoria
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
-class FiltroZona implements FiltroStrategy {
+class FiltroZonaStrategy implements FiltroStrategy {
     - zona: Zona
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
-class FiltroFecha implements FiltroStrategy {
+class FiltroFechaStrategy implements FiltroStrategy {
     - fechaInicio: LocalDate
     - fechaFin: LocalDate
     + cumpleFiltro(hecho: Hecho): Boolean
@@ -135,6 +132,7 @@ class Coleccion {
     - descripcion: String
     - criterios: Set<FiltroStrategy>
     - fuentes: Set<FuenteDeDatos>
+    + obtenerHechos(): Set<Hecho>
 }
 
 enum Estado {
