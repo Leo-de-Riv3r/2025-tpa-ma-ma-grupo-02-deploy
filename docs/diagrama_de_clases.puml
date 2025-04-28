@@ -25,6 +25,7 @@ Origen --> TipoOrigen
 FiltroZonaStrategy --> Zona
 FiltroCategoriaStrategy --> Categoria
 
+FiltroTituloStrategy ..> Hecho
 FiltroCategoriaStrategy ..> Hecho
 FiltroFechaStrategy ..> Hecho
 FiltroZonaStrategy ..> Hecho
@@ -32,8 +33,12 @@ FiltroZonaStrategy ..> Hecho
 Coleccion --> " * " FiltroStrategy
 Coleccion --> " * " FuenteDeDatos
 
+Estado --> TipoEstado
+
 Solicitud --> Hecho
 Solicitud --> Estado
+
+FuenteDeDatos ..> FiltroStrategy
 
 FuenteEstaticaCsv --> CsvReaderAdapter
 
@@ -97,17 +102,22 @@ class Zona {
 }
 
 interface FuenteDeDatos {
-    + obtenerHechos(): Set<Hechos>
+    + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hechos>
 }
 
 class FuenteEstaticaCsv implements FuenteDeDatos {
     - csvReader: csvReaderAdapter
     - rutaArchivo: String
     - separadorColumna: String
-    + obtenerHechos(): Set<Hecho>
+    + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hecho>
 }
 
 interface FiltroStrategy {
+    + cumpleFiltro(hecho: Hecho): Boolean
+}
+
+class FiltroTituloStrategy implements FiltroStrategy {
+    - titulo: String
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
@@ -132,23 +142,29 @@ class Coleccion {
     - descripcion: String
     - criterios: Set<FiltroStrategy>
     - fuentes: Set<FuenteDeDatos>
-    + obtenerHechos(): Set<Hecho>
+    + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hecho>
 }
 
-enum Estado {
+enum TipoEstado {
     PENDIENTE
     ACEPTADA
     RECHAZADA
+}
+
+class Estado {
+   - estado: TipoEstado
+   - fechaActualizacion: LocalDateTime
+   - supervisor: String
 }
 
 class Solicitud {
    - titulo: String
    - texto: String
    - hecho: Hecho
-   - estado: Estado
-   - fecha: LocalDateTime
+   - fechaCreacion: LocalDateTime
    - responsable: String
-   - supervisor: String
+   - estado: Estado
+   - historial: Set<Estado>
    + estaFundado(): Boolean
 }
 
