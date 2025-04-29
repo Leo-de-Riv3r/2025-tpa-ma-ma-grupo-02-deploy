@@ -90,7 +90,7 @@ class Hecho {
     - fechaAcontecimiento: LocalDate
     - fechaCarga: LocalDate
     - origen: Origen
-    - multimedia: Multimedia
+    - multimedia: List<Multimedia>
     - eliminado: Boolean
     + agregar(etiqueta: Etiqueta): Boolean
 }
@@ -163,7 +163,7 @@ class Solicitud {
    - hecho: Hecho
    - fechaCreacion: LocalDateTime
    - responsable: String
-   - estado: Estado
+   - estadoActual: Estado
    - historial: Set<Estado>
    + estaFundado(): Boolean
 }
