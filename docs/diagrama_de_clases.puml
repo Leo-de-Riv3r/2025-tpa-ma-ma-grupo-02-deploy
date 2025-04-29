@@ -11,6 +11,7 @@ Alcance:
 'https://plantuml.com/class-diagram
 
 Multimedia --> Formato
+Lugar --> TipoLugar
 
 Hecho --> Categoria
 Hecho --> " * " Etiqueta
@@ -19,6 +20,8 @@ Hecho --> Origen
 Hecho --> Multimedia
 
 Zona --> " * " Ubicacion
+
+Ubicacion --> Lugar
 
 Origen --> TipoOrigen
 
@@ -51,8 +54,15 @@ class Etiqueta {
 }
 
 class Ubicacion {
-    - latitud: Integer
-    - longitud: Integer
+    - latitud: Double
+    - longitud: Double
+    - direccion: String
+    - referenciaLugar: Lugar
+}
+
+class Lugar {
+    - nombre: String
+    - tipo: TipoLugar
 }
 
 class Origen {
@@ -73,6 +83,12 @@ enum Formato {
     IMAGEN
     AUDIO
     VIDEO
+}
+
+enum TipoLugar {
+    LOCALIDAD
+    MUNICIPIO
+    PROVINCIA
 }
 
 class Multimedia {
