@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import ar.edu.utn.frba.dds.strategies.FiltroStrategy;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,7 +24,7 @@ public class Coleccion {
     this.fuentes = new HashSet<>();
   }
 
-  // ------ Esto habia que sacarlo, no?
+  /*
 
   public boolean agregarHechos(Set<Hecho> hechos) {
     boolean alMenosUnoAgregado = false;
@@ -45,12 +47,12 @@ public class Coleccion {
     return alMenosUnoEliminado;
   }
 
-  // ------
+  */
 
   public Set<Hecho> obtenerHechos() {
     return fuentes.stream()
-        .flatMap(fuente -> fuente.obtenerHechos().stream())
-        .filter(hecho -> !hecho.getEliminado() && criterios.stream().allMatch(filtro -> filtro.cumpleFiltro(hecho)))
+        .flatMap(fuente -> fuente.obtenerHechos(criterios).stream())
+        .filter(hecho -> !hecho.getEliminado())
         .collect(Collectors.toSet());
   }
 
@@ -61,4 +63,9 @@ public class Coleccion {
   public void eliminarCriterio(FiltroStrategy filtro) {
     this.criterios.remove(filtro);
   }
+
+  public void agregarFuente(FuenteDeDatos fuente) {
+    this.fuentes.add(fuente);
+  }
+
 }
