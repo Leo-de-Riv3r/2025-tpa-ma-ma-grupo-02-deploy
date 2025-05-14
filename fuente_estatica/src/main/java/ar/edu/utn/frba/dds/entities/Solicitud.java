@@ -31,5 +31,11 @@ public class Solicitud {
     return texto.length() >= 500;
   }
 
-  //TODO: Manejo de aceptacion o rechazo de solicitud
+  public void rechazar() {
+    // TODO: Implementar
+  }
+
+  public void aceptar() {
+    // TODO: Implementar
+  }
 }

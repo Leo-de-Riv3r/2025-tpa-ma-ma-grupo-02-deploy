@@ -1,6 +1,8 @@
 package ar.edu.utn.frba.dds.utils;
 
 import ar.edu.utn.frba.dds.adapters.CsvReaderAdapter;
+import lombok.AllArgsConstructor;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

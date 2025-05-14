@@ -3,10 +3,8 @@ package ar.edu.utn.frba.dds;
 import ar.edu.utn.frba.dds.adapters.CsvReaderAdapter;
 import ar.edu.utn.frba.dds.entities.*;
 import ar.edu.utn.frba.dds.enums.Estado;
-import ar.edu.utn.frba.dds.strategies.FiltroCategoriaStrategy;
-import ar.edu.utn.frba.dds.strategies.FiltroFechaStrategy;
-import ar.edu.utn.frba.dds.strategies.FiltroStrategy;
-import ar.edu.utn.frba.dds.strategies.FiltroTituloStrategy;
+import ar.edu.utn.frba.dds.strategies.*;
+import ar.edu.utn.frba.dds.utils.FuenteEstaticaCsv;
 import ar.edu.utn.frba.dds.utils.LectorCsv;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,13 +103,14 @@ public class PrimeraEntregaTest {
 
         coleccion.agregarFuente(fuente);
 
-        var etiqueta = new Etiqueta("Caída de Aeronave");
+        var etiqueta1 = new Etiqueta("Caída de Aeronave");
+        var etiquetas = Set.of(etiqueta1);
         var titulo = "un título";
 
-        FiltroStrategy filtroEtiqueta = new FiltroEtiquetaStrategy(etiqueta);
+        FiltroStrategy filtroEtiqueta = new FiltroEtiquetaStrategy(etiquetas); // TODO: Agregar al diagrama de clases
         FiltroStrategy filtroTitulo = new FiltroTituloStrategy(titulo);
 
-        coleccion.agregarCriterio(filtroCategoria);
+        coleccion.agregarCriterio(filtroEtiqueta);
         coleccion.agregarCriterio(filtroTitulo);
 
         Assertions.assertEquals(0, coleccion.obtenerHechos().size());
@@ -135,7 +134,7 @@ public class PrimeraEntregaTest {
 
     @Test
     public void importacionDeHechosPorCsv() {
-        CsvReaderAdapter csvReaderAdapter = new LectorCsv("src/test/resources/csv/desastres_naturales_argentina.csv", ",");
+        CsvReaderAdapter csvReaderAdapter = new LectorCsv();
         FuenteDeDatos fuenteCsv = new FuenteEstaticaCsv(csvReaderAdapter,"src/test/resources/csv/desastres_naturales_argentina.csv", ",");
 
         var hechosCsv = fuenteCsv.obtenerHechos(Set.of());
@@ -168,7 +167,7 @@ public class PrimeraEntregaTest {
 
         var solicitud1 = new Solicitud("Solicitud de eliminación por datos erroneos", "", hecho, "Juan Perez");
 
-        solicitud1.rechazar(); // Deberia pasarle el motivo???
+        solicitud1.rechazar(); // TODO: Deberia pasarle el motivo???
 
         Assertions.assertEquals(Estado.RECHAZADA, solicitud1.getEstado());
 
