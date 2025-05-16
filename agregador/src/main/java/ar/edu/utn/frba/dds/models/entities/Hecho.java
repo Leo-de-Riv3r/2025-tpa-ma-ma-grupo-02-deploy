@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.models.entities;
 
-import ar.edu.utn.frba.dds.entities.Ubicacion;
+import ar.edu.utn.frba.dds.entities.Etiqueta;
+import ar.edu.utn.frba.dds.models.entities.Categoria;
 import java.time.LocalDateTime;
 import java.util.Set;
 

@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.adapters;
+package ar.edu.utn.frba.dds.models.entities.adapters;
 
 import java.util.List;
 

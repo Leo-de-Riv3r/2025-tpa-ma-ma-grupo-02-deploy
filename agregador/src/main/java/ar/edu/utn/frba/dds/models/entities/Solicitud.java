@@ -1,10 +1,9 @@
 package ar.edu.utn.frba.dds.models.entities;
 
-import ar.edu.utn.frba.dds.models.entities.enums.TipoEstado;
+import ar.edu.utn.frba.dds.entities.Hecho;
 import java.time.LocalDate;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,15 +13,16 @@ public class Solicitud {
   private String titulo;
   private String texto;
   private Hecho hecho;
-  private TipoEstado estado;
+  private Estado estado;
   private LocalDateTime fecha;
   private String responsable;
+  private String supervisor;
 
   public Solicitud(String titulo, String texto, Hecho hecho, String responsable) {
     this.titulo = titulo;
     this.texto = texto;
     this.hecho = hecho;
-    this.estado = TipoEstado.PENDIENTE;
+    this.estado = Estado.PENDIENTE;
     this.fecha = LocalDateTime.now();
     this.responsable = responsable;
   }
@@ -31,5 +31,11 @@ public class Solicitud {
     return texto.length() >= 500;
   }
 
-  //TODO: Manejo de aceptacion o rechazo de solicitud
+  public void rechazar() {
+    // TODO: Implementar
+  }
+
+  public void aceptar() {
+    // TODO: Implementar
+  }
 }

@@ -1,6 +1,6 @@
-package ar.edu.utn.frba.dds.utils;
+package ar.edu.utn.frba.dds.models.entities.utils;
 
-import ar.edu.utn.frba.dds.adapters.CsvReaderAdapter;
+import ar.edu.utn.frba.dds.models.entities.adapters.CsvReaderAdapter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

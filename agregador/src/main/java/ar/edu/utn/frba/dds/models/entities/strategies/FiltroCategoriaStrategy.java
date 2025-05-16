@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.dds.models.entities.strategies;
 
-import ar.edu.utn.frba.dds.entities.Categoria;
-import ar.edu.utn.frba.dds.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Categoria;
+import ar.edu.utn.frba.dds.models.entities.Hecho;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

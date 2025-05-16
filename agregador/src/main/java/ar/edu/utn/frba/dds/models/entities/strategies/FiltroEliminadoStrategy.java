@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.dds.models.entities.strategies;
 
-import ar.edu.utn.frba.dds.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Hecho;
 
 import java.util.HashSet;
 import java.util.Set;

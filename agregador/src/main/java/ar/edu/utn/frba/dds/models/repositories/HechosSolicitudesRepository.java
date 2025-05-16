@@ -9,7 +9,7 @@ public class HechosSolicitudesRepository implements IHechosSolicitudesRepository
   private List<Hecho> hechos;
   @Override
   public void createSolicitud(Solicitud solicitud) {
-
+    solicitudes.add(solicitud);
   }
 
   @Override

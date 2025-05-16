@@ -1,11 +1,11 @@
 package ar.edu.utn.frba.dds.models.entities;
 
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ar.edu.utn.frba.dds.strategies.FiltroStrategy;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,31 +23,6 @@ public class Coleccion {
     this.criterios = new HashSet<>();
     this.fuentes = new HashSet<>();
   }
-
-  /*
-
-  public boolean agregarHechos(Set<Hecho> hechos) {
-    boolean alMenosUnoAgregado = false;
-    for (Hecho hecho : hechos) {
-      if (hechos.add(hecho)) {
-        alMenosUnoAgregado = true;
-      }
-    }
-    return alMenosUnoAgregado;
-  }
-
-  public boolean eliminarHechos(List<String> titulos) {
-    boolean alMenosUnoEliminado = false;
-    for (Hecho hecho : hechos) {
-      if (titulos.contains(hecho.getTitulo()) && !hecho.getEliminado()) {
-        hecho.setEliminado(Boolean.TRUE);
-        alMenosUnoEliminado = true;
-      }
-    }
-    return alMenosUnoEliminado;
-  }
-
-  */
 
   public Set<Hecho> obtenerHechos() {
     return fuentes.stream()
