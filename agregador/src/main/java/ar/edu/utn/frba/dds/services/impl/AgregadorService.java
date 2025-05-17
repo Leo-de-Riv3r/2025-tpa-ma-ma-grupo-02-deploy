@@ -17,10 +17,12 @@ public class AgregadorService implements IAgregadorService {
   }
 
   @Override
-  public void createSolicitud(Solicitud solicitud) {
+  public void createSolicitud(Solicitud solicitud) throws Exception {
     //agregar manejo errores api
     if (!detectorSpam.esSpam(solicitud.getTexto())) {
       hechosSolicitudesRepository.createSolicitud(solicitud);
+    } else {
+        throw new Exception("Se detecto un posible spam");
     }
   }
 }
