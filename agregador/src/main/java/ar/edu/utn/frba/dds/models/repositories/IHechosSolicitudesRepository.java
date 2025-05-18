@@ -7,6 +7,6 @@ public interface IHechosSolicitudesRepository {
 
   public void createSolicitud(Solicitud solicitud);
   //TODO buscar forma de identificar solicitud por id, etc...
-  public void aceptarSolicitud();
-  public void rechazarSolicitud();
+  public void aceptarSolicitud(Solicitud solicitud, String supervisor);
+  public void rechazarSolicitud(Solicitud solicitud, String supervisor);
 }

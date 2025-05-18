@@ -15,7 +15,7 @@ public class Coleccion {
   private String titulo;
   private String descripcion;
   private Set<FiltroStrategy> criterios;
-  private Set<FuenteDeDatos> fuentes; // Esto no deberia ser un strategy entonces?
+  private Set<FuenteDeDatos> fuentes;
 
   public Coleccion(String titulo, String descripcion) {
     this.titulo = titulo;
@@ -42,5 +42,4 @@ public class Coleccion {
   public void agregarFuente(FuenteDeDatos fuente) {
     this.fuentes.add(fuente);
   }
-
 }
