@@ -13,8 +13,12 @@ public class ColecionesRepository implements IColeccionesRepository{
     colecciones.add(coleccion);
   }
 
-  private void updateColeccion(String handler, Coleccion coleccionAActualizar){
+  public void updateColeccion(String handler, Coleccion coleccionAActualizar){
     colecciones.removeIf(coleccion -> coleccion.equals(coleccionAActualizar));
     colecciones.add(coleccionAActualizar);
+  }
+
+  public List<Coleccion> getColecciones(){
+    return colecciones;
   }
 }

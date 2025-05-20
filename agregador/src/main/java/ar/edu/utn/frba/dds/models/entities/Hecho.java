@@ -1,8 +1,8 @@
 package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.entities.Etiqueta;
-import ar.edu.utn.frba.dds.models.entities.Categoria;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import lombok.*;
@@ -11,19 +11,16 @@ import lombok.*;
 @Setter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 public class Hecho {
   private String titulo;
   private String descripcion;
-  private Categoria categoria;
+  private String categoria;
   private Set<Etiqueta> etiquetas;
   private Ubicacion ubicacion;
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
   private Origen origen;
-  private Multimedia multimedia;
-  @Builder.Default
-  private Boolean eliminado = Boolean.FALSE;
+  private List<Multimedia> multimedia;
 
   @Override
   public boolean equals(Object o) {
