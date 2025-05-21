@@ -11,19 +11,20 @@ import org.springframework.stereotype.Service;
 public class AgregadorService implements IAgregadorService {
   private IHechosSolicitudesRepository hechosSolicitudesRepository = new HechosSolicitudesRepository();
   private IDetectorSpam detectorSpam;
+
   @Override
   public void actualizarColecciones() {
-
   }
 
   @Override
   public void createSolicitud(Solicitud solicitud) throws Exception {
+    hechosSolicitudesRepository.createSolicitud(solicitud);
     if(!detectorSpam.esSpam(solicitud.getTexto())) {
-      hechosSolicitudesRepository.createSolicitud(solicitud);
+      this.rechazarSolicitud(solicitud, "automatico");
     }
   }
 
-  public void rechazarSolicitud()  {
-
+  public void rechazarSolicitud(Solicitud solicitud, String supervisor)  {
+    hechosSolicitudesRepository.rechazarSolicitud(solicitud, supervisor);
   }
 }

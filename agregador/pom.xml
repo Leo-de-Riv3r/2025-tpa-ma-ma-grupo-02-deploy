@@ -18,11 +18,11 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>ar.edu.utn.frba.dds</groupId>
-            <artifactId>fuente_estatica</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version> <!-- O usa la versión más reciente -->
         </dependency>
+
     </dependencies>
 
 </project>

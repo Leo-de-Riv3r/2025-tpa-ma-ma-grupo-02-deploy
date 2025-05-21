@@ -11,4 +11,7 @@ public interface FuenteDeDatos {
 
     public String getUrl();
     public void setHechos(List<Hecho> hechosActualizados);
+
+    public boolean tiempoReal();
+    public void agregarHecho(Hecho hecho);
 }

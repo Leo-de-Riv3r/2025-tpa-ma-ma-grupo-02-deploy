@@ -4,7 +4,10 @@ import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,10 +15,19 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Coleccion {
+  private String handler;
   private String titulo;
   private String descripcion;
   private Set<FiltroStrategy> criterios;
   private Set<FuenteDeDatos> fuentes;
+
+  public Coleccion(String titulo, String descripcion, Set<FiltroStrategy> criterios, Set<FuenteDeDatos> fuentes) {
+    this.handler = UUID.randomUUID().toString().substring(0, 10);
+    this.titulo = titulo;
+    this.descripcion = descripcion;
+    this.criterios = criterios;
+    this.fuentes = fuentes;
+  }
 
   public Coleccion(String titulo, String descripcion) {
     this.titulo = titulo;
@@ -27,7 +39,6 @@ public class Coleccion {
   public Set<Hecho> obtenerHechos() {
     return fuentes.stream()
         .flatMap(fuente -> fuente.obtenerHechos(criterios).stream())
-        .filter(hecho -> !hecho.getEliminado())
         .collect(Collectors.toSet());
   }
 

@@ -10,69 +10,65 @@ import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoOrigen;
 import ar.edu.utn.frba.dds.models.repositories.IColeccionesRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 @Service
 public class ColeccionesService {
-  private WebClient webClient;
   private IColeccionesRepository coleccionesRepository;
 
 
   public List<Coleccion> getColecciones(){
     return coleccionesRepository.getColecciones();
   }
-  public void refrescoColecciones(){
-    //una posible solucion a fuente proxy seria que las fuentes tengan el mensaje tiempoReal()
-    //si la fruente agregada es en tiempo real, se conectara inmediatamente a la fuente
-    List <Coleccion> colecciones = this.getColecciones();
-    colecciones.forEach(coleccion -> actualizarFuentes(coleccion));
+
+  public void refrescoColecciones() {
+    List<Coleccion> colecciones = this.getColecciones();
+    colecciones.forEach(coleccion -> actualizarHechosFuentes(coleccion));
     //guardo cada coleccion actualizada en el repository
-    colecciones.forEach(coleccion -> actualizarColeccion(coleccion.getHandler(), coleccion));
+    colecciones.forEach(coleccion -> setFuentesColeccion(coleccion.getHandler(), coleccion.getFuentes()));
+  }
+
+  public void setFuentesColeccion(String handler, Set<FuenteDeDatos> fuentes) {
+    this.coleccionesRepository.cambiarFuentesColeccion(handler, fuentes);
   }
 
   public void actualizarColeccion(String handler, Coleccion coleccion) {
     coleccionesRepository.updateColeccion(handler, coleccion);
   }
 
-  private void actualizarFuentes(Coleccion coleccion){
+  private void actualizarHechosFuentes(Coleccion coleccion){
     coleccion.getFuentes().forEach(fuente -> {
-      List<HechosDTOEntrada> hechosActualizadosDTO = consultarHechos(fuente.getUrl())
-          .stream().filter(hecho -> !this.existeHecho(hecho)).toList();
-
-      List<Hecho> hechosActualizados = (List<Hecho>) hechosActualizadosDTO.stream().map(hechoDTO -> convertirHechoDTOAHecho(hechoDTO));
-      //agregar hechos uno por uno
-      for(Hecho hecho : hechosActualizados){
-        //cambiar esto en fuente
-        fuente.agregarHecho(hecho);
+      if (!fuente.tiempoReal()) {
+        List<Object> hechosActualizadosDTO = Collections.singletonList(consultarHechos(fuente.getUrl()));
+        List<Hecho> hechosActualizados = (List<Hecho>) hechosActualizadosDTO.stream().map(hechoDTO -> convertirHechoDTOAHecho(hechoDTO));
+        //reemplazar hechos de la fuente por los nuevos hechos
+        fuente.setHechos(hechosActualizados);
       }
     });
   }
 
-  private Hecho convertirHechoDTOAHecho(HechosDTOEntrada hecho) {
-    Ubicacion ubicacion = new Ubicacion(hecho.getLatitud(), hecho.getLongitud());
-    Origen origen = new Origen(TipoOrigen.FUENTE, "-----");
-    //entidad hechos modificado
-    Hecho hechoConvertido = new Hecho(hecho.getTitulo(), hecho.getDescripcion(), hecho.getCategoria(), Set.of(), ubicacion, hecho.getFecha_hecho(), hecho.getCreated_at(), origen, List.of());
-    return hechoConvertido;
-  }
-
-  private Boolean existeHecho(HechosDTOEntrada hechoDTO) {
-    List<Hecho> hechos = this.obtenerHechos();
-    if (hechos.stream().anyMatch(hecho -> this.coincideDTOConHecho(hecho, hechoDTO))) {
-      return true;
+  private Hecho convertirHechoDTOAHecho(Object hecho) {
+    if (hecho instanceof Hecho) {
+      return (Hecho) hecho;
+    } else {
+      //transformar hechos de fuente estatica
+      HechosDTOEntrada hechoDto = (HechosDTOEntrada) hecho;
+      Ubicacion ubicacion = new Ubicacion(hechoDto.getLatitud(), hechoDto.getLongitud());
+      return new Hecho(hechoDto.getTitulo(), hechoDto.getDescripcion(), hechoDto.getCategoria(), Set.of(), ubicacion, hechoDto.getFecha_hecho(), LocalDateTime.now(), null,  List.of());
     }
-    return false;
   }
 
-  private Boolean coincideDTOConHecho(Hecho hecho, HechosDTOEntrada hechoDTO) {
-    return hecho.getTitulo().equals(hechoDTO.getTitulo())
-        && hecho.getDescripcion().equals(hechoDTO.getDescripcion());
-  }
   public List<Hecho> obtenerHechos() {
     List<Coleccion> colecciones = this.getColecciones();
     List<Hecho> hechos = new java.util.ArrayList<>(List.of());
@@ -94,19 +90,22 @@ public class ColeccionesService {
         .block();
   }
 
-  public agregarFuente(String handler, FuenteDeDatos fuente) {
-    Coleccion coleccion = coleccionesRepository.findByHandler(handler);
-    coleccion.agregarFuente(fuente);
-    this.actualizarColeccion(handler, coleccion);
+  public void agregarFuente(String handler, FuenteDeDatos fuente) {
+    coleccionesRepository.agregarFuente(handler, fuente);
+    if(fuente.tiempoReal()) {
+        Flux<ServerSentEvent<HechosDTOEntrada>> eventStream = WebClient.create(fuente.getUrl())
+        .get()
+        .uri("/stream")
+        .accept(MediaType.TEXT_EVENT_STREAM)
+        .retrieve()
+        .bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<HechosDTOEntrada>>() {});
+
+      eventStream.subscribe(event -> {
+        //System.out.println("Evento recibido: " + event.data());
+        //agregar hecho a la fuente dinamica
+        Hecho hecho = this.convertirHechoDTOAHecho(event);
+        coleccionesRepository.agregarHechoTiempoReal(handler, fuente, hecho);
+      });
+    }
   }
-//  Flux<ServerSentEvent<String>> eventStream = WebClient.create()
-//      .get()
-//      .uri("https://api.ejemplo.com/stream")
-//      .accept(MediaType.TEXT_EVENT_STREAM)
-//      .retrieve()
-//      .bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {});
-//
-//eventStream.subscribe(event -> {
-//    System.out.println("Evento recibido: " + event.data());
-//  });
 }
