@@ -6,7 +6,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginResponse {
-  private boolean error;
+  private Boolean error;
   private String message;
   private LoginData data;
+
+  public Boolean isError() {
+    return error;
+  }
 }

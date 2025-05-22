@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.dtos.external.hecho.HechoDTO;
-import ar.edu.utn.frba.dds.models.dtos.external.hecho.HechoPaginadoResponseDTO;
+import ar.edu.utn.frba.dds.models.dtos.external.hecho.HechosPagDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -22,7 +22,7 @@ public class HechoService {
         .build();
   }
 
-  public Mono<HechoPaginadoResponseDTO> getHechos(Integer page, Integer perPage) {
+  public Mono<HechosPagDTO> getHechos(Integer page, Integer perPage) {
     return webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/api/desastres")
@@ -30,7 +30,7 @@ public class HechoService {
             .queryParam("per_page", perPage)
             .build())
         .retrieve()
-        .bodyToMono(HechoPaginadoResponseDTO.class);
+        .bodyToMono(HechosPagDTO.class);
   }
 
   public Mono<HechoDTO> getHechoById(Integer id) {

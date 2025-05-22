@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.external.hecho.HechoDTO;
-import ar.edu.utn.frba.dds.models.dtos.external.hecho.HechoPaginadoResponseDTO;
+import ar.edu.utn.frba.dds.models.dtos.external.hecho.HechosPagDTO;
 import org.springframework.web.bind.annotation.*;
 import ar.edu.utn.frba.dds.services.HechoService;
 import reactor.core.publisher.Mono;
@@ -21,7 +21,7 @@ public class HechoController {
   }
 
   @GetMapping
-  public Mono<HechoPaginadoResponseDTO> getHechos(
+  public Mono<HechosPagDTO> getHechos(
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer per_page
   ) {
