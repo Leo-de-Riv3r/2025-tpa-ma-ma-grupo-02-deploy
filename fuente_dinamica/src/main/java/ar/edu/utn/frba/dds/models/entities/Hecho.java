@@ -6,6 +6,7 @@ import lombok.*;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 
@@ -20,7 +21,7 @@ public class Hecho {
   private LocalDateTime fechaCarga;
   private Origen origen;
   private Multimedia multimedia;
-  @Builder.default
+  @Builder.Default
   private Boolean eliminado = Boolean.FALSE;
 
   @Override

@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.models.entities.enums;
+package ar.edu.utn.frba.dds.models.enums;
 
 public enum Formato {
   TEXTO,

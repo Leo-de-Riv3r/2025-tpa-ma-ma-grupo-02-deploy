@@ -8,5 +8,6 @@ public class HechoInputDTO {
   private String titulo;
   private String descripcion;
   private String categoria;
-  private String ubicacion;
+  private Double latitud;
+  private Double longitud;
 }
