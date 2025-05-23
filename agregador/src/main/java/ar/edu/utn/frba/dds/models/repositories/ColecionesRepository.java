@@ -23,7 +23,12 @@ public class ColecionesRepository implements IColeccionesRepository{
     colecciones.add(coleccionAActualizar);
   }
 
-
+  @Override
+  public Coleccion findById(String handler) {
+    return colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getHandler(), handler))
+        .findFirst()
+        .get();
+  }
   @Override
   public void cambiarFuentesColeccion(String handler, Set<FuenteDeDatos> fuentes) {
     colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getHandler(), handler))
@@ -31,7 +36,7 @@ public class ColecionesRepository implements IColeccionesRepository{
         .ifPresent(coleccion -> {
           Set<FuenteDeDatos> fuentesColeccion = coleccion.getFuentes();
           for (FuenteDeDatos fuente : fuentes) {
-            if (fuente.tiempoReal()) {
+            if (!fuente.tiempoReal()) {
               fuentesColeccion.remove(fuente);
               fuentesColeccion.add(fuente);
             }

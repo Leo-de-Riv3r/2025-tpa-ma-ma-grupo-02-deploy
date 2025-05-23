@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.models.entities;
 
+import ar.edu.utn.frba.dds.models.entities.enums.TipoOrigen;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 
 import java.util.List;
@@ -14,4 +15,5 @@ public interface FuenteDeDatos {
 
     public boolean tiempoReal();
     public void agregarHecho(Hecho hecho);
+    public TipoOrigen getTipoOrigen();
 }

@@ -1,33 +1,47 @@
 package ar.edu.utn.frba.dds.services;
 
-import ar.edu.utn.frba.dds.models.dtos.HechosDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.FuenteDeDatos;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoOrigen;
 import java.util.List;
 import java.util.Set;
 
 public interface IAgregadorService {
-  public void createSolicitud(Solicitud solicitud);
-  public void rechazarSolicitud(Solicitud solicitud, String supervisor);
-  public List<Coleccion> getColecciones();
-  public void refrescoColecciones();
-  public void setFuentesColeccion(String handler, Set<FuenteDeDatos> fuentes);
+  void createSolicitud(Solicitud solicitud);
 
-  void actualizarColeccion(String handler, Coleccion coleccion);
+  void rechazarSolicitud(Solicitud solicitud, String supervisor);
+
+  void aceptarSolicitud(Solicitud solicitud, String supervisor);
+
+  //funciones de coleccion
+  List<Coleccion> getColecciones();
+
+  void refrescoColecciones();
+
+  void setFuentesColeccion(String handler, Set<FuenteDeDatos> fuentes);
+
+  List<Hecho> filtrarHechosSinSolicitud(List<Hecho> hechos);
+
+  Hecho convertirHechoDTOAHecho(Object hecho, TipoOrigen tipoOrigen);
+
+  void actualizarHechosFuentes(Coleccion coleccion, Integer page, Integer per_page);
 
   void actualizarHechosFuentes(Coleccion coleccion);
 
-  Hecho convertirHechoDTOAHecho(Object hecho);
+  //obtener todos los hechos
+  List<Hecho> obtenerHechos();
 
-  public List<Hecho> obtenerHechos();
+  List<Hecho> obtenerHechos(Integer page, Integer per_page);
 
+  List<Hecho> obtenerHechos(String handler);
 
-  List<HechosDTOEntrada> consultarHechos(String url);
+  List<Hecho> obtenerHechos(String handler, Integer page, Integer per_page);
 
-  public void agregarFuente(String handler, FuenteDeDatos fuente);
+  List<Hecho> consultarHechos(FuenteDeDatos fuente);
 
+  List<Hecho> consultarHechos(FuenteDeDatos fuente, Integer page, Integer per_page);
 
-
+  void agregarFuente(String handler, FuenteDeDatos fuente);
 }

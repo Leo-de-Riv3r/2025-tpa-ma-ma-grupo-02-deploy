@@ -3,7 +3,6 @@ package ar.edu.utn.frba.dds.models.repositories;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.stereotype.Repository;
@@ -27,6 +26,9 @@ public class HechosSolicitudesRepository implements IHechosSolicitudesRepository
     this.buscarSolicitud(solicitud).get().rechazar(supervisor);
   }
 
+  public boolean hechoEliminado(Hecho hecho) {
+    return solicitudes.stream().anyMatch(solicitud -> EqualsBuilder.reflectionEquals(solicitud.getHecho(), hecho));
+  }
   private Optional<Solicitud> buscarSolicitud(Solicitud solicitudBuscada) {
     return solicitudes.stream().filter(solicitud -> EqualsBuilder.reflectionEquals(solicitudBuscada, solicitud))
         .findFirst();

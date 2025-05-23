@@ -17,4 +17,5 @@ public interface IColeccionesRepository {
 
   public void agregarHechoTiempoReal(String handler, FuenteDeDatos fuente, Hecho hecho);
 
+  Coleccion findById(String handler);
 }
