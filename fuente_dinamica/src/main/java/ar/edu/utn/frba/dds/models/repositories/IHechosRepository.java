@@ -8,5 +8,4 @@ public interface IHechosRepository {
   public void delete(Hecho hecho);
   public void deleteById(Long id);
   public long count();
-
 }

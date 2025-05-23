@@ -10,4 +10,5 @@ public class HechoInputDTO {
   private String categoria;
   private Double latitud;
   private Double longitud;
+  // TODO: Falta agregar atributo para texto y multimedia
 }
