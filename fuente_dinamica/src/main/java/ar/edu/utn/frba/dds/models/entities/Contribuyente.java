@@ -13,9 +13,9 @@ public class Contribuyente {
     private Long id;
     private String email;
     private String password;
-    private List<Hecho> contribuciones;
+    private List<Long> contribuciones;
 
-    public void agregarContribucion(Hecho hecho) {
-        this.contribuciones.add(hecho);
+    public void agregarContribucion(Long id) {
+        this.contribuciones.add(id);
     }
 }
