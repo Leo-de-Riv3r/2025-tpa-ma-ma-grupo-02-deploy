@@ -2,6 +2,8 @@ package ar.edu.utn.frba.dds.models.dtos.input;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class HechoInputDTO {
   private Long id;
@@ -10,5 +12,5 @@ public class HechoInputDTO {
   private String categoria;
   private Double latitud;
   private Double longitud;
-  // TODO: Falta agregar atributo para texto y multimedia
+  private List<MultimediaInputDTO> multimedia;
 }

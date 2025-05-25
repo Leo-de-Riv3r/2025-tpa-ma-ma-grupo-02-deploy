@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.models.entities;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import lombok.*;
 
@@ -20,7 +21,7 @@ public class Hecho {
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
   private Origen origen;
-  private Multimedia multimedia;
+  private List<Multimedia> multimedia;
   @Builder.Default
   private Boolean eliminado = Boolean.FALSE;
 

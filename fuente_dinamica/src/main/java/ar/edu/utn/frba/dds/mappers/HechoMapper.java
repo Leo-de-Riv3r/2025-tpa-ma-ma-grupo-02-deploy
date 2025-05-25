@@ -2,6 +2,8 @@ package ar.edu.utn.frba.dds.mappers;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Multimedia;
+import ar.edu.utn.frba.dds.models.enums.Formato;
 
 public class HechoMapper {
 
@@ -10,6 +12,11 @@ public class HechoMapper {
                 .id(hechoInputDTO.getId())
                 .titulo(hechoInputDTO.getTitulo())
                 .descripcion(hechoInputDTO.getDescripcion())
+                .multimedia(hechoInputDTO.getMultimedia().stream().map(m -> Multimedia.builder()
+                                .nombre(m.getNombre())
+                                .ruta(m.getRuta())
+                                .formato(Formato.fromString(m.getFormato()))
+                        .build()).toList())
                 .build();
     }
 
