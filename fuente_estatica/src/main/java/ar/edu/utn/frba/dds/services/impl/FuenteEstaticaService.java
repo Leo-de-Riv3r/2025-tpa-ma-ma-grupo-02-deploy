@@ -48,7 +48,7 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
 
         hechos.forEach(hecho -> {
           LocalDateTime fechaHecho = hecho.getFecha().atStartOfDay();
-          HechoDTO hechoDTO = new HechoDTO(hecho.getTitulo(), hecho.getDescripcion(), hecho.getCategoria(), hecho.getLatitud(), hecho.getLongitud(), fechaHecho, LocalDateTime.now());
+          HechoDTO hechoDTO = new HechoDTO(hecho.getTitulo(), hecho.getDescripcion(), hecho.getCategoria(), hecho.getLatitud(), hecho.getLongitud(), fechaHecho, LocalDateTime.now(), LocalDateTime.now());
           listaHechos.add(hechoDTO);
         });
 
