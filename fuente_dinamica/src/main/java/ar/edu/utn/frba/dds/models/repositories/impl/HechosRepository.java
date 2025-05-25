@@ -19,10 +19,15 @@ public class HechosRepository implements IHechosRepository {
 
   @Override
   public Hecho save(Hecho hecho) {
-    hecho.setId((this.nextId));
-    hecho.setFechaCarga(LocalDateTime.now());
-    this.hechos.add(hecho);
-    this.nextId++;
+    if (hecho.getId() == null) {
+      hecho.setId((this.nextId));
+      hecho.setFechaCarga(LocalDateTime.now());
+      this.hechos.add(hecho);
+      this.nextId++;
+    } else {
+      deleteById((hecho.getId()));
+      this.hechos.add(hecho);
+    }
     return hecho;
   }
 

@@ -3,7 +3,7 @@ package ar.edu.utn.frba.dds.servicies.impl;
 import ar.edu.utn.frba.dds.exceptions.ContrasenaIncorrectaException;
 import ar.edu.utn.frba.dds.mappers.HechoMapper;
 import ar.edu.utn.frba.dds.models.dtos.input.ContribucionInputDTO;
-import ar.edu.utn.frba.dds.models.dtos.input.ContribuidorInputDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.ContribuyenteInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.ContribucionOutputDTO;
 import ar.edu.utn.frba.dds.models.entities.Categoria;
 import ar.edu.utn.frba.dds.models.entities.Contribuyente;
@@ -47,7 +47,8 @@ public class ContribucionService implements IContribucionService {
 
         hechosRepository.save(hecho);
 
-        ContribuidorInputDTO contribuyente = contribucion.getContribuidor();
+        ContribuyenteInputDTO contribuyenteDto = contribucion.getContribuyente();
+        Contribuyente contribuyente = contribuyenteRepository.findByEmail(contribuyenteDto.getEmail());
 
         if (contribuyente.tieneCredenciales()) {
             Contribuyente c = this.contribuyenteRepository.findByEmail(contribuyente.getEmail());

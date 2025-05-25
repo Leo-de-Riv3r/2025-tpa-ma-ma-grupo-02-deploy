@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class ContribucionInputDTO {
     private HechoInputDTO hecho;
-    private ContribuidorInputDTO contribuidor;
+    private ContribuyenteInputDTO contribuyente;
 }
