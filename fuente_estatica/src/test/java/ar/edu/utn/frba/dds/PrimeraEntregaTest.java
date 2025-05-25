@@ -1,11 +1,21 @@
 package ar.edu.utn.frba.dds;
 
-import ar.edu.utn.frba.dds.adapters.CsvReaderAdapter;
-import ar.edu.utn.frba.dds.entities.*;
-import ar.edu.utn.frba.dds.enums.Estado;
-import ar.edu.utn.frba.dds.strategies.*;
-import ar.edu.utn.frba.dds.utils.FuenteEstaticaCsv;
-import ar.edu.utn.frba.dds.utils.LectorCsv;
+import ar.edu.utn.frba.dds.models.entities.Categoria;
+import ar.edu.utn.frba.dds.models.entities.Coleccion;
+import ar.edu.utn.frba.dds.models.entities.Etiqueta;
+import ar.edu.utn.frba.dds.models.entities.FuenteDeDatos;
+import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Solicitud;
+import ar.edu.utn.frba.dds.models.entities.Ubicacion;
+import ar.edu.utn.frba.dds.models.entities.adapters.CsvReaderAdapter;
+import ar.edu.utn.frba.dds.models.entities.enums.Estado;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroCategoriaStrategy;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroEtiquetaStrategy;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroFechaStrategy;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroTituloStrategy;
+import ar.edu.utn.frba.dds.models.entities.utils.FuenteEstaticaCsv;
+import ar.edu.utn.frba.dds.models.entities.utils.LectorCsv;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
