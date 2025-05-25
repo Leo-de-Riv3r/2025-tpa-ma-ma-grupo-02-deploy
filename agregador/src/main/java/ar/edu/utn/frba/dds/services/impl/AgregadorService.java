@@ -189,7 +189,7 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
   @Override
   public List<Hecho> consultarHechos(FuenteDeDatos fuente) {
     WebClient webClient = WebClient.builder().baseUrl(fuente.getUrl()).build();
-    List<HechosDTOEntrada> hechosDTOEntrada = webClient
+    List<Object> hechosDTOEntrada = webClient
         .get()
         .uri("/hechos")
         .retrieve()
@@ -204,7 +204,7 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
         .baseUrl(fuente.getUrl())
         .build();
 
-    List<HechosDTOEntrada> hechosDTOEntrada = webClient.get()
+    List<Object> hechosDTOEntrada = webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/hechos")
             .queryParam("page", page)

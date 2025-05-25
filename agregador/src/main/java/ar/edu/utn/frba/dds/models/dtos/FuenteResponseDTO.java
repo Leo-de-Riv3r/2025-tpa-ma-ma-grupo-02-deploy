@@ -7,5 +7,5 @@ import lombok.Data;
 @Data
 public class FuenteResponseDTO {
   private Integer currentPage;
-  private List<HechosDTOEntrada> hechosDTOEntrada;
+  private List<Object> hechosDTOEntrada;
 }
