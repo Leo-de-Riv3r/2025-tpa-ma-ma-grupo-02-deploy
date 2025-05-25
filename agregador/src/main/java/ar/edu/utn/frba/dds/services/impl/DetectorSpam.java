@@ -3,9 +3,12 @@ package ar.edu.utn.frba.dds.services.impl;
 import ar.edu.utn.frba.dds.models.dtos.SpamDetectorRequestDTO;
 import ar.edu.utn.frba.dds.models.dtos.SpamDetectorResponseDTO;
 import ar.edu.utn.frba.dds.services.IDetectorSpam;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+
+@Component
 public class DetectorSpam implements IDetectorSpam {
   private String url = "https://api.oopspam.com/v1/spamdetection";
   private WebClient webClient;

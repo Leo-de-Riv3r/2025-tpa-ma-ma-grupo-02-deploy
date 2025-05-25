@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.services.impl;
 
+import ar.edu.utn.frba.dds.AgregadorApplication;
 import ar.edu.utn.frba.dds.models.dtos.FuenteResponseDTO;
 import ar.edu.utn.frba.dds.models.dtos.HechosDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
@@ -27,6 +28,12 @@ public class AgregadorService  implements IAgregadorService{
   private IHechosSolicitudesRepository hechosSolicitudesRepository = new HechosSolicitudesRepository();
   private IDetectorSpam detectorSpam;
   private IColeccionesRepository coleccionesRepository;
+
+  public AgregadorService(IHechosSolicitudesRepository hechosSolicitudesRepository, IDetectorSpam detectorSpam, IColeccionesRepository coleccionesRepository) {
+    this.hechosSolicitudesRepository = hechosSolicitudesRepository;
+    this.detectorSpam = detectorSpam;
+    this.coleccionesRepository = coleccionesRepository;
+  }
 
   @Override
   public void createSolicitud(Solicitud solicitud) {
@@ -113,13 +120,8 @@ public class AgregadorService  implements IAgregadorService{
     colecciones.forEach(coleccion -> {
       Set<Hecho> hechosColeccion = coleccion.obtenerHechos();
       hechos.addAll(hechosColeccion);
-      List<FuenteDeDatos> fuentesProxy = coleccion.getFuentes().stream()
-          .filter(fuente -> fuente.getTipoOrigen() == TipoOrigen.PROXY)
-          .toList();
-      for (FuenteDeDatos fuenteDeDatos : fuentesProxy) {
-        hechos.addAll(consultarHechos(fuenteDeDatos));
-      }
 
+      hechos.addAll(obtenerHechosProxy(coleccion, null, null));
     });
     return hechos.stream()
         .filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho)).toList();
@@ -137,14 +139,9 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
       Set<Hecho> hechosColeccion = coleccion.obtenerHechos();
       hechos.addAll(hechosColeccion);
 
-      List<FuenteDeDatos> fuentesProxy = coleccion.getFuentes().stream()
-          .filter(fuente -> fuente.getTipoOrigen() == TipoOrigen.PROXY)
-          .toList();
-      for (FuenteDeDatos fuenteDeDatos : fuentesProxy) {
-        hechos.addAll(consultarHechos(fuenteDeDatos, page, per_page));
-      }
+      //tratamiento fuente proxy
+      hechos.addAll(obtenerHechosProxy(coleccion, page, per_page));
     });
-
 
   return hechos.stream()
       .filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho)).toList();
@@ -154,14 +151,9 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
   public List<Hecho> obtenerHechos(String handler) {
     Coleccion coleccion = coleccionesRepository.findById(handler);
     List<Hecho> hechos = new ArrayList<>(List.of());
-
     hechos.addAll(coleccion.obtenerHechos());
-    List<FuenteDeDatos> fuentesProxy = coleccion.getFuentes().stream()
-        .filter(fuente -> fuente.tiempoReal())
-        .toList();
-    for (FuenteDeDatos fuenteDeDatos : fuentesProxy) {
-      hechos.addAll(consultarHechos(fuenteDeDatos));
-    }
+
+    hechos.addAll(obtenerHechosProxy(coleccion, null, null));
 
     return hechos.stream()
         .filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho)).toList();
@@ -169,19 +161,29 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
 
   @Override
   public List<Hecho> obtenerHechos(String handler, Integer page, Integer per_page) {
-    //actualizo las colecciones
     Coleccion coleccion = coleccionesRepository.findById(handler);
     List<Hecho> hechos = List.of();
     actualizarHechosFuentes(coleccion, page,per_page);
     hechos.addAll(coleccion.obtenerHechos());
+    hechos.addAll(obtenerHechosProxy(coleccion, page, per_page));
+    return hechos.stream()
+        .filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho)).toList();
+  }
+
+  private List<Hecho> obtenerHechosProxy(Coleccion coleccion, Integer page, Integer per_page) {
+    List<Hecho> hechos = new ArrayList<>(List.of());
     List<FuenteDeDatos> fuentesProxy = coleccion.getFuentes().stream()
         .filter(fuente -> fuente.tiempoReal())
         .toList();
     for (FuenteDeDatos fuenteDeDatos : fuentesProxy) {
-      hechos.addAll(consultarHechos(fuenteDeDatos, page, per_page));
-    };
-    return hechos.stream()
-        .filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho)).toList();
+      if (page != null && per_page != null) {
+        hechos.addAll(consultarHechos(fuenteDeDatos));
+      } else {
+        hechos.addAll(consultarHechos(fuenteDeDatos, page, per_page));
+      }
+    }
+
+    return hechos;
   }
 
   @Override
@@ -193,7 +195,6 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
         .retrieve()
         .bodyToMono(FuenteResponseDTO.class)
         .map(FuenteResponseDTO::getHechosDTOEntrada).block();
-
     return hechosDTOEntrada.stream().map(hechoDto -> convertirHechoDTOAHecho(hechoDto, fuente.getTipoOrigen())).toList();
   }
 
@@ -219,20 +220,6 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
   @Override
   public void agregarFuente(String handler, FuenteDeDatos fuente) {
     coleccionesRepository.agregarFuente(handler, fuente);
-//    if (fuente.tiempoReal()) {
-//      Flux<FuenteResponseDTO> eventStream = WebClient.create(fuente.getUrl())
-//          .get()
-//          .uri("/stream")
-//          .accept(MediaType.TEXT_EVENT_STREAM)
-//          .retrieve()
-//          .bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<HechosDTOEntrada>>() {});
-//
-//      eventStream.subscribe(event -> {
-//        //agregar hecho a la fuente dinamica
-//        Hecho hecho = this.convertirHechoDTOAHecho(event,TipoOrigen.PROXY);
-//        coleccionesRepository.agregarHechoTiempoReal(handler, fuente, hecho);
-//      });
-//    }
- }
+  }
 }
 
