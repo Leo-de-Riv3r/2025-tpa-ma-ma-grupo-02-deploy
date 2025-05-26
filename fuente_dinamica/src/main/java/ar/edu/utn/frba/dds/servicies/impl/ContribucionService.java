@@ -15,7 +15,10 @@ import ar.edu.utn.frba.dds.models.repositories.impl.CategoriaRepository;
 import ar.edu.utn.frba.dds.models.repositories.impl.ContribuyenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.impl.HechosRepository;
 import ar.edu.utn.frba.dds.servicies.IContribucionService;
+import ar.edu.utn.frba.dds.utils.ContribucionUtils;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ContribucionService implements IContribucionService {
     private final IHechosRepository hechosRepository;
     private final IContribuyenteRepository contribuyenteRepository;
@@ -43,22 +46,19 @@ public class ContribucionService implements IContribucionService {
 
         hecho.setCategoria(categoria);
 
-        // TODO: Falta manejar ubicación, etiquetas, multimedia, origen, etc.
-
         hechosRepository.save(hecho);
 
         ContribuyenteInputDTO contribuyenteDto = contribucion.getContribuyente();
-        Contribuyente contribuyente = contribuyenteRepository.findByEmail(contribuyenteDto.getEmail());
 
-        if (contribuyente.tieneCredenciales()) {
-            Contribuyente c = this.contribuyenteRepository.findByEmail(contribuyente.getEmail());
+        if (ContribucionUtils.tieneCredenciales(contribuyenteDto)) {
+            Contribuyente contribuyente = this.contribuyenteRepository.findByEmail(contribuyenteDto.getEmail());
 
-            if (!c.getPassword().equals(contribuyente.getPassword())) {
+            if (!contribuyente.getPassword().equals(contribuyenteDto.getPassword())) {
                 throw new ContrasenaIncorrectaException();
             }
 
-            c.agregarContribucion(hecho.getId());
-            this.contribuyenteRepository.save(c);
+            contribuyente.agregarContribucion(hecho.getId());
+            contribuyenteRepository.save(contribuyente);
         }
 
         return new ContribucionOutputDTO(); // TODO: Modelar esto

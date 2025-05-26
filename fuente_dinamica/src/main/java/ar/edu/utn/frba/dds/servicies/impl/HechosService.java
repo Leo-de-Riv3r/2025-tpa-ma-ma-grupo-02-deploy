@@ -7,47 +7,45 @@ import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.repositories.IContribuyenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.servicies.IHechosService;
-import java.time.LocalDateTime;
+import ar.edu.utn.frba.dds.utils.ContribucionUtils;
+import org.springframework.stereotype.Service;
 
+
+@Service
 public class HechosService implements IHechosService {
   private IHechosRepository hechosRepository;
   private IContribuyenteRepository contribuyenteRepository;
 
   @Override
-  public void editarHecho(ContribuyenteInputDTO contribuyenteInputDTO, HechoInputDTO hechoInputDTO) {
-    Hecho hecho = hechosRepository.findById(hechoInputDTO.getId());
+  public void modificarHecho(ContribuyenteInputDTO contribuyenteDTO, HechoInputDTO hechoDTO) {
+    Contribuyente contribuyente = contribuyenteRepository.findByEmail(contribuyenteDTO.getEmail());
 
-    if (puedeHechoSerEditadoPor(contribuyenteInputDTO, hecho)) {
-      throw new RuntimeException("No puede editar el hecho");
+    if (!ContribucionUtils.tieneCredenciales(contribuyenteDTO)) {
+      throw new RuntimeException("Se necesita ser contribuyente para editar un hecho");
     }
 
-    hecho.actualizarBasadoEn(hechoInputDTO);
+    if (!contribuyente.tieneHecho(hechoDTO.getId())) {
+       throw new RuntimeException("No le pertenece el hecho al contribuyente");
+    }
+
+    Hecho hecho = hechosRepository.findById(hechoDTO.getId());
+
+    if (!sePuedeEditarHecho(hecho)) {
+      throw new RuntimeException("Paso la fecha limite para editar el hecho");
+    }
+
+    // Llamar a los repositorios de Categoria, Multimedia y Ubicación para actualizar los campos del input dto
+
+    hecho.actaulizarDesde(hechoDTO);
+
     hechosRepository.save(hecho);
+
+
   }
 
-  private boolean tieneCredenciales(ContribuyenteInputDTO contribuyente) {
-    String email = contribuyente.getEmail();
-    String password = contribuyente.getPassword();
-    return email != null && !email.isBlank() &&
-        password != null && !password.isBlank();
+  private boolean sePuedeEditarHecho(Hecho hecho) {
+    var fechaLimite = hecho.getFechaCarga().plusWeeks(1);
+    return hecho.getFechaCarga().isBefore(fechaLimite);
   }
 
-  private boolean puedeHechoSerEditadoPor(ContribuyenteInputDTO contribuyenteInputDTO, Hecho hecho) {
-    LocalDateTime fechaCarga = hecho.getFechaCarga();
-    Long idHecho = hecho.getId();
-    if (!tieneCredenciales(contribuyenteInputDTO)) {
-      return false;
-    }
-    Contribuyente contribuyente = contribuyenteRepository.findByEmail(contribuyenteInputDTO.getEmail());
-    if (!contribuyente.getPassword().equals(contribuyenteInputDTO.getPassword())) {
-      return false;
-    }
-
-    if (!contribuyente.tieneHecho(idHecho)) {
-      return false;
-    }
-
-    LocalDateTime limite = fechaCarga.plusWeeks(1);//Posiblemente implementar patrón Strategy
-    return LocalDateTime.now().isBefore(limite);
-  }
 }

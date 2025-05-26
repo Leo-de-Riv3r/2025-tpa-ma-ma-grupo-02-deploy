@@ -2,10 +2,12 @@ package ar.edu.utn.frba.dds.models.repositories.impl;
 
 import ar.edu.utn.frba.dds.models.entities.Categoria;
 import ar.edu.utn.frba.dds.models.repositories.ICategoriaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class CategoriaRepository implements ICategoriaRepository {
     private List<Categoria> categorias;
     private Long nextId;
