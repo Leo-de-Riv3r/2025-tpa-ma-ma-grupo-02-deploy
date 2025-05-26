@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.models.dtos.external.auth;
+package ar.edu.utn.frba.dds.models.dtos.external.api.auth;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,17 +1,17 @@
 package ar.edu.utn.frba.dds.services;
 
-import ar.edu.utn.frba.dds.models.dtos.external.hecho.HechoDTO;
-import ar.edu.utn.frba.dds.models.dtos.external.hecho.HechosPagDTO;
+import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechoDTO;
+import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechosPagDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
-public class HechoService {
+public class HechoApiService {
   private final WebClient webClient;
 
-  public HechoService(
+  public HechoApiService(
       @Value("${api.baseUrl}") String baseUrl,
       ApiAuthService authService
   ) {

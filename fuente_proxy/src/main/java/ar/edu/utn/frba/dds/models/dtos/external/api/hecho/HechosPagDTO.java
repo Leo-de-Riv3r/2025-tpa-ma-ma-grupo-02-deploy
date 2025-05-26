@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.models.dtos.external.hecho;
+package ar.edu.utn.frba.dds.models.dtos.external.api.hecho;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

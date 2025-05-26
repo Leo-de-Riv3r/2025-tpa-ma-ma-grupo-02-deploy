@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.dds.services;
 
-import ar.edu.utn.frba.dds.models.dtos.external.auth.LoginRequest;
-import ar.edu.utn.frba.dds.models.dtos.external.auth.LoginResponse;
+import ar.edu.utn.frba.dds.models.dtos.external.api.auth.LoginRequest;
+import ar.edu.utn.frba.dds.models.dtos.external.api.auth.LoginResponse;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

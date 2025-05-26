@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.models.dtos.external.hecho;
+package ar.edu.utn.frba.dds.models.dtos.external.api.hecho;
 
 import java.time.LocalDateTime;
 import lombok.Data;
@@ -13,5 +13,5 @@ public class HechoDTO {
   private Double longitud;
   private LocalDateTime fecha_hecho;
   private LocalDateTime created_at;
-  private LocalDateTime updated_at;
+  //private LocalDateTime updated_at;
 }
