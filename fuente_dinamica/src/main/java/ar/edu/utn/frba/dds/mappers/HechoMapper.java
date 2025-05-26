@@ -32,7 +32,7 @@ public class HechoMapper {
             .longitud(hecho.getUbicacion().getLongitud())
             .fecha_hecho(hecho.getFechaAcontecimiento())
             .created_at(hecho.getFechaCarga())
-            .updated_at(hecho.getFechaCarga())
+            //.updated_at(hecho.getFechaCarga())
             /*.multimedia(
                 hecho.getMultimedia().stream()
                     .map(m -> MultimediaOutputDTO.builder()

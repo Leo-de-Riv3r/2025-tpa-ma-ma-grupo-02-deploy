@@ -74,7 +74,7 @@ public class HechosService implements IHechosService {
   public HechoOutputDTO getHechoById(Long id) {
     Hecho hecho = hechosRepository.findById(id);
     if (hecho == null) {
-      throw new RuntimeException("No existe ese hecho con ese id");
+      throw new RuntimeException("No existe hecho con ese id");
     }
     return HechoMapper.toHechoOutputDTO(hecho);
   }

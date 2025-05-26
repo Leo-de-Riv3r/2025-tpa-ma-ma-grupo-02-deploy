@@ -29,6 +29,6 @@ public class HechosController {
 
   @GetMapping("/{id}")
   public HechoOutputDTO getHechoById(@PathVariable Long id) {
-    return hechosService.getHechoById(id); // TODO: try catch
+    return hechosService.getHechoById(id); // TODO: try cath
   }
 }
