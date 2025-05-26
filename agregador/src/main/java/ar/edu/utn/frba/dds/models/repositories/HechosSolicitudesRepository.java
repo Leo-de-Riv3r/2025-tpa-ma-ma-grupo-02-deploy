@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class HechosSolicitudesRepository implements IHechosSolicitudesRepository{
-  private List<Solicitud> solicitudes;
-  private List<Hecho> hechos;
+  private List<Solicitud> solicitudes = List.of();
+  private List<Hecho> hechos = List.of();
   @Override
   public void createSolicitud(Solicitud solicitud) {
     solicitudes.add(solicitud);

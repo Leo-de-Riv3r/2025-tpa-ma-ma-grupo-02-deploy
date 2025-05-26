@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class ColecionesRepository implements IColeccionesRepository{
-  List<Coleccion> colecciones;
+  List<Coleccion> colecciones = List.of();
 
   public void createColeccion(Coleccion coleccion) {
     colecciones.add(coleccion);
