@@ -56,4 +56,9 @@ public class HechosRepository implements IHechosRepository {
   public long count() {
     return hechos.size();
   }
+
+  @Override
+  public List<Hecho> findAll() {
+    return this.hechos;
+  }
 }
