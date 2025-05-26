@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.dds.models.repositories;
 
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
-import ar.edu.utn.frba.dds.models.entities.FuenteDeDatos;
+import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import java.util.List;
 import java.util.Objects;
@@ -25,17 +25,17 @@ public class ColecionesRepository implements IColeccionesRepository{
 
   @Override
   public Coleccion findById(String handler) {
-    return colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getHandler(), handler))
+    return colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getId(), handler))
         .findFirst()
         .get();
   }
   @Override
-  public void cambiarFuentesColeccion(String handler, Set<FuenteDeDatos> fuentes) {
-    colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getHandler(), handler))
+  public void cambiarFuentesColeccion(String handler, Set<IFuenteAdapter> fuentes) {
+    colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getId(), handler))
         .findFirst()
         .ifPresent(coleccion -> {
-          Set<FuenteDeDatos> fuentesColeccion = coleccion.getFuentes();
-          for (FuenteDeDatos fuente : fuentes) {
+          Set<IFuenteAdapter> fuentesColeccion = coleccion.getFuentes();
+          for (IFuenteAdapter fuente : fuentes) {
             if (!fuente.tiempoReal()) {
               fuentesColeccion.remove(fuente);
               fuentesColeccion.add(fuente);
@@ -46,20 +46,11 @@ public class ColecionesRepository implements IColeccionesRepository{
 
 
   @Override
-  public void agregarFuente(String handler, FuenteDeDatos fuente) {
-    colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getHandler(), handler))
+  public void agregarFuente(String handler, IFuenteAdapter fuente) {
+    colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getId(), handler))
         .findFirst()
         .get()
         .agregarFuente(fuente);
-  }
-
-  @Override
-  public void agregarHechoTiempoReal(String handler, FuenteDeDatos fuenteTiempoReal, Hecho hecho) {
-    colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getHandler(), handler))
-        .findFirst().get()
-        .getFuentes().stream().filter(fuente -> EqualsBuilder.reflectionEquals(fuente, fuenteTiempoReal))
-        .findFirst().get()
-        .agregarHecho(hecho);
   }
 
 

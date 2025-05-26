@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.dds.models.entities;
 
-import ar.edu.utn.frba.dds.models.entities.enums.TipoOrigen;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 import java.util.HashSet;
 import java.util.List;
@@ -14,14 +13,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Coleccion {
-  private String handler;
+  private String id;
   private String titulo;
   private String descripcion;
   private Set<FiltroStrategy> criterios;
-  private Set<FuenteDeDatos> fuentes;
+  private Set<IFuenteAdapter> fuentes;
 
-  public Coleccion(String titulo, String descripcion, Set<FiltroStrategy> criterios, Set<FuenteDeDatos> fuentes) {
-    this.handler = UUID.randomUUID().toString().substring(0, 10);
+  public Coleccion(String titulo, String descripcion, Set<FiltroStrategy> criterios, Set<IFuenteAdapter> fuentes) {
+    this.id = UUID.randomUUID().toString().substring(0, 10);
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.criterios = criterios;
@@ -36,7 +35,7 @@ public class Coleccion {
   }
 
   public Set<Hecho> obtenerHechos() {
-    List<FuenteDeDatos> fuentes = getFuentes().stream().filter(fuente -> !fuente.tiempoReal()).toList();
+    List<IFuenteAdapter> fuentes = getFuentes().stream().filter(fuente -> !fuente.tiempoReal()).toList();
     return fuentes.stream()
         .flatMap(fuente -> fuente.obtenerHechos(criterios).stream())
         .collect(Collectors.toSet());
@@ -46,7 +45,7 @@ public class Coleccion {
     this.criterios.remove(filtro);
   }
 
-  public void agregarFuente(FuenteDeDatos fuente) {
+  public void agregarFuente(IFuenteAdapter fuente) {
     this.fuentes.add(fuente);
   }
 

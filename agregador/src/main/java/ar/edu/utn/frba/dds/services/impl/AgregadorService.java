@@ -1,10 +1,9 @@
 package ar.edu.utn.frba.dds.services.impl;
 
-import ar.edu.utn.frba.dds.AgregadorApplication;
 import ar.edu.utn.frba.dds.models.dtos.FuenteResponseDTO;
 import ar.edu.utn.frba.dds.models.dtos.HechosDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
-import ar.edu.utn.frba.dds.models.entities.FuenteDeDatos;
+import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
@@ -64,11 +63,11 @@ public class AgregadorService  implements IAgregadorService{
     List<Coleccion> colecciones = this.getColecciones();
     colecciones.forEach(coleccion -> actualizarHechosFuentes(coleccion));
 
-    colecciones.forEach(coleccion -> setFuentesColeccion(coleccion.getHandler(), coleccion.getFuentes()));
+    colecciones.forEach(coleccion -> setFuentesColeccion(coleccion.getId(), coleccion.getFuentes()));
   }
 
   @Override
-  public void setFuentesColeccion(String handler, Set<FuenteDeDatos> fuentes) {
+  public void setFuentesColeccion(String handler, Set<IFuenteAdapter> fuentes) {
     this.coleccionesRepository.cambiarFuentesColeccion(handler, fuentes);
   }
 
@@ -172,14 +171,14 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
 
   private List<Hecho> obtenerHechosProxy(Coleccion coleccion, Integer page, Integer per_page) {
     List<Hecho> hechos = new ArrayList<>(List.of());
-    List<FuenteDeDatos> fuentesProxy = coleccion.getFuentes().stream()
+    List<IFuenteAdapter> fuentesProxy = coleccion.getFuentes().stream()
         .filter(fuente -> fuente.tiempoReal())
         .toList();
-    for (FuenteDeDatos fuenteDeDatos : fuentesProxy) {
+    for (IFuenteAdapter IFuenteAdapter : fuentesProxy) {
       if (page != null && per_page != null) {
-        hechos.addAll(consultarHechos(fuenteDeDatos));
+        hechos.addAll(consultarHechos(IFuenteAdapter));
       } else {
-        hechos.addAll(consultarHechos(fuenteDeDatos, page, per_page));
+        hechos.addAll(consultarHechos(IFuenteAdapter, page, per_page));
       }
     }
 
@@ -187,7 +186,7 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
   }
 
   @Override
-  public List<Hecho> consultarHechos(FuenteDeDatos fuente) {
+  public List<Hecho> consultarHechos(IFuenteAdapter fuente) {
     WebClient webClient = WebClient.builder().baseUrl(fuente.getUrl()).build();
     List<Object> hechosDTOEntrada = webClient
         .get()
@@ -199,7 +198,7 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
   }
 
   @Override
-  public List<Hecho> consultarHechos(FuenteDeDatos fuente, Integer page, Integer per_page) {
+  public List<Hecho> consultarHechos(IFuenteAdapter fuente, Integer page, Integer per_page) {
     WebClient webClient =  WebClient.builder()
         .baseUrl(fuente.getUrl())
         .build();
@@ -218,7 +217,7 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
   }
 
   @Override
-  public void agregarFuente(String handler, FuenteDeDatos fuente) {
+  public void agregarFuente(String handler, IFuenteAdapter fuente) {
     coleccionesRepository.agregarFuente(handler, fuente);
   }
 }

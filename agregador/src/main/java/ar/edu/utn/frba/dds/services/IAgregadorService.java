@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
-import ar.edu.utn.frba.dds.models.entities.FuenteDeDatos;
+import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoOrigen;
@@ -20,7 +20,7 @@ public interface IAgregadorService {
 
   void refrescoColecciones();
 
-  void setFuentesColeccion(String handler, Set<FuenteDeDatos> fuentes);
+  void setFuentesColeccion(String handler, Set<IFuenteAdapter> fuentes);
 
   List<Hecho> filtrarHechosSinSolicitud(List<Hecho> hechos);
 
@@ -39,9 +39,9 @@ public interface IAgregadorService {
 
   List<Hecho> obtenerHechos(String handler, Integer page, Integer per_page);
 
-  List<Hecho> consultarHechos(FuenteDeDatos fuente);
+  List<Hecho> consultarHechos(IFuenteAdapter fuente);
 
-  List<Hecho> consultarHechos(FuenteDeDatos fuente, Integer page, Integer per_page);
+  List<Hecho> consultarHechos(IFuenteAdapter fuente, Integer page, Integer per_page);
 
-  void agregarFuente(String handler, FuenteDeDatos fuente);
+  void agregarFuente(String handler, IFuenteAdapter fuente);
 }

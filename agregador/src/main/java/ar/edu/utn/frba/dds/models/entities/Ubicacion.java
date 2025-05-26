@@ -13,4 +13,11 @@ public class Ubicacion {
     this.latitud = latitud;
     this.longitud = longitud;
   }
+
+  public Ubicacion(Double latitud, Double longitud, String direccion, Lugar referenciaLugar) {
+    this.latitud = latitud;
+    this.longitud = longitud;
+    this.direccion = direccion;
+    this.referenciaLugar = referenciaLugar;
+  }
 }
