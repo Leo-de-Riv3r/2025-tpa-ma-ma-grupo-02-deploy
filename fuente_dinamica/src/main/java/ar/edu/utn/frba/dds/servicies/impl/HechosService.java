@@ -36,7 +36,7 @@ public class HechosService implements IHechosService {
 
     // Llamar a los repositorios de Categoria, Multimedia y Ubicación para actualizar los campos del input dto
 
-    hecho.actaulizarDesde(hechoDTO);
+    hecho.actualizarDesde(hechoDTO);
 
     hechosRepository.save(hecho);
 

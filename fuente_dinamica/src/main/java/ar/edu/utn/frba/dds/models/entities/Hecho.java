@@ -41,7 +41,7 @@ public class Hecho {
     return this.etiquetas.add(etiqueta);
   }
 
-  public void actaulizarDesde(HechoInputDTO dto) {
+  public void actualizarDesde(HechoInputDTO dto) {
     if (dto.getTitulo() != null) {
       titulo = dto.getTitulo();
     }
