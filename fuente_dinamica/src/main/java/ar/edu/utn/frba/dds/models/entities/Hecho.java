@@ -41,18 +41,6 @@ public class Hecho {
     return this.etiquetas.add(etiqueta);
   }
 
-  public boolean puedeSerEditadoPor(Contribuyente contribuyente) {
-    if (!contribuyente.tieneCredenciales()) {
-      return false;
-    }
-    if (!contribuyente.tieneHecho(this.id)) {
-      return false;
-    }
-
-    LocalDateTime limite = this.fechaCarga.plusWeeks(1);//Posiblemente implementar patrón Strategy
-    return LocalDateTime.now().isBefore(limite);
-  }
-
   public void actualizarBasadoEn(HechoInputDTO hechoDTO) {
     return;
   }

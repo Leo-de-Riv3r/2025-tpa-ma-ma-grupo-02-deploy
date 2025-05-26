@@ -19,11 +19,6 @@ public class Contribuyente {
         this.contribuciones.add(id);
     }
 
-    public boolean tieneCredenciales() {
-        return email != null && !email.isBlank() &&
-            password != null && !password.isBlank();
-    }
-
     public boolean tieneHecho(Long id) {
         return contribuciones.contains(id);
     }
