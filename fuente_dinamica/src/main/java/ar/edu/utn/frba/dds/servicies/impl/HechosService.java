@@ -1,14 +1,16 @@
 package ar.edu.utn.frba.dds.servicies.impl;
 
 import ar.edu.utn.frba.dds.mappers.HechoMapper;
-import ar.edu.utn.frba.dds.models.dtos.input.ContribuyenteInputDTO;
-import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
+
+import ar.edu.utn.frba.dds.models.dtos.input.SolicitudModificacionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoPagDTO;
-import ar.edu.utn.frba.dds.models.entities.Contribuyente;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Solicitud;
+import ar.edu.utn.frba.dds.models.enums.Motivo;
 import ar.edu.utn.frba.dds.models.repositories.IContribuyenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
+import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
 import ar.edu.utn.frba.dds.servicies.IHechosService;
 import ar.edu.utn.frba.dds.utils.ContribucionUtils;
 import java.util.List;
@@ -19,32 +21,44 @@ import org.springframework.stereotype.Service;
 public class HechosService implements IHechosService {
   private IHechosRepository hechosRepository;
   private IContribuyenteRepository contribuyenteRepository;
+  private ISolicitudesRepository solicitudesRepository;
+
+  public HechosService(
+          IHechosRepository hechosRepository,
+          IContribuyenteRepository contribuyenteRepository,
+          ISolicitudesRepository solicitudesRepository) {
+    this.hechosRepository = hechosRepository;
+    this.contribuyenteRepository = contribuyenteRepository;
+    this.solicitudesRepository = solicitudesRepository;
+  }
 
   @Override
-  public void modificarHecho(ContribuyenteInputDTO contribuyenteDTO, HechoInputDTO hechoDTO) {
-    Contribuyente contribuyente = contribuyenteRepository.findByEmail(contribuyenteDTO.getEmail());
+  public void modificarHecho(SolicitudModificacionInputDTO solicitudModificacion) {
+    var hecho = hechosRepository.findById(solicitudModificacion.getHecho().getId());
+    var contribuyenteDto = solicitudModificacion.getContribuyente();
 
-    if (!ContribucionUtils.tieneCredenciales(contribuyenteDTO)) {
-      throw new RuntimeException("Se necesita ser contribuyente para editar un hecho");
+    if (!ContribucionUtils.tieneCredenciales(contribuyenteDto)) {
+      hecho.actualizarDesde(solicitudModificacion.getHecho());
+      agregarNuevaSolicitud(solicitudModificacion, hecho);
+      return;
     }
 
-    if (!contribuyente.tieneHecho(hechoDTO.getId())) {
-       throw new RuntimeException("No le pertenece el hecho al contribuyente");
+    var contribuyente = contribuyenteRepository.findByEmail(contribuyenteDto.getEmail());
+
+    if (sePuedeEditarHecho(hecho) && contribuyente.getPassword().equals(contribuyenteDto.getPassword())) {
+      hecho.actualizarDesde(solicitudModificacion.getHecho());
+      hechosRepository.save(hecho);
+      return;
     }
 
-    Hecho hecho = hechosRepository.findById(hechoDTO.getId());
+    hecho.actualizarDesde(solicitudModificacion.getHecho());
+    agregarNuevaSolicitud(solicitudModificacion, hecho);
+  }
 
-    if (!sePuedeEditarHecho(hecho)) {
-      throw new RuntimeException("Paso la fecha limite para editar el hecho");
-    }
-
-    // Llamar a los repositorios de Categoria, Multimedia y Ubicación para actualizar los campos del input dto
-
-    hecho.actualizarDesde(hechoDTO);
-
-    hechosRepository.save(hecho);
-
-
+  private void agregarNuevaSolicitud(SolicitudModificacionInputDTO _solicitud, Hecho hecho) {
+    var solicitud = new Solicitud(_solicitud.getTitulo(), _solicitud.getTexto(), hecho, _solicitud.getContribuyente().getNombre());
+    solicitud.setMotivo(Motivo.MODIFICACION);
+    solicitudesRepository.save(solicitud);
   }
 
   private boolean sePuedeEditarHecho(Hecho hecho) {
@@ -52,6 +66,7 @@ public class HechosService implements IHechosService {
     return hecho.getFechaCarga().isBefore(fechaLimite);
   }
 
+  @Override
   public HechoPagDTO getHechos(Integer page, Integer per_page) {
     if (per_page < 1) per_page = 1;
     if (per_page > 100) per_page = 100;
@@ -70,6 +85,7 @@ public class HechosService implements IHechosService {
 
     return new HechoPagDTO(page, dtos);
   }
+
   @Override
   public HechoOutputDTO getHechoById(Long id) {
     Hecho hecho = hechosRepository.findById(id);

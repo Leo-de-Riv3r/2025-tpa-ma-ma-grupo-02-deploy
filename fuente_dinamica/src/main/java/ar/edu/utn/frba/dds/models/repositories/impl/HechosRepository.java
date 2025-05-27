@@ -33,13 +33,12 @@ public class HechosRepository implements IHechosRepository {
 
   @Override
   public Hecho findById(Long id) {
-    Hecho hecho = null;
     for (Hecho h: hechos) {
       if (h.getId().equals(id)) {
         return h;
       }
     }
-    return hecho;
+    return null;
   }
 
   @Override
