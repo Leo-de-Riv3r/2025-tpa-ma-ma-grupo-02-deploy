@@ -39,6 +39,7 @@ Estado --> TipoEstado
 
 Solicitud --> Hecho
 Solicitud --> Estado
+Solicitud --> Motivo
 
 IFuenteAdapter ..> FiltroStrategy
 
@@ -174,11 +175,17 @@ class Solicitud {
    - titulo: String
    - texto: String
    - hecho: Hecho
+   - motivo: Motivo
    - fechaCreacion: LocalDateTime
    - responsable: String
    - estadoActual: Estado
    - historial: Set<Estado>
    + estaFundado(): Boolean
+}
+
+enum Motivo {
+    ELIMINACION
+    MODIFICACION
 }
 
 @enduml
