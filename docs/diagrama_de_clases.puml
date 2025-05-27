@@ -13,8 +13,7 @@ Alcance:
 Multimedia --> Formato
 Lugar --> TipoLugar
 
-Hecho --> Categoria
-Hecho --> " * " Etiqueta
+Hecho --> " * "Etiqueta
 Hecho --> Ubicacion
 Hecho --> Origen
 Hecho --> Multimedia
@@ -26,7 +25,6 @@ Ubicacion --> Lugar
 Origen --> TipoOrigen
 
 FiltroZonaStrategy --> Zona
-FiltroCategoriaStrategy --> Categoria
 
 FiltroTituloStrategy ..> Hecho
 FiltroCategoriaStrategy ..> Hecho
@@ -34,23 +32,19 @@ FiltroFechaStrategy ..> Hecho
 FiltroZonaStrategy ..> Hecho
 
 Coleccion --> " * " FiltroStrategy
-Coleccion --> " * " FuenteDeDatos
+Coleccion --> " * " IFuenteAdapter
+FuenteAdapter --> TipoOrigen
 
 Estado --> TipoEstado
 
 Solicitud --> Hecho
 Solicitud --> Estado
 
-FuenteDeDatos ..> FiltroStrategy
+IFuenteAdapter ..> FiltroStrategy
 
-FuenteEstaticaCsv --> CsvReaderAdapter
-
-class Categoria {
-    - nombre: String
-}
 
 class Etiqueta {
-    - nombre: String
+    - etiqueta : String
 }
 
 class Ubicacion {
@@ -73,9 +67,9 @@ class Origen {
 }
 
 enum TipoOrigen {
-    MANUAL
     DATASET
-    CONTRIBUYENTE
+    DINAMICA
+    PROXY
 }
 
 enum Formato {
@@ -100,7 +94,7 @@ class Multimedia {
 class Hecho {
     - titulo: String
     - descripcion: String
-    - categoria: Categoria
+    - categoria: String
     - etiquetas: Set<Etiqueta>
     - ubicacion: Ubicacion
     - fechaAcontecimiento: LocalDate
@@ -117,14 +111,16 @@ class Zona {
     + pertenece(ubicacion: Ubicacion): Boolean
 }
 
-interface FuenteDeDatos {
-    + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hechos>
+interface IFuenteAdapter {
+    + tiempoReal() : Boolean
+    + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hecho>
 }
 
-class FuenteEstaticaCsv implements FuenteDeDatos {
-    - csvReader: csvReaderAdapter
-    - rutaArchivo: String
-    - separadorColumna: String
+class FuenteAdapter implements IFuenteAdapter{
+    - url: String
+    - tipoOrigen: TipoOrigen
+    - hechos : List<Hecho>
+    + tiempoReal() : Boolean
     + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hecho>
 }
 
@@ -138,7 +134,7 @@ class FiltroTituloStrategy implements FiltroStrategy {
 }
 
 class FiltroCategoriaStrategy implements FiltroStrategy {
-    - categoria: Categoria
+    - categoria: String
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
@@ -154,6 +150,7 @@ class FiltroFechaStrategy implements FiltroStrategy {
 }
 
 class Coleccion {
+    - id: String
     - titulo: String
     - descripcion: String
     - criterios: Set<FiltroStrategy>
@@ -182,14 +179,6 @@ class Solicitud {
    - estadoActual: Estado
    - historial: Set<Estado>
    + estaFundado(): Boolean
-}
-
-class LectorCsv implements CsvReaderAdapter {
-    + readCsv(path: String, separator: String): List<Object>
-}
-
-interface CsvReaderAdapter {
-    + readCsv(path: String, separator: String): List<Object>
 }
 
 @enduml
