@@ -2,8 +2,8 @@ package ar.edu.utn.frba.dds.models.repositories;
 
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
-import ar.edu.utn.frba.dds.models.entities.Hecho;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface IColeccionesRepository {
@@ -15,5 +15,5 @@ public interface IColeccionesRepository {
 
   public void agregarFuente(String handler, IFuenteAdapter fuente);
 
-  Coleccion findById(String handler);
+  Optional<Coleccion> findById(String handler);
 }

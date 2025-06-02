@@ -3,7 +3,7 @@ package ar.edu.utn.frba.dds.models.repositories;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
 
-public interface IHechosSolicitudesRepository {
+public interface ISolicitudesRepository {
   //TODO agregar entidades hecho sy solicitudes junto a las demas entidades necesarias
 
   public void createSolicitud(Solicitud solicitud);

@@ -2,9 +2,9 @@ package ar.edu.utn.frba.dds.models.repositories;
 
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
-import ar.edu.utn.frba.dds.models.entities.Hecho;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.stereotype.Repository;
@@ -24,11 +24,11 @@ public class ColecionesRepository implements IColeccionesRepository{
   }
 
   @Override
-  public Coleccion findById(String handler) {
+  public Optional<Coleccion> findById(String handler) {
     return colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getId(), handler))
-        .findFirst()
-        .get();
+        .findFirst();
   }
+
   @Override
   public void cambiarFuentesColeccion(String handler, Set<IFuenteAdapter> fuentes) {
     colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getId(), handler))
@@ -49,8 +49,7 @@ public class ColecionesRepository implements IColeccionesRepository{
   public void agregarFuente(String handler, IFuenteAdapter fuente) {
     colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getId(), handler))
         .findFirst()
-        .get()
-        .agregarFuente(fuente);
+        .ifPresent(coleccion -> coleccion.agregarFuente(fuente));
   }
 
 

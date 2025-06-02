@@ -8,9 +8,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class HechosSolicitudesRepository implements IHechosSolicitudesRepository{
+public class SolicitudesRepository implements ISolicitudesRepository {
   private List<Solicitud> solicitudes = List.of();
-  private List<Hecho> hechos = List.of();
+
   @Override
   public void createSolicitud(Solicitud solicitud) {
     solicitudes.add(solicitud);
@@ -18,12 +18,12 @@ public class HechosSolicitudesRepository implements IHechosSolicitudesRepository
 
   @Override
   public void aceptarSolicitud(Solicitud solicitud, String supervisor) {
-      this.buscarSolicitud(solicitud).get().aceptar(supervisor);
+      this.buscarSolicitud(solicitud).ifPresent(s -> s.aceptar(supervisor));
   }
 
   @Override
   public void rechazarSolicitud(Solicitud solicitud, String supervisor) {
-    this.buscarSolicitud(solicitud).get().rechazar(supervisor);
+    this.buscarSolicitud(solicitud).ifPresent(s -> s.rechazar(supervisor));
   }
 
   public boolean hechoEliminado(Hecho hecho) {

@@ -3,56 +3,25 @@ package ar.edu.utn.frba.dds.services.impl;
 import ar.edu.utn.frba.dds.models.dtos.FuenteResponseDTO;
 import ar.edu.utn.frba.dds.models.dtos.HechosDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
-import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
 import ar.edu.utn.frba.dds.models.entities.Origen;
-import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoOrigen;
-import ar.edu.utn.frba.dds.models.repositories.HechosSolicitudesRepository;
 import ar.edu.utn.frba.dds.models.repositories.IColeccionesRepository;
-import ar.edu.utn.frba.dds.models.repositories.IHechosSolicitudesRepository;
-import ar.edu.utn.frba.dds.services.IAgregadorService;
-import ar.edu.utn.frba.dds.services.IDetectorSpam;
+import ar.edu.utn.frba.dds.services.IColeccionesService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
-public class AgregadorService  implements IAgregadorService{
-  private IHechosSolicitudesRepository hechosSolicitudesRepository = new HechosSolicitudesRepository();
-  private IDetectorSpam detectorSpam;
+public class ColeccionesService implements IColeccionesService {
   private IColeccionesRepository coleccionesRepository;
 
-  public AgregadorService(IHechosSolicitudesRepository hechosSolicitudesRepository, IDetectorSpam detectorSpam, IColeccionesRepository coleccionesRepository) {
-    this.hechosSolicitudesRepository = hechosSolicitudesRepository;
-    this.detectorSpam = detectorSpam;
-    this.coleccionesRepository = coleccionesRepository;
-  }
-
-  @Override
-  public void createSolicitud(Solicitud solicitud) {
-    hechosSolicitudesRepository.createSolicitud(solicitud);
-    if (!detectorSpam.esSpam(solicitud.getTexto())) {
-      this.rechazarSolicitud(solicitud, "automatico");
-    }
-  }
-
-  @Override
-  public void rechazarSolicitud(Solicitud solicitud, String supervisor)  {
-    hechosSolicitudesRepository.rechazarSolicitud(solicitud, supervisor);
-  }
-
-  @Override
-  public void aceptarSolicitud(Solicitud solicitud, String supervisor) {
-    hechosSolicitudesRepository.aceptarSolicitud(solicitud, supervisor);
-  }
-
-  //funciones de coleccion
   @Override
   public List<Coleccion> getColecciones(){
     return coleccionesRepository.getColecciones();
@@ -71,12 +40,6 @@ public class AgregadorService  implements IAgregadorService{
     this.coleccionesRepository.cambiarFuentesColeccion(handler, fuentes);
   }
 
-  @Override
-  public List<Hecho> filtrarHechosSinSolicitud(List<Hecho> hechos) {
-    return hechos.stream().filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho))
-        .collect(Collectors.toList());
-  }
-  
   @Override
   public Hecho convertirHechoDTOAHecho(Object hecho, TipoOrigen tipoOrigen) {
     if (hecho instanceof Hecho) {
@@ -98,7 +61,7 @@ public class AgregadorService  implements IAgregadorService{
         fuente.setHechos(hechos);
       }
     });
-}
+  }
 
   @Override
   public void actualizarHechosFuentes(Coleccion coleccion) {
@@ -122,12 +85,11 @@ public class AgregadorService  implements IAgregadorService{
 
       hechos.addAll(obtenerHechosProxy(coleccion, null, null));
     });
-    return hechos.stream()
-        .filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho)).toList();
+    return hechos.stream().toList();
   }
 
-@Override
-public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
+  @Override
+  public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
     List<Coleccion> colecciones = this.getColecciones();
     List<Hecho> hechos = new ArrayList<>(List.of());
     colecciones.forEach(coleccion -> {
@@ -142,31 +104,38 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
       hechos.addAll(obtenerHechosProxy(coleccion, page, per_page));
     });
 
-  return hechos.stream()
-      .filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho)).toList();
+    return hechos.stream().toList();
   }
 
   @Override
   public List<Hecho> obtenerHechos(String handler) {
-    Coleccion coleccion = coleccionesRepository.findById(handler);
+    Optional<Coleccion> coleccion = coleccionesRepository.findById(handler);
     List<Hecho> hechos = new ArrayList<>(List.of());
-    hechos.addAll(coleccion.obtenerHechos());
+    if (coleccion.isPresent()) {
+      Coleccion coleccion1 = coleccion.get();
 
-    hechos.addAll(obtenerHechosProxy(coleccion, null, null));
+      hechos.addAll(coleccion1.obtenerHechos());
 
-    return hechos.stream()
-        .filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho)).toList();
+      hechos.addAll(obtenerHechosProxy(coleccion1, null, null));
+
+      return hechos.stream().toList();
+    } else {
+      return null;
+    }
   }
 
   @Override
   public List<Hecho> obtenerHechos(String handler, Integer page, Integer per_page) {
-    Coleccion coleccion = coleccionesRepository.findById(handler);
+    Optional<Coleccion> coleccion = coleccionesRepository.findById(handler);
     List<Hecho> hechos = List.of();
-    actualizarHechosFuentes(coleccion, page,per_page);
-    hechos.addAll(coleccion.obtenerHechos());
-    hechos.addAll(obtenerHechosProxy(coleccion, page, per_page));
-    return hechos.stream()
-        .filter(hecho -> hechosSolicitudesRepository.hechoEliminado(hecho)).toList();
+    if (coleccion.isPresent()) {
+      Coleccion coleccion1 = coleccion.get();
+      actualizarHechosFuentes(coleccion1, page, per_page);
+      hechos.addAll(coleccion1.obtenerHechos());
+      hechos.addAll(obtenerHechosProxy(coleccion1, page, per_page));
+      return hechos.stream().toList();
+    }
+    else return null;
   }
 
   private List<Hecho> obtenerHechosProxy(Coleccion coleccion, Integer page, Integer per_page) {
@@ -221,4 +190,3 @@ public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
     coleccionesRepository.agregarFuente(handler, fuente);
   }
 }
-

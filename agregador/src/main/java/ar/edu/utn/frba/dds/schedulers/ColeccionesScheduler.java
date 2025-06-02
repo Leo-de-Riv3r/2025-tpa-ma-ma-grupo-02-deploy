@@ -1,19 +1,21 @@
 package ar.edu.utn.frba.dds.schedulers;
 
-import ar.edu.utn.frba.dds.services.IAgregadorService;
+import ar.edu.utn.frba.dds.services.IColeccionesService;
+import ar.edu.utn.frba.dds.services.ISolicitudesService;
+import ar.edu.utn.frba.dds.services.impl.ColeccionesService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ColeccionesScheduler {
-  private final IAgregadorService agregadorService;
+  private IColeccionesService coleccionesService;
 
-  public ColeccionesScheduler(IAgregadorService agregadorService) {
-    this.agregadorService = agregadorService;
+  public ColeccionesScheduler(IColeccionesService coleccionesService) {
+    this.coleccionesService = coleccionesService;
   }
 
   @Scheduled(fixedRate = 3600000) // 1 hora
   public void refrescarColecciones() {
-    agregadorService.refrescoColecciones();
+    coleccionesService.refrescoColecciones();
   }
 }
