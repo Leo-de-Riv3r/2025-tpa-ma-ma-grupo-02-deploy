@@ -14,4 +14,6 @@ public interface ISolicitudesService {
   void rechazarSolicitud(Solicitud solicitud, String supervisor);
 
   void aceptarSolicitud(Solicitud solicitud, String supervisor);
+
+  Boolean hechoEliminado(Hecho hecho);
 }

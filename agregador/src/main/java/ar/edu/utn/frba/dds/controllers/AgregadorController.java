@@ -33,11 +33,13 @@ public class AgregadorController {
       @RequestParam (required = false) Integer per_page
   ) {
     //TODO agregar retorno de estado 404
+    List <Hecho> hechos = List.of();
     if (page != null && per_page != null) {
-      return coleccionesService.obtenerHechos(page, per_page);
+      hechos = coleccionesService.obtenerHechos(page, per_page);
     } else {
-      return coleccionesService.obtenerHechos();
+      hechos = coleccionesService.obtenerHechos();
     }
+    return hechos.stream().filter(hecho -> !solicitudesService.hechoEliminado(hecho)).toList();
   }
 
   @GetMapping("/colecciones")
@@ -51,12 +53,14 @@ public class AgregadorController {
       @RequestParam (required = false) Integer page,
       @RequestParam (required = false) Integer per_page
   ) {
+    List <Hecho> hechos = List.of();
     if (page != null && per_page != null) {
       //agregar meanejo error 404
-      return coleccionesService.obtenerHechos(id, page, per_page);
+      hechos = coleccionesService.obtenerHechos(id, page, per_page);
     } else {
-      return coleccionesService.obtenerHechos(id);
+      hechos = coleccionesService.obtenerHechos(id);
     }
+    return hechos.stream().filter(hecho -> !solicitudesService.hechoEliminado(hecho)).toList();
   }
 
   @PostMapping("/solicitudes")

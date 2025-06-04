@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.models.repositories;
 
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
+import java.util.List;
 
 public interface ISolicitudesRepository {
   //TODO agregar entidades hecho sy solicitudes junto a las demas entidades necesarias
@@ -12,4 +13,6 @@ public interface ISolicitudesRepository {
   public void rechazarSolicitud(Solicitud solicitud, String supervisor);
 
   boolean hechoEliminado(Hecho hecho);
+
+  List<Solicitud> getSolicitudes();
 }

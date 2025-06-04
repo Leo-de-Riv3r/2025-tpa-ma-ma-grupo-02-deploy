@@ -29,6 +29,12 @@ public class SolicitudesRepository implements ISolicitudesRepository {
   public boolean hechoEliminado(Hecho hecho) {
     return solicitudes.stream().anyMatch(solicitud -> EqualsBuilder.reflectionEquals(solicitud.getHecho(), hecho));
   }
+
+  @Override
+  public List<Solicitud> getSolicitudes() {
+    return solicitudes;
+  }
+
   private Optional<Solicitud> buscarSolicitud(Solicitud solicitudBuscada) {
     return solicitudes.stream().filter(solicitud -> EqualsBuilder.reflectionEquals(solicitudBuscada, solicitud))
         .findFirst();

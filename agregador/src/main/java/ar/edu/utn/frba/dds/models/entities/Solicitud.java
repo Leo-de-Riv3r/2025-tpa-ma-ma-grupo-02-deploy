@@ -43,4 +43,8 @@ public class Solicitud {
     this.historial.add(this.estadoActual);
     this.estadoActual = estado;
   }
+
+  public boolean estaAceptada() {
+    return this.estadoActual.getEstado() == TipoEstado.ACEPTADA;
+  }
 }
