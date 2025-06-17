@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.models.repositories;
 
+import ar.edu.utn.frba.dds.models.entities.AlgoritmoConsenso;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
 import java.util.List;
@@ -20,6 +21,7 @@ public class ColecionesRepository implements IColeccionesRepository{
 
   public void updateColeccion(String handler, Coleccion coleccionAActualizar){
     colecciones.removeIf(coleccion -> EqualsBuilder.reflectionEquals(coleccion, coleccionAActualizar));
+    coleccionAActualizar.setId(handler);
     colecciones.add(coleccionAActualizar);
   }
 
@@ -52,8 +54,30 @@ public class ColecionesRepository implements IColeccionesRepository{
         .ifPresent(coleccion -> coleccion.agregarFuente(fuente));
   }
 
-
+  @Override
   public List<Coleccion> getColecciones(){
     return colecciones;
+  }
+
+  @Override
+  public Coleccion deleteColeccion(String id) {
+    Optional<Coleccion> coleccionAEliminar = colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getId(), id))
+        .findFirst();
+    if (coleccionAEliminar.isPresent()) {
+        colecciones.remove(coleccionAEliminar.get());
+        return coleccionAEliminar.get();
+    } else {
+      return null;
+    }
+  }
+  @Override
+  public void eliminarFuente(String idColeccion, String idFuente) {
+    Coleccion coleccion = colecciones.stream().filter(c -> EqualsBuilder.reflectionEquals(c.getId(), idColeccion))
+        .findFirst().orElse(null);
+    coleccion.eliminarFuente(idFuente);
+  }
+
+  public void setAlgoritmoConsenso(String id, AlgoritmoConsenso algoritmoConsenso) {
+    findById(id).ifPresent(coleccion -> coleccion.setAlgoritmoConsenso(algoritmoConsenso));
   }
 }

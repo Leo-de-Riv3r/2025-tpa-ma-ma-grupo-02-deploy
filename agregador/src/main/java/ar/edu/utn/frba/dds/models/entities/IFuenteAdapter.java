@@ -8,11 +8,11 @@ import java.util.Set;
 
 public interface IFuenteAdapter {
     public Set<Hecho> obtenerHechos(Set<FiltroStrategy> criterios);
-    public boolean eliminarHecho(Hecho hecho);
 
     public String getUrl();
     public void setHechos(List<Hecho> hechosActualizados);
 
     public boolean tiempoReal();
     public TipoOrigen getTipoOrigen();
+    public String getId();
 }

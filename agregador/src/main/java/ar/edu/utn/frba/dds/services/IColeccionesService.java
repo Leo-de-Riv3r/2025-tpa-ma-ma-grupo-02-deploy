@@ -34,4 +34,12 @@ public interface IColeccionesService {
   List<Hecho> consultarHechos(IFuenteAdapter fuente, Integer page, Integer per_page);
 
   void agregarFuente(String handler, IFuenteAdapter fuente);
+
+  void eliminarFuente(String handler, IFuenteAdapter fuente);
+
+  void actualizarColeccion(String id, Coleccion coleccion);
+
+  void eliminarColeccion(String id);
+
+  void crearColeccion(Coleccion coleccion);
 }

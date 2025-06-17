@@ -16,4 +16,10 @@ public interface IColeccionesRepository {
   public void agregarFuente(String handler, IFuenteAdapter fuente);
 
   Optional<Coleccion> findById(String handler);
+
+  Coleccion deleteColeccion(String id);
+
+  void eliminarFuente(String id, IFuenteAdapter fuente);
+
+  void eliminarFuente(String idColeccion, String idFuente);
 }

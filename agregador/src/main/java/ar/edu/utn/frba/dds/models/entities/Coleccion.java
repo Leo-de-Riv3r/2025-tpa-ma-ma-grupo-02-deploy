@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 @Getter
 @Setter
@@ -18,13 +19,15 @@ public class Coleccion {
   private String descripcion;
   private Set<FiltroStrategy> criterios;
   private Set<IFuenteAdapter> fuentes;
-
+  private AlgoritmoConsenso algoritmoConsenso;
+  private List<Hecho> hechosConsensuados;
   public Coleccion(String titulo, String descripcion, Set<FiltroStrategy> criterios, Set<IFuenteAdapter> fuentes) {
     this.id = UUID.randomUUID().toString().substring(0, 10);
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.criterios = criterios;
     this.fuentes = fuentes;
+    this.algoritmoConsenso = new AlgoritmoAbsoluto();
   }
 
   public Coleccion(String titulo, String descripcion) {
@@ -48,5 +51,15 @@ public class Coleccion {
   public void agregarFuente(IFuenteAdapter fuente) {
     this.fuentes.add(fuente);
   }
+  public void eliminarFuente(String idFuente) {
+    fuentes.removeIf(fuente -> EqualsBuilder.reflectionEquals(fuente.getId(), idFuente));
+  }
 
+  public void setAlgoConsenso(AlgoritmoConsenso algoritmoConsenso) {
+    this.algoritmoConsenso = algoritmoConsenso;
+  }
+
+  public void actualizarHechosConsensuados() {
+      this.algoritmoConsenso.obtenerHechosConsensuados(fuentes, criterios);
+    }
 }

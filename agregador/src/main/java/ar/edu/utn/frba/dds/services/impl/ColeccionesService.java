@@ -2,12 +2,14 @@ package ar.edu.utn.frba.dds.services.impl;
 
 import ar.edu.utn.frba.dds.models.dtos.FuenteResponseDTO;
 import ar.edu.utn.frba.dds.models.dtos.HechosDTOEntrada;
+import ar.edu.utn.frba.dds.models.entities.AlgoritmoConsenso;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
 import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoOrigen;
+import ar.edu.utn.frba.dds.models.repositories.ColecionesRepository;
 import ar.edu.utn.frba.dds.models.repositories.IColeccionesRepository;
 import ar.edu.utn.frba.dds.services.IColeccionesService;
 import java.time.LocalDateTime;
@@ -20,7 +22,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 public class ColeccionesService implements IColeccionesService {
+  private final ColecionesRepository colecionesRepository;
   private IColeccionesRepository coleccionesRepository;
+
+  public ColeccionesService(ColecionesRepository colecionesRepository) {
+    this.colecionesRepository = colecionesRepository;
+  }
 
   @Override
   public List<Coleccion> getColecciones(){
@@ -189,4 +196,27 @@ public class ColeccionesService implements IColeccionesService {
   public void agregarFuente(String handler, IFuenteAdapter fuente) {
     coleccionesRepository.agregarFuente(handler, fuente);
   }
+
+  @Override
+  public void eliminarFuente(String handler, IFuenteAdapter fuente) {
+    coleccionesRepository.eliminarFuente(handler, fuente);
+  }
+  @Override
+  public void actualizarColeccion(String id, Coleccion coleccion) {
+    coleccionesRepository.updateColeccion(id, coleccion);
+  }
+  @Override
+  public void eliminarColeccion(String id) {
+    coleccionesRepository.deleteColeccion(id);
+  }
+
+  @Override
+  public void crearColeccion(Coleccion coleccion) {
+    colecionesRepository.createColeccion(coleccion);
+  }
+
+  public void cambiarAlgoritmoConsenso(String id, AlgoritmoConsenso algoritmoConsenso) {
+    coleccionesRepository.setAlgoritmoConsenso(id, algoritmoConsenso);
+  }
+
 }
