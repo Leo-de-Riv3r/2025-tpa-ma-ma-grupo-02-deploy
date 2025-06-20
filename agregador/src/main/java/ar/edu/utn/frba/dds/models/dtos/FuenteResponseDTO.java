@@ -8,4 +8,5 @@ import lombok.Data;
 public class FuenteResponseDTO {
   private Integer currentPage;
   private List<Object> hechosDTOEntrada;
+  private Integer lastPage;
 }

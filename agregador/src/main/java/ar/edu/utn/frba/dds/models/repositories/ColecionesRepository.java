@@ -2,7 +2,7 @@ package ar.edu.utn.frba.dds.models.repositories;
 
 import ar.edu.utn.frba.dds.models.entities.AlgoritmoConsenso;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
-import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
+import ar.edu.utn.frba.dds.models.entities.IFuenteAbstract;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,10 +15,12 @@ import org.springframework.stereotype.Repository;
 public class ColecionesRepository implements IColeccionesRepository{
   List<Coleccion> colecciones = List.of();
 
+  @Override
   public void createColeccion(Coleccion coleccion) {
     colecciones.add(coleccion);
   }
 
+  @Override
   public void updateColeccion(String handler, Coleccion coleccionAActualizar){
     colecciones.removeIf(coleccion -> EqualsBuilder.reflectionEquals(coleccion, coleccionAActualizar));
     coleccionAActualizar.setId(handler);
@@ -32,23 +34,7 @@ public class ColecionesRepository implements IColeccionesRepository{
   }
 
   @Override
-  public void cambiarFuentesColeccion(String handler, Set<IFuenteAdapter> fuentes) {
-    colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getId(), handler))
-        .findFirst()
-        .ifPresent(coleccion -> {
-          Set<IFuenteAdapter> fuentesColeccion = coleccion.getFuentes();
-          for (IFuenteAdapter fuente : fuentes) {
-            if (!fuente.tiempoReal()) {
-              fuentesColeccion.remove(fuente);
-              fuentesColeccion.add(fuente);
-            }
-          }
-        });
-  }
-
-
-  @Override
-  public void agregarFuente(String handler, IFuenteAdapter fuente) {
+  public void agregarFuente(String handler, IFuenteAbstract fuente) {
     colecciones.stream().filter(coleccion -> Objects.equals(coleccion.getId(), handler))
         .findFirst()
         .ifPresent(coleccion -> coleccion.agregarFuente(fuente));
@@ -70,14 +56,24 @@ public class ColecionesRepository implements IColeccionesRepository{
       return null;
     }
   }
+
   @Override
-  public void eliminarFuente(String idColeccion, String idFuente) {
-    Coleccion coleccion = colecciones.stream().filter(c -> EqualsBuilder.reflectionEquals(c.getId(), idColeccion))
-        .findFirst().orElse(null);
-    coleccion.eliminarFuente(idFuente);
+  public void eliminarFuente(String id, String idFuente) {
+    findById(id).ifPresent(coleccion -> coleccion.eliminarFuente(idFuente));
   }
 
+  @Override
   public void setAlgoritmoConsenso(String id, AlgoritmoConsenso algoritmoConsenso) {
     findById(id).ifPresent(coleccion -> coleccion.setAlgoritmoConsenso(algoritmoConsenso));
+  }
+
+  @Override
+  public void actualizarFuentes() {
+    colecciones.forEach(Coleccion::actualizarFuentes);
+  }
+
+  @Override
+  public void actualizarHechosConsensuados() {
+    colecciones.forEach(Coleccion::actualizarHechosConsensuados);
   }
 }

@@ -8,9 +8,10 @@ public interface ISolicitudesRepository {
   //TODO agregar entidades hecho sy solicitudes junto a las demas entidades necesarias
 
   public void createSolicitud(Solicitud solicitud);
-  //TODO buscar forma de identificar solicitud por id, etc...
-  public void aceptarSolicitud(Solicitud solicitud, String supervisor);
-  public void rechazarSolicitud(Solicitud solicitud, String supervisor);
+
+  void aceptarSolicitud(String id, String supervisor);
+
+  void rechazarSolicitud(String id, String supervisor);
 
   boolean hechoEliminado(Hecho hecho);
 

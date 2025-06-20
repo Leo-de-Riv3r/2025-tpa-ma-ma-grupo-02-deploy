@@ -25,18 +25,18 @@ public class SolicitudesService implements ISolicitudesService {
   public void createSolicitud(Solicitud solicitud) {
     hechosSolicitudesRepository.createSolicitud(solicitud);
     if (!detectorSpam.esSpam(solicitud.getTexto())) {
-      this.rechazarSolicitud(solicitud, "automatico");
+      this.rechazarSolicitud(solicitud.getId(), "automatico");
     }
   }
 
   @Override
-  public void rechazarSolicitud(Solicitud solicitud, String supervisor)  {
-    hechosSolicitudesRepository.rechazarSolicitud(solicitud, supervisor);
+  public void rechazarSolicitud(String id, String supervisor)  {
+    hechosSolicitudesRepository.rechazarSolicitud(id, supervisor);
   }
 
   @Override
-  public void aceptarSolicitud(Solicitud solicitud, String supervisor) {
-    hechosSolicitudesRepository.aceptarSolicitud(solicitud, supervisor);
+  public void aceptarSolicitud(String id, String supervisor) {
+    hechosSolicitudesRepository.aceptarSolicitud(id, supervisor);
   }
 
   @Override

@@ -1,11 +1,10 @@
 package ar.edu.utn.frba.dds.services.impl;
 
-import ar.edu.utn.frba.dds.models.dtos.FuenteResponseDTO;
 import ar.edu.utn.frba.dds.models.dtos.HechosDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.AlgoritmoConsenso;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
-import ar.edu.utn.frba.dds.models.entities.IFuenteAdapter;
+import ar.edu.utn.frba.dds.models.entities.IFuenteAbstract;
 import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoOrigen;
@@ -14,19 +13,20 @@ import ar.edu.utn.frba.dds.models.repositories.IColeccionesRepository;
 import ar.edu.utn.frba.dds.services.IColeccionesService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 public class ColeccionesService implements IColeccionesService {
-  private final ColecionesRepository colecionesRepository;
   private IColeccionesRepository coleccionesRepository;
+  private Set<Hecho> hechosConsensuados;
 
   public ColeccionesService(ColecionesRepository colecionesRepository) {
-    this.colecionesRepository = colecionesRepository;
+    this.coleccionesRepository = colecionesRepository;
   }
 
   @Override
@@ -36,15 +36,7 @@ public class ColeccionesService implements IColeccionesService {
 
   @Override
   public void refrescoColecciones() {
-    List<Coleccion> colecciones = this.getColecciones();
-    colecciones.forEach(coleccion -> actualizarHechosFuentes(coleccion));
-
-    colecciones.forEach(coleccion -> setFuentesColeccion(coleccion.getId(), coleccion.getFuentes()));
-  }
-
-  @Override
-  public void setFuentesColeccion(String handler, Set<IFuenteAdapter> fuentes) {
-    this.coleccionesRepository.cambiarFuentesColeccion(handler, fuentes);
+    this.getColecciones().forEach(coleccion -> actualizarHechosFuentes(coleccion));
   }
 
   @Override
@@ -61,150 +53,68 @@ public class ColeccionesService implements IColeccionesService {
   }
 
   @Override
-  public void actualizarHechosFuentes(Coleccion coleccion, Integer page, Integer per_page) {
-    coleccion.getFuentes().forEach(fuente -> {
-      if (!fuente.tiempoReal()) {
-        List<Hecho> hechos = consultarHechos(fuente, page, per_page);
-        fuente.setHechos(hechos);
-      }
-    });
-  }
-
-  @Override
   public void actualizarHechosFuentes(Coleccion coleccion) {
-    coleccion.getFuentes().forEach(fuente -> {
-      if (!fuente.tiempoReal()) {
-        List<Hecho> hechosActualizados= consultarHechos(fuente);
-        //reemplazar hechos de la fuente por los nuevos hechos
-        fuente.setHechos(hechosActualizados);
-      }
-    });
-  }
+    coleccionesRepository.actualizarFuentes();
+    }
 
   //obtener todos los hechos
   @Override
-  public List<Hecho> obtenerHechos() {
+  public Set<Hecho> obtenerHechos() {
     List<Coleccion> colecciones = this.getColecciones();
     List<Hecho> hechos = new ArrayList<>(List.of());
     colecciones.forEach(coleccion -> {
       Set<Hecho> hechosColeccion = coleccion.obtenerHechos();
       hechos.addAll(hechosColeccion);
-
-      hechos.addAll(obtenerHechosProxy(coleccion, null, null));
     });
-    return hechos.stream().toList();
+    return new HashSet<>(hechos);
   }
 
   @Override
-  public List<Hecho> obtenerHechos(Integer page, Integer per_page) {
+  public Set<Hecho> obtenerHechos(Integer page, Integer per_page) {
     List<Coleccion> colecciones = this.getColecciones();
     List<Hecho> hechos = new ArrayList<>(List.of());
-    colecciones.forEach(coleccion -> {
-      actualizarHechosFuentes(coleccion, page,per_page);
-    });
 
     colecciones.forEach(coleccion -> {
       Set<Hecho> hechosColeccion = coleccion.obtenerHechos();
       hechos.addAll(hechosColeccion);
-
-      //tratamiento fuente proxy
-      hechos.addAll(obtenerHechosProxy(coleccion, page, per_page));
+      //AGREGAR TRATAMIENTO PAGINACION
     });
 
-    return hechos.stream().toList();
+    return new HashSet<>(hechos);
   }
 
   @Override
-  public List<Hecho> obtenerHechos(String handler) {
+  public Set<Hecho> obtenerHechos(String handler) {
     Optional<Coleccion> coleccion = coleccionesRepository.findById(handler);
     List<Hecho> hechos = new ArrayList<>(List.of());
     if (coleccion.isPresent()) {
-      Coleccion coleccion1 = coleccion.get();
-
-      hechos.addAll(coleccion1.obtenerHechos());
-
-      hechos.addAll(obtenerHechosProxy(coleccion1, null, null));
-
-      return hechos.stream().toList();
+      return coleccion.get().obtenerHechos();
     } else {
       return null;
     }
   }
 
   @Override
-  public List<Hecho> obtenerHechos(String handler, Integer page, Integer per_page) {
+  public Set<Hecho> obtenerHechos(String handler, Integer page, Integer per_page) {
     Optional<Coleccion> coleccion = coleccionesRepository.findById(handler);
-    List<Hecho> hechos = List.of();
-    if (coleccion.isPresent()) {
-      Coleccion coleccion1 = coleccion.get();
-      actualizarHechosFuentes(coleccion1, page, per_page);
-      hechos.addAll(coleccion1.obtenerHechos());
-      hechos.addAll(obtenerHechosProxy(coleccion1, page, per_page));
-      return hechos.stream().toList();
-    }
-    else return null;
-  }
-
-  private List<Hecho> obtenerHechosProxy(Coleccion coleccion, Integer page, Integer per_page) {
-    List<Hecho> hechos = new ArrayList<>(List.of());
-    List<IFuenteAdapter> fuentesProxy = coleccion.getFuentes().stream()
-        .filter(fuente -> fuente.tiempoReal())
-        .toList();
-    for (IFuenteAdapter IFuenteAdapter : fuentesProxy) {
-      if (page != null && per_page != null) {
-        hechos.addAll(consultarHechos(IFuenteAdapter));
-      } else {
-        hechos.addAll(consultarHechos(IFuenteAdapter, page, per_page));
-      }
-    }
-
-    return hechos;
+    return coleccion.map(value -> value.obtenerHechos(page, per_page)).orElse(null);
   }
 
   @Override
-  public List<Hecho> consultarHechos(IFuenteAdapter fuente) {
-    WebClient webClient = WebClient.builder().baseUrl(fuente.getUrl()).build();
-    List<Object> hechosDTOEntrada = webClient
-        .get()
-        .uri("/hechos")
-        .retrieve()
-        .bodyToMono(FuenteResponseDTO.class)
-        .map(FuenteResponseDTO::getHechosDTOEntrada).block();
-    return hechosDTOEntrada.stream().map(hechoDto -> convertirHechoDTOAHecho(hechoDto, fuente.getTipoOrigen())).toList();
-  }
-
-  @Override
-  public List<Hecho> consultarHechos(IFuenteAdapter fuente, Integer page, Integer per_page) {
-    WebClient webClient =  WebClient.builder()
-        .baseUrl(fuente.getUrl())
-        .build();
-
-    List<Object> hechosDTOEntrada = webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .path("/hechos")
-            .queryParam("page", page)
-            .queryParam("per_page", per_page)
-            .build())
-        .retrieve()
-        .bodyToMono(FuenteResponseDTO.class)
-        .map(FuenteResponseDTO::getHechosDTOEntrada).block();
-
-    return hechosDTOEntrada.stream().map(hechoDto -> convertirHechoDTOAHecho(hechoDto, fuente.getTipoOrigen())).toList();
-  }
-
-  @Override
-  public void agregarFuente(String handler, IFuenteAdapter fuente) {
+  public void agregarFuente(String handler, IFuenteAbstract fuente) {
     coleccionesRepository.agregarFuente(handler, fuente);
   }
 
   @Override
-  public void eliminarFuente(String handler, IFuenteAdapter fuente) {
-    coleccionesRepository.eliminarFuente(handler, fuente);
+  public void eliminarFuente(String handler, String idFuente) {
+    coleccionesRepository.eliminarFuente(handler, idFuente);
   }
+
   @Override
   public void actualizarColeccion(String id, Coleccion coleccion) {
     coleccionesRepository.updateColeccion(id, coleccion);
   }
+
   @Override
   public void eliminarColeccion(String id) {
     coleccionesRepository.deleteColeccion(id);
@@ -212,11 +122,21 @@ public class ColeccionesService implements IColeccionesService {
 
   @Override
   public void crearColeccion(Coleccion coleccion) {
-    colecionesRepository.createColeccion(coleccion);
+    coleccionesRepository.createColeccion(coleccion);
   }
 
+  @Override
   public void cambiarAlgoritmoConsenso(String id, AlgoritmoConsenso algoritmoConsenso) {
     coleccionesRepository.setAlgoritmoConsenso(id, algoritmoConsenso);
   }
 
+  @Override
+  public List<Hecho> obtenerHechosCurados(String id) {
+    return coleccionesRepository.findById(id).get().getHechosConsensuados();
+  }
+
+  @Override
+  public void actualizarHechosConsensuados() {
+    coleccionesRepository.actualizarHechosConsensuados();
+  }
 }

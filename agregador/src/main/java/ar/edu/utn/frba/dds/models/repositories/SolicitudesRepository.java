@@ -17,13 +17,13 @@ public class SolicitudesRepository implements ISolicitudesRepository {
   }
 
   @Override
-  public void aceptarSolicitud(Solicitud solicitud, String supervisor) {
-      this.buscarSolicitud(solicitud).ifPresent(s -> s.aceptar(supervisor));
+  public void aceptarSolicitud(String id, String supervisor) {
+      this.buscarSolicitud(id).ifPresent(s -> s.aceptar(supervisor));
   }
 
   @Override
-  public void rechazarSolicitud(Solicitud solicitud, String supervisor) {
-    this.buscarSolicitud(solicitud).ifPresent(s -> s.rechazar(supervisor));
+  public void rechazarSolicitud(String id, String supervisor) {
+    this.buscarSolicitud(id).ifPresent(s -> s.rechazar(supervisor));
   }
 
   public boolean hechoEliminado(Hecho hecho) {
@@ -35,8 +35,8 @@ public class SolicitudesRepository implements ISolicitudesRepository {
     return solicitudes;
   }
 
-  private Optional<Solicitud> buscarSolicitud(Solicitud solicitudBuscada) {
-    return solicitudes.stream().filter(solicitud -> EqualsBuilder.reflectionEquals(solicitudBuscada, solicitud))
+  private Optional<Solicitud> buscarSolicitud(String id ) {
+    return solicitudes.stream().filter(solicitud -> EqualsBuilder.reflectionEquals(id, solicitud.getId()))
         .findFirst();
   }
 }

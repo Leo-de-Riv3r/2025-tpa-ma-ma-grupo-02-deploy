@@ -4,12 +4,14 @@ import ar.edu.utn.frba.dds.models.entities.enums.TipoEstado;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class Solicitud {
+  private String id;
   private String titulo;
   private String texto;
   private Hecho hecho;
@@ -25,6 +27,7 @@ public class Solicitud {
     this.estadoActual = new Estado("----", TipoEstado.PENDIENTE);
     this.fecha = LocalDateTime.now();
     this.responsable = responsable;
+    this.id = UUID.randomUUID().toString().substring(0, 10);
   }
 
   public Boolean estaFundado() {

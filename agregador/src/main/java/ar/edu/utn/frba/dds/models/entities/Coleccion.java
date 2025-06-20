@@ -18,16 +18,16 @@ public class Coleccion {
   private String titulo;
   private String descripcion;
   private Set<FiltroStrategy> criterios;
-  private Set<IFuenteAdapter> fuentes;
+  private Set<IFuenteAbstract> fuentes;
   private AlgoritmoConsenso algoritmoConsenso;
   private List<Hecho> hechosConsensuados;
-  public Coleccion(String titulo, String descripcion, Set<FiltroStrategy> criterios, Set<IFuenteAdapter> fuentes) {
+  public Coleccion(String titulo, String descripcion, Set<FiltroStrategy> criterios, Set<IFuenteAbstract> fuentes) {
     this.id = UUID.randomUUID().toString().substring(0, 10);
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.criterios = criterios;
     this.fuentes = fuentes;
-    this.algoritmoConsenso = new AlgoritmoAbsoluto();
+    this.algoritmoConsenso = new AlgoritmoMayoriaAbsoluta();
   }
 
   public Coleccion(String titulo, String descripcion) {
@@ -38,17 +38,25 @@ public class Coleccion {
   }
 
   public Set<Hecho> obtenerHechos() {
-    List<IFuenteAdapter> fuentes = getFuentes().stream().filter(fuente -> !fuente.tiempoReal()).toList();
-    return fuentes.stream()
-        .flatMap(fuente -> fuente.obtenerHechos(criterios).stream())
-        .collect(Collectors.toSet());
+    Set<Hecho> hechos = new HashSet<>(Set.of());
+    fuentes.forEach(fuente -> hechos.addAll(fuente.obtenerHechos(criterios)));
+    return hechos;
+
   }
 
+  public Set<Hecho> obtenerHechos(Integer page, Integer per_page) {
+    Set<Hecho> hechos = new HashSet<>(Set.of());
+
+    fuentes.forEach(fuente -> {
+      hechos.addAll(fuente.obtenerHechosUrl(page, per_page).getHechosDTOEntrada().stream().map(fuente::convertirHechoDTOAHecho).toList());
+    });
+    return hechos;
+  }
   public void eliminarCriterio(FiltroStrategy filtro) {
     this.criterios.remove(filtro);
   }
 
-  public void agregarFuente(IFuenteAdapter fuente) {
+  public void agregarFuente(IFuenteAbstract fuente) {
     this.fuentes.add(fuente);
   }
   public void eliminarFuente(String idFuente) {
@@ -61,5 +69,9 @@ public class Coleccion {
 
   public void actualizarHechosConsensuados() {
       this.algoritmoConsenso.obtenerHechosConsensuados(fuentes, criterios);
-    }
+  }
+
+  public void actualizarFuentes() {
+    fuentes.forEach(IFuenteAbstract::actualizarHechos);
+  }
 }

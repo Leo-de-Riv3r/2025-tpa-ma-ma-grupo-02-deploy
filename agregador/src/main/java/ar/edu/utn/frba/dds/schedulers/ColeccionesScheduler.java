@@ -18,4 +18,8 @@ public class ColeccionesScheduler {
   public void refrescarColecciones() {
     coleccionesService.refrescoColecciones();
   }
+  @Scheduled(fixedRate = 86400000) // 24 horas
+  public void actualizarHechosConsensuados() {
+    coleccionesService.actualizarHechosConsensuados();
+  }
 }
