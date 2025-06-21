@@ -21,8 +21,9 @@ public class Coleccion {
   private Set<IFuenteAbstract> fuentes;
   private AlgoritmoConsenso algoritmoConsenso;
   private List<Hecho> hechosConsensuados;
+  private IGeneradorIdAdapter generadorId = new GeneradorUUIIAdapter();
   public Coleccion(String titulo, String descripcion, Set<FiltroStrategy> criterios, Set<IFuenteAbstract> fuentes) {
-    this.id = UUID.randomUUID().toString().substring(0, 10);
+    this.id = generadorId.generarId();
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.criterios = criterios;

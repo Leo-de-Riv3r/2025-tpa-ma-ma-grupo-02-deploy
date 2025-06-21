@@ -16,9 +16,10 @@ public abstract class Fuente implements IFuenteAbstract {
   private String url;
   private TipoOrigen tipoOrigen;
   private List<Hecho> hechos;
+  private IGeneradorIdAdapter generadorId = new GeneradorUUIIAdapter();
 
   public Fuente(String url, TipoOrigen tipoOrigen) {
-    this.id = UUID.randomUUID().toString().substring(0, 10);
+    this.id = generadorId.generarId();
     this.url = url;
     this.tipoOrigen = tipoOrigen;
   }

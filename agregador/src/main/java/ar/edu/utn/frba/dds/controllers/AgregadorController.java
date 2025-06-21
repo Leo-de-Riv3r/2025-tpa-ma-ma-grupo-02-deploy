@@ -3,12 +3,14 @@ package ar.edu.utn.frba.dds.controllers;
 import ar.edu.utn.frba.dds.models.dtos.AdministracionSolicitudDTO;
 import ar.edu.utn.frba.dds.models.dtos.CambiarConsensoDTOInput;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
+import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import ar.edu.utn.frba.dds.services.ISolicitudesService;
 import ar.edu.utn.frba.dds.services.IColeccionesService;
 import java.util.List;
 import java.util.Set;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,8 +36,6 @@ public class AgregadorController {
       @RequestParam (required = false) Integer page,
       @RequestParam (required = false) Integer per_page
   ) {
-    //TODO agregar retorno de estado 404
-
       Set<Hecho> hechos;
       if (page != null && per_page != null) {
         hechos = coleccionesService.obtenerHechos(page, per_page);
@@ -95,5 +95,20 @@ public class AgregadorController {
       @RequestBody AdministracionSolicitudDTO datosSupervisor,
       @RequestParam (required = true) String idSolicitud) {
     solicitudesService.aceptarSolicitud(idSolicitud, datosSupervisor.getNombre());
+  }
+
+  @PostMapping("/colecciones/{id}/fuentes")
+  public void eliminarFuenteDeColeccion(
+      @PathVariable String id, @RequestBody Fuente fuente
+      ) {
+    coleccionesService.agregarFuente(id, fuente);
+  }
+
+  @DeleteMapping("/colecciones/{id}/fuentes")
+  public void agregarFuenteDeColeccion(
+      @PathVariable String idColeccion,
+      @PathVariable String idFuente
+  ) {
+    coleccionesService.eliminarFuente(idColeccion, idFuente);
   }
 }

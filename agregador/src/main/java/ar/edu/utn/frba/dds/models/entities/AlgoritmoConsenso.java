@@ -11,14 +11,14 @@ import java.util.Set;
 
 public abstract class AlgoritmoConsenso{
   public int cantidadMinimaApariciones;
-  private Hecho convertirHechoDTOAHecho(Object hecho, TipoOrigen tipoOrigen) {
+  private Hecho convertirHechoDTOAHechoComparable(Object hecho) {
     if (hecho instanceof Hecho) {
       return (Hecho) hecho;
     } else {
       //transformar hechos de fuente estatica o proxy
       HechosDTOEntrada hechoDto = (HechosDTOEntrada) hecho;
       Ubicacion ubicacion = new Ubicacion(hechoDto.getLatitud(), hechoDto.getLongitud());
-      Origen origen = new Origen(tipoOrigen, "---");
+      Origen origen = new Origen(null, "---");
       return new Hecho(hechoDto.getTitulo(), hechoDto.getDescripcion(), hechoDto.getCategoria(), Set.of(), ubicacion, hechoDto.getFecha_hecho(), LocalDateTime.now(), origen, List.of());
     }
   }
@@ -30,7 +30,7 @@ public abstract class AlgoritmoConsenso{
     int page = 1;
     do {
       hechosFuente = fuente.obtenerHechosUrl(page, 50);
-      List<Hecho> hechos = hechosFuente.getHechosDTOEntrada().stream().map(hecho1 -> convertirHechoDTOAHecho(hecho1, fuente.getTipoOrigen()))
+      List<Hecho> hechos = hechosFuente.getHechosDTOEntrada().stream().map(hecho1 -> convertirHechoDTOAHechoComparable(hecho1))
           .filter(h -> fuente.cumpleCriterios(criterios, h)).toList();
       if (hechos.contains(hecho)) {
         cantApariciones++;
@@ -52,7 +52,8 @@ public abstract class AlgoritmoConsenso{
       Integer paginaActual = 1;
       do {
         List<Object> hechosFuente = fuente.obtenerHechosUrl(paginaActual, 50).getHechosDTOEntrada();
-        List<Hecho> hechos1 = hechosFuente.stream().map(hecho1 -> convertirHechoDTOAHecho(hecho1, fuente.getTipoOrigen()))
+        List<Hecho> hechos1 = hechosFuente.stream().map(this::convertirHechoDTOAHechoComparable)
+            .filter(h -> cumpleConsenso(h, fuentes, criterios))
             .filter(h -> fuente.cumpleCriterios(criterios, h)).toList();
         hechos.addAll(hechos1);
         paginaActual++;
