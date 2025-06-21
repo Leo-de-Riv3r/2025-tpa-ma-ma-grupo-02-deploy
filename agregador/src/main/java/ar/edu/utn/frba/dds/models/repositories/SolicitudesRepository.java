@@ -8,29 +8,35 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class HechosSolicitudesRepository implements IHechosSolicitudesRepository{
+public class SolicitudesRepository implements ISolicitudesRepository {
   private List<Solicitud> solicitudes = List.of();
-  private List<Hecho> hechos = List.of();
+
   @Override
   public void createSolicitud(Solicitud solicitud) {
     solicitudes.add(solicitud);
   }
 
   @Override
-  public void aceptarSolicitud(Solicitud solicitud, String supervisor) {
-      this.buscarSolicitud(solicitud).get().aceptar(supervisor);
+  public void aceptarSolicitud(String id, String supervisor) {
+      this.buscarSolicitud(id).ifPresent(s -> s.aceptar(supervisor));
   }
 
   @Override
-  public void rechazarSolicitud(Solicitud solicitud, String supervisor) {
-    this.buscarSolicitud(solicitud).get().rechazar(supervisor);
+  public void rechazarSolicitud(String id, String supervisor) {
+    this.buscarSolicitud(id).ifPresent(s -> s.rechazar(supervisor));
   }
 
   public boolean hechoEliminado(Hecho hecho) {
     return solicitudes.stream().anyMatch(solicitud -> EqualsBuilder.reflectionEquals(solicitud.getHecho(), hecho));
   }
-  private Optional<Solicitud> buscarSolicitud(Solicitud solicitudBuscada) {
-    return solicitudes.stream().filter(solicitud -> EqualsBuilder.reflectionEquals(solicitudBuscada, solicitud))
+
+  @Override
+  public List<Solicitud> getSolicitudes() {
+    return solicitudes;
+  }
+
+  private Optional<Solicitud> buscarSolicitud(String id ) {
+    return solicitudes.stream().filter(solicitud -> EqualsBuilder.reflectionEquals(id, solicitud.getId()))
         .findFirst();
   }
 }
