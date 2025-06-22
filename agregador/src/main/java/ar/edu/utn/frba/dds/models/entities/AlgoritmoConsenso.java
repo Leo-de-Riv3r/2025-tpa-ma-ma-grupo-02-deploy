@@ -2,16 +2,17 @@ package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.dtos.FuenteResponseDTO;
 import ar.edu.utn.frba.dds.models.dtos.HechosDTOEntrada;
-import ar.edu.utn.frba.dds.models.entities.enums.TipoOrigen;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class AlgoritmoConsenso{
+public abstract class AlgoritmoConsenso implements IAlgoritmoConsenso{
   public int cantidadMinimaApariciones;
-  private Hecho convertirHechoDTOAHechoComparable(Object hecho) {
+
+  @Override
+  public Hecho convertirHechoDTOAHechoComparable(Object hecho) {
     if (hecho instanceof Hecho) {
       return (Hecho) hecho;
     } else {
@@ -23,7 +24,8 @@ public abstract class AlgoritmoConsenso{
     }
   }
 
-  public  Boolean cumpleConsenso(Hecho hecho, Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) {
+  @Override
+  public Boolean cumpleConsenso(Hecho hecho, Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) {
     int cantApariciones = 0;
     FuenteResponseDTO hechosFuente;
   for(IFuenteAbstract fuente : fuentes) {
@@ -44,7 +46,7 @@ public abstract class AlgoritmoConsenso{
     return false;
   }
 
-
+  @Override
   public Set<Hecho> obtenerHechosConsensuados(Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) {
     Set<Hecho> hechos = new java.util.HashSet<>();
     for (IFuenteAbstract fuente : fuentes) {
