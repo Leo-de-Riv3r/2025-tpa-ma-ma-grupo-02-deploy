@@ -33,6 +33,7 @@ FiltroZonaStrategy ..> Hecho
 
 Coleccion --> " * " FiltroStrategy
 Coleccion --> " * " IFuenteAbstract
+Coleccion -->  IAlgoritmoConsenso
 FuenteAdapter --> TipoOrigen
 
 Estado --> TipoEstado
@@ -173,7 +174,8 @@ class Coleccion {
     - titulo: String
     - descripcion: String
     - criterios: Set<FiltroStrategy>
-    - fuentes: Set<FuenteDeDatos>
+    - fuentes: Set<IFuenteAbstract>
+    - algoritmoConsenso: IAlgoritmoConsenso
     + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hecho>
     + obtenerHechosCurados: Set<Hecho>
 }
