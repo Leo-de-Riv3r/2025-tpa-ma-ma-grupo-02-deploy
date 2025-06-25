@@ -126,11 +126,9 @@ class FuenteAbstract implements IFuenteAbstract{
      - id : String
      - url : String
      - tipoOrigen : TipoOrigen
-     - hechos _: List<Hecho>
+     - hechos : List<Hecho>
      - generadorId : IGeneradorIdAdapter
-     + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hecho>
      + cumpleCriterios(Set<FiltroStrategy> criterios, Hecho hecho) : Boolean
-     + getId() : String
      + obtenerHechosUrl(Integer page, Integer per_page) : FuenteResponseDTO
      + actualizarHechos() : void
 }
@@ -176,20 +174,23 @@ class Coleccion {
     - criterios: Set<FiltroStrategy>
     - fuentes: Set<IFuenteAbstract>
     - algoritmoConsenso: IAlgoritmoConsenso
+    - hechosConsensuados : List<Hecho>
     + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hecho>
-    + obtenerHechosCurados: Set<Hecho>
+    + eliminarCriterio(FiltroStrategy filtro): void
+    + agregarFuente(IFuenteAbstract fuente) : void
+    + eliminarFuente(String idFuente) : void
+    + actualizarHechosConsensuados() : void
+    + actualizarFuentes() : void
 }
 
 interface IAlgoritmoConsenso {
     + convertirHechoDTOAHechoComparable(Object hecho) : Hecho
     + cumpleConsenso(Hecho hecho, Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Boolean
     + obtenerHechosConsensuados(Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Set<Hecho>
-    + setCantMinimaApariciones(int cant) : void
 }
 
 abstract class AlgoritmoConsenso implements IAlgoritmoConsenso {
     - cantidadMinimaApariciones : int
-    + setCantMinimaApariciones(int cant) : void
     + convertirHechoDTOAHechoComparable(Object hecho) : Hecho
     + cumpleConsenso(Hecho hecho, Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Boolean
     + obtenerHechosConsensuados(Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Set<Hecho>
