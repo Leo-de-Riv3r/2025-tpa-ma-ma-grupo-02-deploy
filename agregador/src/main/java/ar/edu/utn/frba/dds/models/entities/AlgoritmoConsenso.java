@@ -8,7 +8,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import lombok.Setter;
 
+@Setter
 public abstract class AlgoritmoConsenso{
   public int cantidadMinimaApariciones;
   private Hecho convertirHechoDTOAHechoComparable(Object hecho) {

@@ -64,10 +64,6 @@ public class Coleccion {
     fuentes.removeIf(fuente -> EqualsBuilder.reflectionEquals(fuente.getId(), idFuente));
   }
 
-  public void setAlgoConsenso(AlgoritmoConsenso algoritmoConsenso) {
-    this.algoritmoConsenso = algoritmoConsenso;
-  }
-
   public void actualizarHechosConsensuados() {
       this.algoritmoConsenso.obtenerHechosConsensuados(fuentes, criterios);
   }
