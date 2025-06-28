@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class HechosPagDTO {
-  @JsonProperty("currentPage")
-  private Integer currentPage;
+  @JsonProperty("current_page")
+  private Integer current_page;
   private List<HechoDTO> data;
-  private Integer lastPage;
+  @JsonProperty("last_page")
+  private Integer last_page;
   //private String first_page_url;
   //private Integer from;
 //  @JsonProperty("last_page")
@@ -19,9 +20,9 @@ public class HechosPagDTO {
   //private String prev_page_url;
   //private Integer to;
   //private Integer total;
-  public HechosPagDTO(Integer currentPage, List<HechoDTO> data, Integer lastPage) {
-    this.currentPage = currentPage;
+  public HechosPagDTO(Integer current_page, List<HechoDTO> data, Integer lastPage) {
+    this.current_page = current_page;
     this.data = data;
-    this.lastPage = lastPage;
+    this.last_page = lastPage;
   }
 }
