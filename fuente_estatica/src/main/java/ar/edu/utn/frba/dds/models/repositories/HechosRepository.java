@@ -28,6 +28,7 @@ public class HechosRepository implements IHechosRepository{
     Integer inicio = (page - 1) * perPage;
     Integer fin = Math.min(inicio + perPage, total);
     List <HechoDTO> hechosPag = List.of();
+    Integer lastPage = (int) Math.ceil((double) total / perPage);
 
     if (inicio > total) {
       hechosPag = hechos.subList(0, 9);
@@ -39,6 +40,6 @@ public class HechosRepository implements IHechosRepository{
 //    //private Integer from;
 //    @JsonProperty("last_page")
 //    private Integer lastPage;
-    return new HechosPagDTO(page, hechosPag);
+    return new HechosPagDTO(page, hechosPag, lastPage);
   }
 }

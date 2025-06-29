@@ -5,8 +5,10 @@ import java.util.List;
 
 public class HechosPagDTO {
   @JsonProperty("current_page")
-  private Integer currentPage;
+  private Integer current_page;
   private List<HechoDTO> data;
+  @JsonProperty("last_page")
+  private Integer last_page;
   //private String first_page_url;
   //private Integer from;
 //  @JsonProperty("last_page")
@@ -18,8 +20,9 @@ public class HechosPagDTO {
   //private String prev_page_url;
   //private Integer to;
   //private Integer total;
-  public HechosPagDTO(Integer currentPage, List<HechoDTO> data) {
-    this.currentPage = currentPage;
+  public HechosPagDTO(Integer current_page, List<HechoDTO> data, Integer lastPage) {
+    this.current_page = current_page;
     this.data = data;
+    this.last_page = lastPage;
   }
 }
