@@ -2,8 +2,9 @@ package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechoDTO;
 import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechosPagDTO;
-import org.springframework.web.bind.annotation.*;
 import ar.edu.utn.frba.dds.services.HechoApiService;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -21,10 +22,7 @@ public class HechoApiController {
   }
 
   @GetMapping
-  public Mono<HechosPagDTO> getHechos(
-      @RequestParam(required = false) Integer page,
-      @RequestParam(required = false) Integer per_page
-  ) {
-    return hechoApiService.getHechos(page, per_page);
+  public Flux<HechoDTO> getHechos() {
+    return hechoApiService.getHechos();
   }
 }
