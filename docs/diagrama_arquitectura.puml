@@ -22,19 +22,25 @@ rectangle MetaMapa #line.dotted {
     }
   }
   node Agregador {
-    component ApiAgr as "API"
+    component ApiAgr as "API" {
+      package ApiAdmin as "API Administrativa"
+      package ApiPublic as "API publica"
+    }
     component ModeloAgr as "Modelo" {
       package AgregacionAgr as "Agregación"
       package FuentesAgr as "Fuentes"
       package SolicitudesAgr as "Solicitudes"
     }
   }
+  node servidorProxy1 as "Servidor" {
+    database HechosYSolicitudes1 as "Hechos y Solicitudes"
+  }
+  node servidorProxy2 as "Servidor" {
+    database HechosYSolicitudes2 as "Hechos y Solicitudes"
+  }
 }
 
 node FuenteMetaMapa as "Fuente MetaMapa"
-
-database HechosYSolicitudes1 as "Hechos y Solicitudes"
-database HechosYSolicitudes2 as "Hechos y Solicitudes"
 
 cloud ServiciosExt as "Servicios Externos"
 
@@ -42,7 +48,7 @@ FuentesAgr -(0- ApiEst : "HTTP - API REST"
 FuentesAgr -(0- ApiDim : "HTTP - API REST"
 FuentesAgr -(0- ApiInt : "HTTP - API REST"
 FuentesInt -(0)- ServiciosExt : "API Desastres Naturales"
-FuentesInt -(0)- FuenteMetaMapa : "API REST"
+FuentesInt -(0- FuenteMetaMapa : "API REST"
 
 ApiEst --> PrincipalEst
 ApiDim --> ModeloDim
@@ -54,7 +60,8 @@ SolicitudesDim --> FuentesDim
 
 FuentesDim --> HechosYSolicitudes1
 
-ApiAgr --> ModeloAgr
+ApiPublic --> ApiAdmin
+ApiAdmin --> ModeloAgr
 AgregacionAgr --> SolicitudesAgr
 SolicitudesAgr --> FuentesAgr
 AgregacionAgr --> FuentesAgr
