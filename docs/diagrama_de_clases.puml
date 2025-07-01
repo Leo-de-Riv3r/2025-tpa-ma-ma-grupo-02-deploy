@@ -32,18 +32,18 @@ FiltroFechaStrategy ..> Hecho
 FiltroZonaStrategy ..> Hecho
 
 Coleccion --> " * " FiltroStrategy
-Coleccion --> " * " IFuenteAbstract
-Coleccion -->  IAlgoritmoConsenso
-FuenteAdapter --> TipoOrigen
+Coleccion --> " * " Fuente
+Coleccion -->  IConsensoStrategy
 
 Estado --> TipoEstado
 
 Solicitud --> Hecho
 Solicitud --> Estado
-Solicitud --> Motivo
 
-IFuenteAbstract ..> FiltroStrategy
-
+Fuente ..> FiltroStrategy
+Fuente -->  TipoFuente
+IConsensoStrategy --> TipoAlgoritmo
+Fuente --> Hecho
 
 class Etiqueta {
     - etiqueta : String
@@ -68,10 +68,11 @@ class Origen {
     - edadAutor: Integer
 }
 
-enum TipoOrigen {
+enum TipoFuente {
     ESTATICA
     DINAMICA
-    PROXY
+    PROXY-API
+    PROXY-METAMAPA
 }
 
 enum Formato {
@@ -85,6 +86,13 @@ enum TipoLugar {
     LOCALIDAD
     MUNICIPIO
     PROVINCIA
+}
+
+enum TipoAlgoritmo{
+    MULTIPLES_MENCIONES
+    MAYORIA_SIMPLE
+    ABSOLUTO
+    + getStrategy() : IConsensoStrategy
 }
 
 class Multimedia {
@@ -105,6 +113,7 @@ class Hecho {
     - multimedia: List<Multimedia>
     - eliminado: Boolean
     + agregar(etiqueta: Etiqueta): Boolean
+    + convertirHechoDTOAHecho(HechoDTOEntrada dto, TipoFuente tipoFuente) : Hecho
 }
 
 class Zona {
@@ -113,34 +122,7 @@ class Zona {
     + pertenece(ubicacion: Ubicacion): Boolean
 }
 
-interface IFuenteAbstract {
-    + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hecho>
-    + cumpleCriterios(Set<FiltroStrategy> criterios, Hecho hecho) : Boolean
-    + getId() : String
-    + obtenerHechosUrl(Integer page, Integer per_page) : FuenteResponseDTO
-    + actualizarHechos() : void
 
-}
-
-class FuenteAbstract implements IFuenteAbstract{
-     - id : String
-     - url : String
-     - tipoOrigen : TipoOrigen
-     - hechos : List<Hecho>
-     - generadorId : IGeneradorIdAdapter
-     + cumpleCriterios(Set<FiltroStrategy> criterios, Hecho hecho) : Boolean
-     + obtenerHechosUrl(Integer page, Integer per_page) : FuenteResponseDTO
-     + actualizarHechos() : void
-}
-
-class FuenteProxy extends FuenteAbstract {
-    +obtenerHechos(Set<FiltroStrategy> criterios) : Set<Hecho>
-    +actualizarHechos()
-}
-
-class FuenteDinamicaEstatica extends FuenteAbstract {
-
-}
 
 interface FiltroStrategy {
     + cumpleFiltro(hecho: Hecho): Boolean
@@ -183,30 +165,43 @@ class Coleccion {
     + actualizarFuentes() : void
 }
 
-interface IAlgoritmoConsenso {
-    + convertirHechoDTOAHechoComparable(Object hecho) : Hecho
-    + cumpleConsenso(Hecho hecho, Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Boolean
-    + obtenerHechosConsensuados(Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Set<Hecho>
+abstract class IConsensoStrategy{
+  -cumpleConsensoBase(Hecho hecho, Set<Fuente> fuentes, Set<IFiltroStrategy> filtros, Integer cantMin) : Boolean
+  +Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes, Set<IFiltroStrategy> filtros) : Boolean
 }
 
-abstract class AlgoritmoConsenso implements IAlgoritmoConsenso {
-    - cantidadMinimaApariciones : int
-    + convertirHechoDTOAHechoComparable(Object hecho) : Hecho
-    + cumpleConsenso(Hecho hecho, Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Boolean
-    + obtenerHechosConsensuados(Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Set<Hecho>
+class ConsensoMultiplesMenciones extends IConsensoStrategy {
+    +cumpleConsenso(Hecho hecho, Set<Fuente> fuentes, Set<IFiltroStrategy> filtros) : Boolean
 }
 
-class AlgoritmoMultiplesMenciones extends AlgoritmoConsenso {
-    + cumpleConsenso(Hecho hecho, Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Boolean
+class ConsensoAbsoluto extends IConsensoStrategy {
+    +cumpleConsenso(Hecho hecho, Set<Fuente> fuentes, Set<IFiltroStrategy> filtros) : Boolean
 }
 
-class AlgoritmoMayoriaAbsoluta extends AlgoritmoConsenso {
-    + cumpleConsenso(Hecho hecho, Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Boolean
+class ConsensoMayorSimple extends IConsensoStrategy {
+    +cumpleConsenso(Hecho hecho, Set<Fuente> fuentes, Set<IFiltroStrategy> filtros) : Boolean
 }
 
-class AlgoritmoIrrestricto extends AlgoritmoConsenso {
-     + cumpleConsenso(Hecho hecho, Set<IFuenteAbstract> fuentes, Set<FiltroStrategy> criterios) : Boolean
+abstract class Fuente {
+  -id : String
+  -url : String
+  -tipoFuente : TipoFuente
+  +convertirFuenteDTOAFuente(FuenteDTO dto) : Fuente
+  +refrescarHechos() : void
+  +getHechos(Set<IFiltroStrategy> filtros) : Set<Hecho>
+  +cumpleFiltros(Set<IFiltroStrategy> filtros, Hecho hecho) : Boolean
 }
+
+class FuenteDefault extends Fuente {
+   + refrescarHechos() : void
+   + getHechos(Set<IFiltroStrategy> filtros) : Set<Hecho>
+}
+
+class FuenteProxyMetamapa extends Fuente {
+   + refrescarHechos() : void
+   + getHechos(Set<IFiltroStrategy> filtros) : Set<Hecho>
+}
+
 enum TipoEstado {
     PENDIENTE
     ACEPTADA
@@ -220,20 +215,20 @@ class Estado {
 }
 
 class Solicitud {
-   - titulo: String
-   - texto: String
-   - hecho: Hecho
-   - motivo: Motivo
-   - fechaCreacion: LocalDateTime
-   - responsable: String
-   - estadoActual: Estado
-   - historial: Set<Estado>
-   + estaFundado(): Boolean
-}
-
-enum Motivo {
-    ELIMINACION
-    MODIFICACION
+    - id : String
+    - titulo : String
+    - texto : String
+    - hecho : Hecho
+    - estadoActual : Estado
+    - fecha : LocalDateTime
+    - responsable : String
+    - supervisor : String
+    - historial : List<Estado>
+    + estaFundado() : Boolean
+    + rechazar() : void
+    + aceptar() : void
+    + cambiarEstado(Estado estado) : void
+    + estaAceptada () : Boolean
 }
 
 @enduml
