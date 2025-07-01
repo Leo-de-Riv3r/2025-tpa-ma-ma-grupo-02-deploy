@@ -101,11 +101,7 @@ public class AgregadorController {
   //SOLICITUDES
   @PostMapping("/solicitudes")
   public ResponseEntity<String> agregarSolicitud(@RequestBody SolicitudDTOEntrada dto) {
-    Optional<Hecho> hechoSolicitud = coleccionService.findHecho(dto.getTituloHecho());
-    if (hechoSolicitud.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Hecho no encontrado");
-    }
-    Solicitud solicitud = new Solicitud(dto.getTitulo(), dto.getTexto(), hechoSolicitud.get(), dto.getResponsable());
+    Solicitud solicitud = new Solicitud(dto.getTitulo(), dto.getTexto(), dto.getTituloHecho(), dto.getResponsable());
 
     solicitudService.createSolicitud(solicitud);
     return ResponseEntity.status(HttpStatus.CREATED).body("Solicitud creada");

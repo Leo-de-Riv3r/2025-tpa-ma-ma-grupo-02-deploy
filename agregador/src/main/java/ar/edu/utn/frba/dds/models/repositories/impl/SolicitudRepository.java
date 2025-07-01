@@ -28,7 +28,7 @@ public class SolicitudRepository implements ISolicitudRepository {
   }
 
   public boolean hechoEliminado(Hecho hecho) {
-    return solicitudes.stream().anyMatch(solicitud -> EqualsBuilder.reflectionEquals(solicitud.getHecho(), hecho));
+    return solicitudes.stream().anyMatch(solicitud -> EqualsBuilder.reflectionEquals(solicitud.getTituloHecho(), hecho.getTitulo()));
   }
 
   @Override
