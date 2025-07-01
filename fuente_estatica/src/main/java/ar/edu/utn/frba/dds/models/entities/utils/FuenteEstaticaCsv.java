@@ -8,7 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -20,11 +22,16 @@ public class FuenteEstaticaCsv implements FuenteDeDatos {
 
     @Override
     public Set<Hecho> obtenerHechos(Set<FiltroStrategy> criterios) {
-        return Set.of();
+        ImportadorHechos importador = new ImportadorHechos(csvReaderAdapter, rutaArchivo, separadorColumna);
+        Set<Hecho> hechos = importador.importarHechos();
+        return hechos.stream()
+                .filter(h -> criterios.stream().allMatch(f -> f.cumpleFiltro(h)))
+                .collect(Collectors.toSet());
     }
 
     @Override
     public boolean eliminarHecho(Hecho hecho) {
-        return false;
+        hecho.setEliminado(true);
+        return true;
     }
 }
