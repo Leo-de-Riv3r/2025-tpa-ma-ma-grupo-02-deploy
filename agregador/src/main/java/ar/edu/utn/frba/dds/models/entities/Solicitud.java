@@ -14,18 +14,18 @@ public class Solicitud {
   private String id;
   private String titulo;
   private String texto;
-  private Hecho hecho;
+  private String tituloHecho;
   private Estado estadoActual;
   private LocalDateTime fecha;
   private String responsable;
   private String supervisor;
   private List<Estado> historial;
 
-  public Solicitud(String titulo, String texto, Hecho hecho, String responsable) {
+  public Solicitud(String titulo, String texto, String tituloHecho, String responsable) {
     this.id = UUID.randomUUID().toString();
     this.titulo = titulo;
     this.texto = texto;
-    this.hecho = hecho;
+    this.tituloHecho = tituloHecho;
     this.estadoActual = new Estado(null, TipoEstado.PENDIENTE);
     this.fecha = LocalDateTime.now();
     this.responsable = responsable;

@@ -108,15 +108,6 @@ public class ColeccionService {
     return hechos;
   }
 
-  public Optional<Hecho> findHecho(String hechoTitulo) {
-    if (hechoTitulo == null) {
-      return Optional.empty();
-    }
-    return getHechos(null, false, null, null).stream()
-        .filter(hecho -> hecho.getTitulo().equals(hechoTitulo))
-        .findFirst();
-  }
-
   public void addFuente(String coleccionId, FuenteDTO dto) {
     Fuente fuente = Fuente.convertirFuenteDTOAFuente(dto);
     coleccionRepository.addFuente(coleccionId, fuente);
