@@ -4,11 +4,11 @@ import ar.edu.utn.frba.dds.models.entities.enums.TipoEstado;
 import java.time.LocalDateTime;
 import lombok.Getter;
 
+@Getter
 public class Estado {
-  @Getter
-  private TipoEstado estado;
+  private final String supervisor;
+  private final TipoEstado estado;
   LocalDateTime fechaActualizacion;
-  private String supervisor;
 
   public Estado(String supervisor, TipoEstado estado) {
     this.fechaActualizacion = LocalDateTime.now();

@@ -1,15 +1,20 @@
 package ar.edu.utn.frba.dds.controllers;
 
-import ar.edu.utn.frba.dds.models.dtos.AdministracionSolicitudDTO;
-import ar.edu.utn.frba.dds.models.dtos.CambiarConsensoDTOInput;
+import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOEntrada;
+import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
+import ar.edu.utn.frba.dds.models.dtos.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
-import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
-import ar.edu.utn.frba.dds.services.ISolicitudesService;
-import ar.edu.utn.frba.dds.services.IColeccionesService;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
+import ar.edu.utn.frba.dds.services.SolicitudService;
+import ar.edu.utn.frba.dds.services.ColeccionService;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,94 +26,104 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class AgregadorController {
-  private ISolicitudesService solicitudesService;
-  private IColeccionesService coleccionesService;
+  private final SolicitudService solicitudService;
+  private final ColeccionService coleccionService;
 
-  public AgregadorController(ISolicitudesService solicitudesService, IColeccionesService coleccionesService) {
-    this.solicitudesService = solicitudesService;
-    this.coleccionesService = coleccionesService;
+  public AgregadorController(SolicitudService solicitudService, ColeccionService coleccionService) {
+    this.solicitudService = solicitudService;
+    this.coleccionService = coleccionService;
   }
 
+  //COLECCIONES
 
-  //controllers sujetos a modificacion
-  @GetMapping("/hechos")
-  public List<Hecho> getHechos(
-      @RequestParam (required = false) Integer page,
-      @RequestParam (required = false) Integer per_page
-  ) {
-      Set<Hecho> hechos;
-      if (page != null && per_page != null) {
-        hechos = coleccionesService.obtenerHechos(page, per_page);
-      } else {
-        hechos = coleccionesService.obtenerHechos();
-      }
-      return hechos.stream().filter(hecho -> !solicitudesService.hechoEliminado(hecho)).toList();
+  //CRUD COLECCIONES
+  @PostMapping
+  public ResponseEntity<Coleccion> createColeccion(@RequestBody ColeccionDTOEntrada dto) {
+    Coleccion coleccionCreada = coleccionService.createColeccion(dto);
+    return ResponseEntity.status(HttpStatus.CREATED).body(coleccionCreada);
   }
 
   @GetMapping("/colecciones")
   public List<Coleccion> getColecciones() {
-    return coleccionesService.getColecciones();
+    return coleccionService.getColecciones();
+  }
+
+  @GetMapping("/colecciones/{id}")
+  public Coleccion getColeccion(@PathVariable String id) {
+    return coleccionService.getColeccion(id);
+  }
+
+  @PutMapping("/colecciones/{id}")
+  public void updateColeccion(@PathVariable String id, @RequestParam ColeccionDTOEntrada dto) {
+    coleccionService.updateColeccion(id, dto);
+  }
+
+  @DeleteMapping("/colecciones/{id}")
+  public void deleteColeccion(@PathVariable String id) {
+    coleccionService.deleteColeccion(id);
+  }
+
+  @GetMapping("/hechos")
+  public Set<Hecho> getHechos(
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer per_page
+  ) {
+    Set<Hecho> hechos = coleccionService.getHechos(null, false, page, per_page);
+    return hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
   }
 
   @GetMapping("/colecciones/{id}/hechos")
-  public List<Hecho> getHechosDeColeccion(
+  public Set<Hecho> getHechos(
       @PathVariable String id,
-      @RequestParam (required = false) Integer page,
-      @RequestParam (required = false) Integer per_page,
-      @RequestParam (required = false) Boolean curados
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer per_page,
+      @RequestParam(required = false) Boolean curados
   ) {
-    if (curados) {
-      return coleccionesService.obtenerHechosCurados(id).stream().filter(hecho -> !solicitudesService.hechoEliminado(hecho)).toList();
-    }
-    else {
-      Set<Hecho> hechos;
-      if (page != null && per_page != null) {
-        //agregar meanejo error 404
-        hechos = coleccionesService.obtenerHechos(id, page, per_page);
-      } else {
-        hechos = coleccionesService.obtenerHechos(id);
-      }
-      return hechos.stream().filter(hecho -> !solicitudesService.hechoEliminado(hecho)).toList();
-    }
+    Set<Hecho> hechos = coleccionService.getHechos(id, curados, page, per_page);
+    return hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
   }
 
+  @PutMapping("/colecciones/{id}/algoritmo")
+  public void updateAlgoritmoConsenso(@PathVariable String id, @RequestParam TipoAlgoritmo tipo_algoritmo) {
+    coleccionService.updateAlgoritmoConsenso(id, tipo_algoritmo);
+  }
+
+  @PostMapping("/colecciones/{id}/fuentes")
+  public void addFuente(@PathVariable String id, @RequestBody FuenteDTO dto) {
+    coleccionService.addFuente(id, dto);
+  }
+
+  @DeleteMapping("/colecciones/{id}/fuentes")
+  public void removeFuente(@PathVariable String id, @RequestParam String fuenteId) {
+    coleccionService.removeFuente(id, fuenteId);
+  }
+
+  //SOLICITUDES
   @PostMapping("/solicitudes")
-  public void agregarSolicitud(@RequestBody Solicitud solicitud) {
-    solicitudesService.createSolicitud(solicitud);
-    //return ResponseEntity.status(HttpStatus.CREATED).body("Solicitud creada");
-  }
+  public ResponseEntity<String> agregarSolicitud(@RequestBody SolicitudDTOEntrada dto) {
+    Optional<Hecho> hechoSolicitud = coleccionService.findHecho(dto.getTituloHecho());
+    if (hechoSolicitud.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Hecho no encontrado");
+    }
+    Solicitud solicitud = new Solicitud(dto.getTitulo(), dto.getTexto(), hechoSolicitud.get(), dto.getResponsable());
 
-  @PutMapping("/cambiar_algoritmo")
-  public void cambiarAlgoritmoConsenso(@RequestBody CambiarConsensoDTOInput cambiarConsensoDTOInput) {
-    coleccionesService.cambiarAlgoritmoConsenso(cambiarConsensoDTOInput.getId(), cambiarConsensoDTOInput.getAlgoritmoConsenso());
-  }
-
-  @PutMapping("/solicitudes/denegar/{id}")
-  public void denegarSolicitud(
-      @RequestBody AdministracionSolicitudDTO datosSupervisor,
-      @RequestParam (required = true) String idSolicitud) {
-    solicitudesService.rechazarSolicitud(idSolicitud, datosSupervisor.getNombre());
+    solicitudService.createSolicitud(solicitud);
+    return ResponseEntity.status(HttpStatus.CREATED).body("Solicitud creada");
   }
 
   @PutMapping("/solicitudes/aceptar/{id}")
   public void aceptarSolicitud(
-      @RequestBody AdministracionSolicitudDTO datosSupervisor,
-      @RequestParam (required = true) String idSolicitud) {
-    solicitudesService.aceptarSolicitud(idSolicitud, datosSupervisor.getNombre());
-  }
-
-  @PostMapping("/colecciones/{id}/fuentes")
-  public void eliminarFuenteDeColeccion(
-      @PathVariable String id, @RequestBody Fuente fuente
-      ) {
-    coleccionesService.agregarFuente(id, fuente);
-  }
-
-  @DeleteMapping("/colecciones/{id}/fuentes")
-  public void agregarFuenteDeColeccion(
-      @PathVariable String idColeccion,
-      @PathVariable String idFuente
+      @PathVariable String id,
+      @RequestParam(required = true) String supervisor
   ) {
-    coleccionesService.eliminarFuente(idColeccion, idFuente);
+    solicitudService.aceptarSolicitud(id, supervisor);
+  }
+
+  @PutMapping("/solicitudes/denegar/{id}")
+  public void rechazarSolicitud(
+      @PathVariable String id,
+      @RequestParam(required = true) String supervisor
+  ) {
+    solicitudService.rechazarSolicitud(id, supervisor);
   }
 }

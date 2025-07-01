@@ -8,13 +8,12 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class Hecho {
   private String titulo;
   private String descripcion;
   private Categoria categoria;
-  private Set<Etiqueta> etiquetas;
+  @Builder.Default
+  private Set<Etiqueta> etiquetas = Set.of();
   private Ubicacion ubicacion;
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
@@ -34,7 +33,7 @@ public class Hecho {
     return titulo.equals(hecho.titulo);
   }
 
-  public boolean agregar(Etiqueta etiqueta) {
+  public boolean addEtiqueta(Etiqueta etiqueta) {
     return this.etiquetas.add(etiqueta);
   }
 }

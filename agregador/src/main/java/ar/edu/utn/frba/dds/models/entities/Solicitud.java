@@ -20,14 +20,15 @@ public class Solicitud {
   private String responsable;
   private String supervisor;
   private List<Estado> historial;
+
   public Solicitud(String titulo, String texto, Hecho hecho, String responsable) {
+    this.id = UUID.randomUUID().toString();
     this.titulo = titulo;
     this.texto = texto;
     this.hecho = hecho;
-    this.estadoActual = new Estado("----", TipoEstado.PENDIENTE);
+    this.estadoActual = new Estado(null, TipoEstado.PENDIENTE);
     this.fecha = LocalDateTime.now();
     this.responsable = responsable;
-    this.id = UUID.randomUUID().toString().substring(0, 10);
   }
 
   public Boolean estaFundado() {

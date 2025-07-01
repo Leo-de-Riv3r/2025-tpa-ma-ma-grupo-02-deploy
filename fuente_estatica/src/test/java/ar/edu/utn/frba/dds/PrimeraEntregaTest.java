@@ -130,8 +130,8 @@ public class PrimeraEntregaTest {
     public void etiquetasTest() {
         this.hechos.forEach(hecho -> {
             if (hecho.getTitulo().equals("Caída de aeronave impacta en Olavarría")) {
-                hecho.agregar(new Etiqueta("Olavarría"));
-                hecho.agregar(new Etiqueta("Grave"));
+                hecho.addEtiqueta(new Etiqueta("Olavarría"));
+                hecho.addEtiqueta(new Etiqueta("Grave"));
             }
         });
 

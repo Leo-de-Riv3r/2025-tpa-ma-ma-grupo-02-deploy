@@ -1,7 +1,6 @@
 package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechoDTO;
-import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechosPagDTO;
 import ar.edu.utn.frba.dds.services.HechoApiService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
