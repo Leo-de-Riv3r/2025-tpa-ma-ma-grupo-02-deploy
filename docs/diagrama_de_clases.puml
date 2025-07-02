@@ -11,38 +11,37 @@ Alcance:
 'https://plantuml.com/class-diagram
 
 Multimedia --> Formato
-Lugar --> TipoLugar
 
 Hecho --> " * "Etiqueta
 Hecho --> Ubicacion
 Hecho --> Origen
 Hecho --> Multimedia
 
-Zona --> " * " Ubicacion
-
-Ubicacion --> Lugar
-
 Origen --> TipoOrigen
 
-FiltroZonaStrategy --> Zona
+FiltroUbicacion --> Ubicacion
 
-FiltroTituloStrategy ..> Hecho
-FiltroCategoriaStrategy ..> Hecho
-FiltroFechaStrategy ..> Hecho
-FiltroZonaStrategy ..> Hecho
+IFiltroStrategy ..> Hecho
 
-Coleccion --> " * " FiltroStrategy
+FiltroStrategyFactory --> IFiltroStrategy
+FiltroStrategyFactory --> TipoFiltro
+
+Coleccion --> " * " IFiltroStrategy
 Coleccion --> " * " Fuente
 Coleccion -->  IConsensoStrategy
+Coleccion --> Hecho
 
 Estado --> TipoEstado
 
 Solicitud --> Hecho
 Solicitud --> Estado
 
-Fuente ..> FiltroStrategy
+Fuente ..> IFiltroStrategy
 Fuente -->  TipoFuente
 IConsensoStrategy --> TipoAlgoritmo
+IConsensoStrategy ..> Hecho
+IConsensoStrategy ..> Fuente
+IConsensoStrategy ..> IFiltroStrategy
 Fuente --> Hecho
 
 class Etiqueta {
@@ -53,12 +52,7 @@ class Ubicacion {
     - latitud: Double
     - longitud: Double
     - direccion: String
-    - referenciaLugar: Lugar
-}
-
-class Lugar {
     - nombre: String
-    - tipo: TipoLugar
 }
 
 class Origen {
@@ -82,17 +76,27 @@ enum Formato {
     VIDEO
 }
 
-enum TipoLugar {
-    LOCALIDAD
-    MUNICIPIO
-    PROVINCIA
-}
-
-enum TipoAlgoritmo{
+enum TipoAlgoritmo {
     MULTIPLES_MENCIONES
     MAYORIA_SIMPLE
     ABSOLUTO
     + getStrategy() : IConsensoStrategy
+}
+
+enum TipoOrigen {
+    MANUAL,
+    DATASET,
+    CONTRIBUYENTE
+}
+
+enum TipoFiltro {
+    FILTRO_CATEGORIA,
+    FILTRO_FECHA_ACONTECIMIENTO_INICIO,
+    FILTRO_FECHA_ACONTECIMIENTO_FIN,
+    FILTRO_FECHA_REPORTE_INICIO,
+    FILTRO_FECHA_REPORTE_FIN,
+    FILTRO_TITULO,
+    FILTRO_UBICACION
 }
 
 class Multimedia {
@@ -114,56 +118,63 @@ class Hecho {
     - eliminado: Boolean
     + agregar(etiqueta: Etiqueta): Boolean
     + convertirHechoDTOAHecho(HechoDTOEntrada dto, TipoFuente tipoFuente) : Hecho
+    + cumpleFiltros(Set<IFiltroStrategy> filtros) : Boolean
 }
 
-class Zona {
-    - nombre: String
-    - perimetro: Set<Ubicacion>
-    + pertenece(ubicacion: Ubicacion): Boolean
-}
-
-
-
-interface FiltroStrategy {
+interface IFiltroStrategy {
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
-class FiltroTituloStrategy implements FiltroStrategy {
+class FiltroTitulo implements IFiltroStrategy {
     - titulo: String
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
-class FiltroCategoriaStrategy implements FiltroStrategy {
-    - categoria: String
+class FiltroCategoria implements IFiltroStrategy {
+    - nombreCategoria: String
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
-class FiltroZonaStrategy implements FiltroStrategy {
-    - zona: Zona
+class FiltroUbicacion implements IFiltroStrategy {
+    - ubicacion: Ubicacion
     + cumpleFiltro(hecho: Hecho): Boolean
 }
 
-class FiltroFechaStrategy implements FiltroStrategy {
+abstract class FiltroFecha implements IFiltroStrategy {
     - fechaInicio: LocalDate
-    - fechaFin: LocalDate
+    - fechaFinal: LocalDate
+    - extractorFecha: Function<Hecho, LocalDateTime>
     + cumpleFiltro(hecho: Hecho): Boolean
 }
+
+class FiltroFechaAcontecimiento extends FiltroFecha {
+}
+
+class FiltroFechaReporte extends FiltroFecha {
+}
+
+class FiltroStrategyFactory {
+    + fromDTO(FiltroDTOEntrada dto): IFiltroStrategy
+    + fromParams(Params): Set<IFiltroStrategy>
+}
+
 
 class Coleccion {
     - id: String
     - titulo: String
     - descripcion: String
-    - criterios: Set<FiltroStrategy>
-    - fuentes: Set<IFuenteAbstract>
+    - criterios: Set<IFiltroStrategy>
+    - fuentes: Set<Fuente>
     - algoritmoConsenso: IAlgoritmoConsenso
     - hechosConsensuados : List<Hecho>
-    + obtenerHechos(criterios: Set<FiltroStrategy>): Set<Hecho>
-    + eliminarCriterio(FiltroStrategy filtro): void
-    + agregarFuente(IFuenteAbstract fuente) : void
-    + eliminarFuente(String idFuente) : void
-    + actualizarHechosConsensuados() : void
-    + actualizarFuentes() : void
-}
+    + getHechos(criterios: Set<IFiltroStrategy>): Set<Hecho>
+    + refrescarHechosCurados(): void
+    + getHechosCurados(): Set<Hecho>
+    + addCriterio(IFiltroStrategy criterio): void
+    + removeCriterio(IFiltroStrategy criterio): void
+    + addFuente(Fuente fuente): void
+    + removeFuente(Fuente fuente): void
+    }
 
 abstract class IConsensoStrategy{
   -cumpleConsensoBase(Hecho hecho, Set<Fuente> fuentes, Set<IFiltroStrategy> filtros, Integer cantMin) : Boolean
@@ -189,7 +200,6 @@ abstract class Fuente {
   +convertirFuenteDTOAFuente(FuenteDTO dto) : Fuente
   +refrescarHechos() : void
   +getHechos(Set<IFiltroStrategy> filtros) : Set<Hecho>
-  +cumpleFiltros(Set<IFiltroStrategy> filtros, Hecho hecho) : Boolean
 }
 
 class FuenteDefault extends Fuente {
