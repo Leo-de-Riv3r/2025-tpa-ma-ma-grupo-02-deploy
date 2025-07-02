@@ -27,7 +27,7 @@ public class FuenteProxyMetamapa extends Fuente {
         .retrieve()
         .bodyToFlux(HechoDTOEntrada.class)
         .map(hecho -> Hecho.convertirHechoDTOAHecho(hecho, tipoFuente))
-        .filter(h -> cumpleFiltros(filtros, h))
+        .filter(h -> h.cumpleFiltros(filtros))
         .collect(Collectors.toSet())
         .block();
   }

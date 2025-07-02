@@ -32,7 +32,7 @@ public class FuenteDefault extends Fuente {
       refrescarHechos();
     }
     return hechos.stream()
-        .filter(h -> cumpleFiltros(filtros, h))
+        .filter(h -> h.cumpleFiltros(filtros))
         .collect(Collectors.toSet());
   }
 }

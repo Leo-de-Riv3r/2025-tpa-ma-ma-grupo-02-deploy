@@ -1,16 +1,24 @@
 package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOEntrada;
+import ar.edu.utn.frba.dds.models.dtos.FiltroDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
 import ar.edu.utn.frba.dds.models.dtos.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
-import ar.edu.utn.frba.dds.services.SolicitudService;
+import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroCategoria;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFechaAcontecimiento;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFechaReporte;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroUbicacion;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import ar.edu.utn.frba.dds.services.ColeccionService;
+import ar.edu.utn.frba.dds.services.SolicitudService;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
@@ -23,6 +31,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class AgregadorController {
@@ -68,7 +77,7 @@ public class AgregadorController {
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer per_page
   ) {
-    Set<Hecho> hechos = coleccionService.getHechos(null, false, page, per_page);
+    Set<Hecho> hechos = coleccionService.getHechos(null, false, page, per_page, null);
     return hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
   }
 
@@ -77,10 +86,53 @@ public class AgregadorController {
       @PathVariable String id,
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer per_page,
-      @RequestParam(required = false) Boolean curados
+      @RequestParam(required = false) Boolean curados,
+      @RequestParam(required = false) String categoria,
+      @RequestParam(required = false) LocalDateTime fecha_reporte_desde,
+      @RequestParam(required = false) LocalDateTime fecha_reporte_hasta,
+      @RequestParam(required = false) LocalDateTime fecha_acontecimiento_desde,
+      @RequestParam(required = false) LocalDateTime fecha_acontecimiento_hasta,
+      @RequestParam(required = false) String ubicacion
   ) {
-    Set<Hecho> hechos = coleccionService.getHechos(id, curados, page, per_page);
+    Set<IFiltroStrategy> filtros = new HashSet<>();
+
+    if (categoria != null) filtros.add(new FiltroCategoria(categoria));
+    if (fecha_acontecimiento_desde != null || fecha_acontecimiento_hasta != null)
+      filtros.add(new FiltroFechaAcontecimiento(fecha_acontecimiento_desde, fecha_acontecimiento_hasta));
+    if (fecha_reporte_desde != null || fecha_reporte_hasta != null)
+      filtros.add(new FiltroFechaReporte(fecha_reporte_desde, fecha_reporte_hasta));
+    if (ubicacion != null && ubicacion.contains(",")) {
+      try {
+        String[] partes = ubicacion.split(",");
+        Double latitud = Double.parseDouble(partes[0].trim());
+        Double longitud = Double.parseDouble(partes[1].trim());
+        filtros.add(new FiltroUbicacion(latitud, longitud));
+      } catch (NumberFormatException e) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ubicación malformateada. Usar 'latitud,longitud'");
+      }
+    }
+    Set<Hecho> hechos = coleccionService.getHechos(id, curados, page, per_page, filtros);
     return hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
+  }
+
+  @PostMapping("/colecciones/{id}/filtros")
+  public ResponseEntity<String> addCriterio(
+      @PathVariable String id,
+      @RequestBody FiltroDTOEntrada dto
+  ) {
+    IFiltroStrategy filtro = FiltroStrategyFactory.fromDTO(dto);
+    coleccionService.addCriterio(id, filtro);
+    return ResponseEntity.ok("Filtro agregado correctamente");
+  }
+
+  @DeleteMapping("/colecciones/{id}/filtros")
+  public ResponseEntity<String> removeCriterio(
+      @PathVariable String id,
+      @RequestBody FiltroDTOEntrada dto
+  ) {
+    IFiltroStrategy filtro = FiltroStrategyFactory.fromDTO(dto);
+    coleccionService.removeCriterio(id, filtro);
+    return ResponseEntity.ok("Filtro eliminado correctamente");
   }
 
   @PutMapping("/colecciones/{id}/algoritmo")

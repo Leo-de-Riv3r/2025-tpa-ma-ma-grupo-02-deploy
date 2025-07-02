@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -73,7 +74,7 @@ public class ColeccionService {
     this.getColecciones().forEach(coleccion -> coleccion.getFuentes().forEach(Fuente::refrescarHechos));
   }
 
-  public Set<Hecho> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage) {
+  public Set<Hecho> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros) {
     Set<Hecho> hechos = Set.of();
     if (coleccionId != null) {
       Optional<Coleccion> coleccion = coleccionRepository.findById(coleccionId);
@@ -103,6 +104,12 @@ public class ColeccionService {
           .skip((long) (page - 1) * perPage)
           .limit(perPage)
           .collect(HashSet::new, HashSet::add, HashSet::addAll) : null;
+    }
+
+    if (filtros != null) {
+      return hechos != null ? hechos.stream()
+          .filter(h -> h.cumpleFiltros(filtros))
+          .collect(Collectors.toSet()) : null;
     }
 
     return hechos;

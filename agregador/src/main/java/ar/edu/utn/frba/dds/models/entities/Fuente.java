@@ -27,10 +27,6 @@ public abstract class Fuente {
 
   public abstract Set<Hecho> getHechos(Set<IFiltroStrategy> filtros);
 
-  public boolean cumpleFiltros(Set<IFiltroStrategy> filtros, Hecho hecho) {
-    return filtros == null || filtros.isEmpty() || filtros.stream().allMatch(f -> f.cumpleFiltro(hecho));
-  }
-
   public static Fuente convertirFuenteDTOAFuente(FuenteDTO dto) {
     TipoFuente tipoFuente = TipoFuente.valueOf(dto.getTipoFuente());
     if (dto.getUrl() == null || dto.getUrl().isEmpty()) {

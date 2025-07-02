@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -51,5 +52,9 @@ public class Hecho {
         .fechaCarga(dto.getCreatedAt())
         .origen(baseOrigin)
         .build();
+  }
+
+  public boolean cumpleFiltros(Set<IFiltroStrategy> filtros) {
+    return filtros == null || filtros.isEmpty() || filtros.stream().allMatch(f -> f.cumpleFiltro(this));
   }
 }
