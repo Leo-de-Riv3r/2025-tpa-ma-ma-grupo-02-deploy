@@ -14,6 +14,7 @@ import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
 import ar.edu.utn.frba.dds.servicies.IHechosService;
 import ar.edu.utn.frba.dds.utils.ContribucionUtils;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 
@@ -67,23 +68,12 @@ public class HechosService implements IHechosService {
   }
 
   @Override
-  public HechoPagDTO getHechos(Integer page, Integer per_page) {
-    if (per_page < 1) per_page = 1;
-    if (per_page > 100) per_page = 100;
-
+  public List<HechoOutputDTO> getHechos() {
     List<Hecho> hechos = hechosRepository.findAll();
 
-    Integer total = hechos.size();
-    Integer inicio = (page - 1) * per_page;
-    Integer fin = Math.min(inicio + per_page, total);
-
-    List<HechoOutputDTO> dtos = hechos
-        .subList(0, 9)
-        .stream()
+    return hechos.stream()
         .map(HechoMapper::toHechoOutputDTO)
-        .toList();
-
-    return new HechoPagDTO(page, dtos);
+        .collect(Collectors.toList());
   }
 
   @Override
