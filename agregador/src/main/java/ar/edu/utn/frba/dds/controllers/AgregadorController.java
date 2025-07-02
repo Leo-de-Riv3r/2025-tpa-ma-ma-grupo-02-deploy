@@ -94,23 +94,15 @@ public class AgregadorController {
       @RequestParam(required = false) LocalDateTime fecha_acontecimiento_hasta,
       @RequestParam(required = false) String ubicacion
   ) {
-    Set<IFiltroStrategy> filtros = new HashSet<>();
+    Set<IFiltroStrategy> filtros = FiltroStrategyFactory.fromParams(
+        categoria,
+        fecha_reporte_desde,
+        fecha_reporte_hasta,
+        fecha_acontecimiento_desde,
+        fecha_acontecimiento_hasta,
+        ubicacion
+    );
 
-    if (categoria != null) filtros.add(new FiltroCategoria(categoria));
-    if (fecha_acontecimiento_desde != null || fecha_acontecimiento_hasta != null)
-      filtros.add(new FiltroFechaAcontecimiento(fecha_acontecimiento_desde, fecha_acontecimiento_hasta));
-    if (fecha_reporte_desde != null || fecha_reporte_hasta != null)
-      filtros.add(new FiltroFechaReporte(fecha_reporte_desde, fecha_reporte_hasta));
-    if (ubicacion != null && ubicacion.contains(",")) {
-      try {
-        String[] partes = ubicacion.split(",");
-        Double latitud = Double.parseDouble(partes[0].trim());
-        Double longitud = Double.parseDouble(partes[1].trim());
-        filtros.add(new FiltroUbicacion(latitud, longitud));
-      } catch (NumberFormatException e) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ubicación malformateada. Usar 'latitud,longitud'");
-      }
-    }
     Set<Hecho> hechos = coleccionService.getHechos(id, curados, page, per_page, filtros);
     return hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
   }
