@@ -63,5 +63,4 @@ public class ContribucionService implements IContribucionService {
 
         return new ContribucionOutputDTO(); // TODO: Modelar esto
     }
-
 }

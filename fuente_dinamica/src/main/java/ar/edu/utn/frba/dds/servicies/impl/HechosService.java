@@ -2,17 +2,25 @@ package ar.edu.utn.frba.dds.servicies.impl;
 
 import ar.edu.utn.frba.dds.mappers.HechoMapper;
 
+import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.MultimediaInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudModificacionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoPagDTO;
+import ar.edu.utn.frba.dds.models.entities.Categoria;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Multimedia;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
+import ar.edu.utn.frba.dds.models.entities.Ubicacion;
+import ar.edu.utn.frba.dds.models.enums.Formato;
 import ar.edu.utn.frba.dds.models.enums.Motivo;
 import ar.edu.utn.frba.dds.models.repositories.IContribuyenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
 import ar.edu.utn.frba.dds.servicies.IHechosService;
 import ar.edu.utn.frba.dds.utils.ContribucionUtils;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -83,6 +91,34 @@ public class HechosService implements IHechosService {
       throw new RuntimeException("No existe hecho con ese id");
     }
     return HechoMapper.toHechoOutputDTO(hecho);
+  }
+
+  @Override
+  public HechoOutputDTO crearHecho(HechoInputDTO hechoDto) {
+    Hecho hecho = Hecho.builder()
+        .titulo(hechoDto.getTitulo())
+        .descripcion(hechoDto.getDescripcion())
+        .categoria(new Categoria(hechoDto.getCategoria()))
+        .ubicacion(new Ubicacion(hechoDto.getLatitud(), hechoDto.getLongitud()))
+        .fechaAcontecimiento(LocalDateTime.parse(hechoDto.getFechaAcontecimiento(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+        .build();
+
+      hechoDto.getMultimedia().forEach(multimediaInputDTO -> {
+            Multimedia multimediaDto = new Multimedia(multimediaInputDTO.getNombre(), multimediaInputDTO.getRuta(), Formato.fromString(multimediaInputDTO.getFormato()));
+            hecho.addMultimedia(multimediaDto);
+      }
+      );
+    Hecho hechoGuardado = hechosRepository.save(hecho);
+
+    return HechoOutputDTO.builder()
+        .titulo(hechoGuardado.getTitulo())
+        .descripcion(hechoGuardado.getDescripcion())
+        .categoria(hechoGuardado.getCategoria().getNombre())
+        .latitud(hechoGuardado.getUbicacion().getLatitud())
+        .longitud(hechoGuardado.getUbicacion().getLongitud())
+        .fecha_hecho(hechoGuardado.getFechaAcontecimiento())
+        .created_at(hechoGuardado.getFechaCarga())
+        .build();
   }
 }
 

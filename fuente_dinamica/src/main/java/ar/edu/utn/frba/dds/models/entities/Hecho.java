@@ -2,18 +2,20 @@ package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import lombok.*;
 
-@Getter
-@Setter
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-
+@Getter
+@Setter
 public class Hecho {
-  private Long id; //ver
+  private Long id;
   private String titulo;
   private String descripcion;
   private Categoria categoria;
@@ -22,7 +24,8 @@ public class Hecho {
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
   private Origen origen;
-  private List<Multimedia> multimedia;
+  @Builder.Default
+  private List<Multimedia> multimedia = new ArrayList<>(List.of());
   @Builder.Default
   private Boolean eliminado = Boolean.FALSE;
 
@@ -50,4 +53,7 @@ public class Hecho {
     }
   }
 
+  public void addMultimedia(Multimedia multimediaNueva) {
+    multimedia.add(multimediaNueva);
+  }
 }
