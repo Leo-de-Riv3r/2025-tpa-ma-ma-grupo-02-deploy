@@ -2,8 +2,10 @@ package ar.edu.utn.frba.dds.models.DTO;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
+@Getter
   public class HechoDTO {
   //private Integer id;
   private String titulo;
@@ -13,5 +15,4 @@ import lombok.AllArgsConstructor;
   private Double longitud;
   private LocalDateTime fecha_hecho;
   private LocalDateTime created_at;
-  private LocalDateTime updated_at;
 }

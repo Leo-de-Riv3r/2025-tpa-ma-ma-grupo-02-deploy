@@ -1,13 +1,15 @@
 package ar.edu.utn.frba.dds.models.DTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
+import lombok.Getter;
 
+@Data
 public class HechosPagDTO {
-  @JsonProperty("current_page")
   private Integer current_page;
-  private List<HechoDTO> data;
-  @JsonProperty("last_page")
+  private List<HechoDTO> data = new ArrayList<>();
   private Integer last_page;
   //private String first_page_url;
   //private Integer from;
