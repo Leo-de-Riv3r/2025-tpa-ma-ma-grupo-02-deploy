@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ColeccionDTO {
-  private Integer id;
+  private String id;
   private String titulo;
   private String descripcion;
 }

@@ -37,7 +37,7 @@ public class Hecho {
     return titulo.equals(hecho.titulo);
   }
 
-  public boolean agregar(Etiqueta etiqueta) {
+  public boolean addEtiqueta(Etiqueta etiqueta) {
     return this.etiquetas.add(etiqueta);
   }
 

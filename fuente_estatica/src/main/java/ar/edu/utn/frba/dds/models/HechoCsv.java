@@ -3,11 +3,14 @@ package ar.edu.utn.frba.dds.models;
 import com.opencsv.bean.CsvBindByName;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import com.opencsv.bean.CsvDate;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class HechoCsv {
-  @CsvBindByName(column = "Titulo")
+  @CsvBindByName(column = "Título")
   private String titulo;
 
   @CsvBindByName(column = "Descripción")
@@ -23,6 +26,7 @@ public class HechoCsv {
   private Double longitud;
 
   @CsvBindByName(column = "Fecha del hecho")
+  @CsvDate("dd/MM/yyyy")
   private LocalDate fecha;
 }
 

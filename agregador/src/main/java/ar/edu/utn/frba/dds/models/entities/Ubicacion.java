@@ -1,23 +1,29 @@
 package ar.edu.utn.frba.dds.models.entities;
 
 import lombok.Getter;
+import lombok.Setter;
 
+@Setter
 @Getter
 public class Ubicacion {
-  private Double latitud;
-  private Double longitud;
+  private final Double latitud;
+  private final Double longitud;
   private String direccion;
-  private Lugar referenciaLugar;
+  private String nombre;
 
   public Ubicacion(Double latitud, Double longitud) {
     this.latitud = latitud;
     this.longitud = longitud;
   }
 
-  public Ubicacion(Double latitud, Double longitud, String direccion, Lugar referenciaLugar) {
+  public Ubicacion(Double latitud, Double longitud, String direccion, String nombre) {
     this.latitud = latitud;
     this.longitud = longitud;
     this.direccion = direccion;
-    this.referenciaLugar = referenciaLugar;
+    this.nombre = nombre;
+  }
+
+  public Boolean mismaUbicacion(Double latitud, Double longitud) {
+    return this.latitud.equals(latitud) && this.longitud.equals(longitud);
   }
 }

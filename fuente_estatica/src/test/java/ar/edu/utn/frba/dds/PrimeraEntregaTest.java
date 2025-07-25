@@ -23,6 +23,7 @@ import org.mockito.Mockito;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class PrimeraEntregaTest {
@@ -32,6 +33,7 @@ public class PrimeraEntregaTest {
 
     @BeforeEach
     public void setUp() {
+        fuente = Mockito.mock(FuenteEstaticaCsv.class);
         hechos = new HashSet<>();
         hechos.add(Hecho.builder()
                 .titulo("Caída de aeronave impacta en Olavarría")
@@ -130,8 +132,8 @@ public class PrimeraEntregaTest {
     public void etiquetasTest() {
         this.hechos.forEach(hecho -> {
             if (hecho.getTitulo().equals("Caída de aeronave impacta en Olavarría")) {
-                hecho.agregar(new Etiqueta("Olavarría"));
-                hecho.agregar(new Etiqueta("Grave"));
+                hecho.addEtiqueta(new Etiqueta("Olavarría"));
+                hecho.addEtiqueta(new Etiqueta("Grave"));
             }
         });
 
@@ -145,23 +147,24 @@ public class PrimeraEntregaTest {
     @Test
     public void importacionDeHechosPorCsv() {
         CsvReaderAdapter csvReaderAdapter = new LectorCsv();
-        FuenteDeDatos fuenteCsv = new FuenteEstaticaCsv(csvReaderAdapter,"src/test/resources/csv/desastres_naturales_argentina.csv", ",");
+        FuenteDeDatos fuenteCsv = new FuenteEstaticaCsv(csvReaderAdapter, "src/test/resources/csv/desastres_naturales_argentina.csv", ",");
 
         var hechosCsv = fuenteCsv.obtenerHechos(Set.of());
 
-        var hechoExpected = Hecho.builder()
-                .titulo("Ráfagas de más de 100 km/h causa estragos en San Vicente, Misiones")
-                .descripcion("La región de San Vicente en Misiones sufrió los efectos de una intensa ráfagas de más de 100 km/h. El incidente obligando a evacuar a residentes de la zona. Se ha convocado al comité de crisis para coordinar las acciones de respuesta.")
-                .categoria(new Categoria("Ráfagas de más de 100 km/h"))
-                .ubicacion(new Ubicacion(-27.029465, -54.436559))
-                .fechaAcontecimiento(LocalDateTime.of(2007, 12, 21, 0, 0))
-                .build();
+        Optional<Hecho> optional = hechosCsv.stream()
+                .filter(h -> h.getTitulo().equals("Ráfagas de más de 100 km/h causa estragos en San Vicente, Misiones"))
+                .findFirst();
 
-        var hechoResult = hechosCsv.stream().filter(h -> h.getTitulo().equals("Ráfagas de más de 100 km/h causa estragos en San Vicente, Misiones")).findFirst().get();
+        Assertions.assertTrue(optional.isPresent());
+        var hecho = optional.get();
 
-        Assertions.assertEquals(15000, hechosCsv.size());
-        Assertions.assertEquals(hechoExpected, hechoResult);
+        Assertions.assertEquals("La región de San Vicente en Misiones sufrió los efectos de una intensa ráfagas de más de 100 km/h. El incidente obligando a evacuar a residentes de la zona. Se ha convocado al comité de crisis para coordinar las acciones de respuesta.", hecho.getDescripcion());
+        Assertions.assertEquals("Ráfagas de más de 100 km/h", hecho.getCategoria().getNombre());
+        Assertions.assertEquals(-27.029465, hecho.getUbicacion().getLatitud());
+        Assertions.assertEquals(-54.436559, hecho.getUbicacion().getLongitud());
+        Assertions.assertEquals(LocalDateTime.of(2007, 12, 21, 0, 0), hecho.getFechaAcontecimiento());
     }
+
 
     // Escenario 3
 

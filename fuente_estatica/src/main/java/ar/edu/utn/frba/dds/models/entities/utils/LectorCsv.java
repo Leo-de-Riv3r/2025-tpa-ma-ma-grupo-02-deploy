@@ -1,26 +1,29 @@
 package ar.edu.utn.frba.dds.models.entities.utils;
 
+import ar.edu.utn.frba.dds.models.HechoCsv;
 import ar.edu.utn.frba.dds.models.entities.adapters.CsvReaderAdapter;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LectorCsv implements CsvReaderAdapter {
   @Override
   public List<Object> readCsv(String path, String separator) {
-    List<Object> objetos = new ArrayList<>();
-    try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-      String linea;
-      while ((linea = br.readLine()) != null) {
-        String[] datosFila = linea.split(separator);
-        objetos.add(datosFila); // cada fila es un String[]
-      }
+    try (Reader reader = new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8)) {
+      CsvToBean<HechoCsv> csvToBean = new CsvToBeanBuilder<HechoCsv>(reader)
+              .withType(HechoCsv.class)
+              .withSeparator(separator.charAt(0))
+              .withIgnoreLeadingWhiteSpace(true)
+              .build();
+
+      return new ArrayList<>(csvToBean.parse());
     } catch (IOException e) {
       e.printStackTrace();
+      return List.of();
     }
-    return objetos;
   }
 }

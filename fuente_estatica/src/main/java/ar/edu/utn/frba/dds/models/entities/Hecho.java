@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.models.entities;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 import lombok.*;
@@ -8,13 +9,12 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class Hecho {
   private String titulo;
   private String descripcion;
   private Categoria categoria;
-  private Set<Etiqueta> etiquetas;
+  @Builder.Default
+  private Set<Etiqueta> etiquetas = new HashSet<>();
   private Ubicacion ubicacion;
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
@@ -34,7 +34,10 @@ public class Hecho {
     return titulo.equals(hecho.titulo);
   }
 
-  public boolean agregar(Etiqueta etiqueta) {
+  public boolean addEtiqueta(Etiqueta etiqueta) {
+    if (this.etiquetas == null) {
+      this.etiquetas = new HashSet<>();
+    }
     return this.etiquetas.add(etiqueta);
   }
 }

@@ -1,5 +1,8 @@
 package ar.edu.utn.frba.dds.models.entities;
 
+import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -9,17 +12,18 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
 public class Hecho {
   private String titulo;
   private String descripcion;
   private String categoria;
-  private Set<Etiqueta> etiquetas;
+  @Builder.Default
+  private Set<Etiqueta> etiquetas = Set.of();
   private Ubicacion ubicacion;
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
   private Origen origen;
-  private List<Multimedia> multimedia;
+  @Builder.Default
+  private List<Multimedia> multimedia = List.of();
 
   @Override
   public boolean equals(Object o) {
@@ -32,7 +36,25 @@ public class Hecho {
     return titulo.equals(hecho.titulo);
   }
 
-  public boolean agregar(Etiqueta etiqueta) {
+  public boolean addEtiqueta(Etiqueta etiqueta) {
     return this.etiquetas.add(etiqueta);
+  }
+
+  public static Hecho convertirHechoDTOAHecho(HechoDTOEntrada dto, TipoFuente tipoFuente) {
+    Ubicacion ubicacion = new Ubicacion(dto.getLatitud(), dto.getLongitud());
+    Origen baseOrigin = new Origen(tipoFuente, null);
+    return Hecho.builder()
+        .titulo(dto.getTitulo())
+        .descripcion(dto.getDescripcion())
+        .categoria(dto.getCategoria())
+        .ubicacion(ubicacion)
+        .fechaAcontecimiento(dto.getFechaHecho())
+        .fechaCarga(dto.getCreatedAt())
+        .origen(baseOrigin)
+        .build();
+  }
+
+  public boolean cumpleFiltros(Set<IFiltroStrategy> filtros) {
+    return filtros == null || filtros.isEmpty() || filtros.stream().allMatch(f -> f.cumpleFiltro(this));
   }
 }

@@ -2,10 +2,13 @@ package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechoDTO;
 import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechosPagDTO;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 @Service
 public class HechoApiService {
@@ -22,7 +25,7 @@ public class HechoApiService {
         .build();
   }
 
-  public Mono<HechosPagDTO> getHechos(Integer page, Integer perPage) {
+  private Mono<HechosPagDTO> getHechosPag(Integer page, Integer perPage) {
     return webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/api/desastres")
@@ -32,6 +35,18 @@ public class HechoApiService {
         .retrieve()
         .bodyToMono(HechosPagDTO.class);
   }
+
+  public Flux<HechoDTO> getHechos() {
+    return getHechosPag(1, 100)
+        .flatMapMany(firstPage -> {
+          int lastPage = firstPage.getLastPage();
+
+          return Flux.range(1, lastPage)
+              .flatMap(pagina -> getHechosPag(pagina, 100))
+              .flatMap(response -> Flux.fromIterable(response.getData()));
+        });
+  }
+
 
   public Mono<HechoDTO> getHechoById(Integer id) {
     return webClient.get()
