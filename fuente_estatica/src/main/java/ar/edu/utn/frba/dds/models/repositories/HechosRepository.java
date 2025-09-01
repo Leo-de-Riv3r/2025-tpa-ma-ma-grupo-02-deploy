@@ -1,15 +1,13 @@
 package ar.edu.utn.frba.dds.models.repositories;
 
 import ar.edu.utn.frba.dds.models.DTO.HechoDTO;
-import ar.edu.utn.frba.dds.models.DTO.HechosPagDTO;
-import ar.edu.utn.frba.dds.models.entities.Hecho;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class HechosRepository implements IHechosRepository{
-  private List<HechoDTO> hechos;
+  private List<HechoDTO> hechos = new ArrayList<>();
 
   @Override
   public HechoDTO save(HechoDTO hecho) {
@@ -23,7 +21,7 @@ public class HechosRepository implements IHechosRepository{
   }
 
   @Override
-  public HechosPagDTO getHechos(Integer page, Integer perPage) {
+  public List<HechoDTO> getHechos(Integer page, Integer perPage) {
     Integer total = hechos.size();
     Integer inicio = (page - 1) * perPage;
     Integer fin = Math.min(inicio + perPage, total);
@@ -31,7 +29,11 @@ public class HechosRepository implements IHechosRepository{
     Integer lastPage = (int) Math.ceil((double) total / perPage);
 
     if (inicio > total) {
+      System.out.println("0-9");
       hechosPag = hechos.subList(0, 9);
+    } else {
+      System.out.println("Inicio: " + inicio + ". Fin: " + fin);
+      hechosPag = hechos.subList(inicio, fin);
     }
 //    @JsonProperty("current_page")
 //    private Integer currentPage;
@@ -40,6 +42,6 @@ public class HechosRepository implements IHechosRepository{
 //    //private Integer from;
 //    @JsonProperty("last_page")
 //    private Integer lastPage;
-    return new HechosPagDTO(page, hechosPag, lastPage);
+    return hechosPag;
   }
 }
