@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.models.dtos.input;
 
+import java.time.LocalDateTime;
 import lombok.Data;
 
 import java.util.List;
@@ -13,4 +14,5 @@ public class HechoInputDTO {
   private Double latitud;
   private Double longitud;
   private List<MultimediaInputDTO> multimedia;
+  private String fechaAcontecimiento;
 }

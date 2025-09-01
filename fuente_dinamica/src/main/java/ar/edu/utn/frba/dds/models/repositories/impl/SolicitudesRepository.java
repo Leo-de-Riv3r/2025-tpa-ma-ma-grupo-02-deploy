@@ -7,7 +7,9 @@ import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class SolicitudesRepository implements ISolicitudesRepository {
     private List<Solicitud> solicitudes;
     private Long nextId;

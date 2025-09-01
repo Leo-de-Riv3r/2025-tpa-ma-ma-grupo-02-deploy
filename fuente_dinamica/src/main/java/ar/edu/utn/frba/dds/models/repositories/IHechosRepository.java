@@ -12,4 +12,6 @@ public interface IHechosRepository {
   public void deleteById(Long id);
   public long count();
   public List<Hecho> findAll();
+
+  void createHecho(Hecho hecho);
 }

@@ -60,4 +60,9 @@ public class HechosRepository implements IHechosRepository {
   public List<Hecho> findAll() {
     return this.hechos;
   }
+
+  @Override
+  public void createHecho(Hecho hecho) {
+    hechos.add(hecho);
+  }
 }
