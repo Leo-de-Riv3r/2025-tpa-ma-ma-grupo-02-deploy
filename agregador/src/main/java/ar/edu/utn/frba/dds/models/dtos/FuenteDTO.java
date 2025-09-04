@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class FuenteDTO {
-  private String url;
-  private String tipoFuente;
+  private String id;
 }

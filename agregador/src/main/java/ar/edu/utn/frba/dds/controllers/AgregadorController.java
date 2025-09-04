@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.controllers;
 
+import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.FiltroDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
@@ -15,6 +16,7 @@ import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFecha
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroUbicacion;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import ar.edu.utn.frba.dds.services.ColeccionService;
+import ar.edu.utn.frba.dds.services.FuenteService;
 import ar.edu.utn.frba.dds.services.SolicitudService;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -46,7 +48,7 @@ public class AgregadorController {
   //COLECCIONES
 
   //CRUD COLECCIONES
-  @PostMapping
+  @PostMapping("/colecciones")
   public ResponseEntity<Coleccion> createColeccion(@RequestBody ColeccionDTOEntrada dto) {
     Coleccion coleccionCreada = coleccionService.createColeccion(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body(coleccionCreada);
@@ -86,7 +88,7 @@ public class AgregadorController {
       @PathVariable String id,
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer per_page,
-      @RequestParam(required = false) Boolean curados,
+      @RequestParam(required = false, defaultValue = "false") Boolean curados,
       @RequestParam(required = false) String categoria,
       @RequestParam(required = false) LocalDateTime fecha_reporte_desde,
       @RequestParam(required = false) LocalDateTime fecha_reporte_hasta,
@@ -107,29 +109,9 @@ public class AgregadorController {
     return hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
   }
 
-  @PostMapping("/colecciones/{id}/filtros")
-  public ResponseEntity<String> addCriterio(
-      @PathVariable String id,
-      @RequestBody FiltroDTOEntrada dto
-  ) {
-    IFiltroStrategy filtro = FiltroStrategyFactory.fromDTO(dto);
-    coleccionService.addCriterio(id, filtro);
-    return ResponseEntity.ok("Filtro agregado correctamente");
-  }
-
-  @DeleteMapping("/colecciones/{id}/filtros")
-  public ResponseEntity<String> removeCriterio(
-      @PathVariable String id,
-      @RequestBody FiltroDTOEntrada dto
-  ) {
-    IFiltroStrategy filtro = FiltroStrategyFactory.fromDTO(dto);
-    coleccionService.removeCriterio(id, filtro);
-    return ResponseEntity.ok("Filtro eliminado correctamente");
-  }
-
   @PutMapping("/colecciones/{id}/algoritmo")
-  public void updateAlgoritmoConsenso(@PathVariable String id, @RequestParam TipoAlgoritmo tipo_algoritmo) {
-    coleccionService.updateAlgoritmoConsenso(id, tipo_algoritmo);
+  public void updateAlgoritmoConsenso(@PathVariable String id, @RequestBody CambioAlgoritmoDTO algoritmoDTO) {
+    coleccionService.updateAlgoritmoConsenso(id, algoritmoDTO);
   }
 
   @PostMapping("/colecciones/{id}/fuentes")
@@ -142,16 +124,25 @@ public class AgregadorController {
     coleccionService.removeFuente(id, fuenteId);
   }
 
+  //prueba
+  @PutMapping("/colecciones")
+  public void actualizarHechosCurados() {
+    coleccionService.refrescarHechosCurados();
+  }
+
   //SOLICITUDES
   @PostMapping("/solicitudes")
   public ResponseEntity<String> agregarSolicitud(@RequestBody SolicitudDTOEntrada dto) {
-    Solicitud solicitud = new Solicitud(dto.getTitulo(), dto.getTexto(), dto.getTituloHecho(), dto.getResponsable());
-
+    Solicitud solicitud = new Solicitud();
+    solicitud.setTitulo(dto.getTitulo());
+    solicitud.setTexto(dto.getTexto());
+    solicitud.setTituloHecho(dto.getTituloHecho());
+    solicitud.setResponsable(dto.getResponsable());
     solicitudService.createSolicitud(solicitud);
     return ResponseEntity.status(HttpStatus.CREATED).body("Solicitud creada");
   }
 
-  @PutMapping("/solicitudes/aceptar/{id}")
+  @PutMapping("/solicitudes/{id}/aceptar")
   public void aceptarSolicitud(
       @PathVariable String id,
       @RequestParam(required = true) String supervisor
@@ -159,7 +150,7 @@ public class AgregadorController {
     solicitudService.aceptarSolicitud(id, supervisor);
   }
 
-  @PutMapping("/solicitudes/denegar/{id}")
+  @PutMapping("/solicitudes/{id}/denegar")
   public void rechazarSolicitud(
       @PathVariable String id,
       @RequestParam(required = true) String supervisor

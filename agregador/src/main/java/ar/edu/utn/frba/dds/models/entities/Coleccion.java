@@ -11,56 +11,62 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import jakarta.persistence.*;
 
 @Getter
 @Setter
+@Entity @Table(name = "coleccion")
 public class Coleccion {
+  @Id
   private String id;
+  @Column
   private String titulo;
+  @Column
   private String descripcion;
-  private Set<IFiltroStrategy> criterios;
-  private Set<Fuente> fuentes;
-  private IConsensoStrategy algoritmoConsenso;
-  private Set<Hecho> hechosCurados;
 
-  public Coleccion(String titulo, String descripcion) {
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name ="coleccion_fuente",
+      joinColumns = @JoinColumn(name = "coleccion_id",
+      referencedColumnName = "id"),
+      inverseJoinColumns =  @JoinColumn(name = "fuente_id",
+      referencedColumnName = "id")
+  )
+  private Set<Fuente> fuentes;
+
+  @OneToOne(cascade = CascadeType.ALL)
+  @JoinColumn(name = "algoritmo_id", referencedColumnName = "id")
+  private IConsensoStrategy algoritmoConsenso;
+
+  public Coleccion() {
     this.id = UUID.randomUUID().toString();
-    this.titulo = titulo;
-    this.descripcion = descripcion;
-    this.criterios = Set.of();
-    this.fuentes = Set.of();
-    this.algoritmoConsenso = null;
-    this.hechosCurados = Set.of();
+    this.fuentes = new HashSet<>();
   }
 
   public Set<Hecho> getHechos() {
     Set<Hecho> hechos = new HashSet<>();
-    fuentes.forEach(fuente -> hechos.addAll(fuente.getHechos(criterios)));
+    fuentes.forEach(fuente -> hechos.addAll(fuente.getHechos()));
     return hechos;
   }
 
-  public void refrescarHechosCurados() {
-    Set<Hecho> hechos = getHechos();
+  public void refrescarHechosCurados(EntityManager em) {
     if (algoritmoConsenso != null) {
-      hechosCurados = hechos.stream().filter(hecho -> algoritmoConsenso.cumpleConsenso(hecho, fuentes, criterios)).collect(Collectors.toSet());
-    } else {
-      hechosCurados = hechos;
+      algoritmoConsenso.actualizarHechos(this.getHechos(), fuentes, em);
     }
   }
 
   public Set<Hecho> getHechosCurados() {
-    if (hechosCurados.isEmpty()) {
-      refrescarHechosCurados();
+//    if (algoritmoConsenso !=null && algoritmoConsenso.getHechosCurados().isEmpty()) {
+//      refrescarHechosCurados();
+//      return algoritmoConsenso.getHechosCurados();
+//    } else{
+//      return this.getHechos();
+//    }
+    if (algoritmoConsenso != null) {
+      return algoritmoConsenso.getHechosCurados();
+    } else {
+      return new HashSet<>();
     }
-    return hechosCurados;
-  }
-
-  public void addCriterio(IFiltroStrategy criterio) {
-    this.criterios.add(criterio);
-  }
-
-  public void removeCriterio(IFiltroStrategy criterio) {
-    this.criterios.remove(criterio);
   }
 
   public void addFuente(Fuente fuente) {
@@ -69,5 +75,13 @@ public class Coleccion {
 
   public void removeFuente(String idFuente) {
     fuentes.removeIf(fuente -> EqualsBuilder.reflectionEquals(fuente.getId(), idFuente));
+  }
+
+  public void limpiarFuentes() {
+    this.fuentes.clear();
+  }
+
+  public void setearFuentes(Set<Fuente> fuentes) {
+    this.fuentes.addAll(fuentes);
   }
 }
