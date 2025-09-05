@@ -22,5 +22,8 @@ public class Lugar {
   private String municipio;
 
   public Lugar() {
+    this.departamento = "";
+    this.provincia = "";
+    this.municipio = "";
   }
 }
