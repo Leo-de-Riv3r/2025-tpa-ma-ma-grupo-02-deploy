@@ -6,28 +6,55 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import jakarta.persistence.*;
 import lombok.*;
 
-
+@Getter
+@Setter
+@Entity
+@Table(name = "hechos")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 public class Hecho {
-  private Long id;
-  private String titulo;
-  private String descripcion;
-  private Categoria categoria;
-  private Set<Etiqueta> etiquetas;
-  private Ubicacion ubicacion;
-  private LocalDateTime fechaAcontecimiento;
-  private LocalDateTime fechaCarga;
-  private Origen origen;
-  @Builder.Default
-  private List<Multimedia> multimedia = new ArrayList<>(List.of());
-  @Builder.Default
-  private Boolean eliminado = Boolean.FALSE;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "titulo", nullable = false)
+    private String titulo;
+
+    @Column(name = "descripcion", nullable = false)
+    private String descripcion;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
+    // TODO: ManyToMany??? Esto deberia tener su propia tabla?
+    private Set<Etiqueta> etiquetas;
+
+    @Embedded
+    private Ubicacion ubicacion;
+
+    @Column(name = "fecha_acontecimiento")
+    private LocalDateTime fechaAcontecimiento;
+
+    @Column(name = "fecha_carga")
+    private LocalDateTime fechaCarga;
+
+    // TODO: Esto deberia tener su propia tabla?
+    private Origen origen;
+
+    // TODO: OneToMany
+    @Builder.Default
+    private List<Multimedia> multimedia = new ArrayList<>(List.of());
+
+    //
+    @Builder.Default
+    @Column(name = "eliminado")
+    private Boolean eliminado = Boolean.FALSE;
 
   @Override
   public boolean equals(Object o) {

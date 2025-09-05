@@ -1,15 +1,19 @@
 package ar.edu.utn.frba.dds.models.entities;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Getter
 @Setter
+@Entity
+@Table(name = "categorias")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Categoria {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "nombre", nullable = false)
     private String nombre;
-
-    public Categoria(String nombre) {
-        this.nombre = nombre;
-    }
 }
