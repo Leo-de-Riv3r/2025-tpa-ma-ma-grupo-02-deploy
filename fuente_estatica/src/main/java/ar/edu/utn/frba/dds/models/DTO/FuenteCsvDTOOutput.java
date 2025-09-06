@@ -7,9 +7,10 @@ import lombok.Getter;
 public class FuenteCsvDTOOutput {
   private String link;
   private int cantidadHechos;
-
-  public FuenteCsvDTOOutput(String link, int cantidadHechos) {
+  private Long id;
+  public FuenteCsvDTOOutput(Long id, String link, int cantidadHechos) {
     this.link = link;
     this.cantidadHechos = cantidadHechos;
+    this.id = id;
   }
 }
