@@ -2,8 +2,11 @@ package ar.edu.utn.frba.dds.estadisticas.models.entities;
 
 import ar.edu.utn.frba.dds.estadisticas.models.dto.input.ColeccionDTO;
 import ar.edu.utn.frba.dds.estadisticas.models.dto.input.HechoDTO;
+import ar.edu.utn.frba.dds.estadisticas.models.dto.input.LugarDTO;
+import ar.edu.utn.frba.dds.estadisticas.models.dto.input.UbicacionDTO;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -28,6 +31,7 @@ public class ConsultadorColeccion {
     DetalleEstadistica detalles = this.calcularDetalles(estadistica);
 //    private Number solcitudesSpam;
 //  contar los hechos que esten marcados como spam
+    estadistica.setDetalle(detalles);
     return estadistica;
   }
 
@@ -47,33 +51,42 @@ public class ConsultadorColeccion {
         );
     detalle.setCategoriaMayoresHechos(categoriaMayorCantHechos);
 //    private String provinciaMayorHecho;
-    Map<String, Long> conteoProvincias = hechos.stream()
+    Map<String, Long> conteoProvincias = hechos
+        .stream()
+        .filter(h -> h.getUbicacion().getLugar().getProvincia() != null)
         .collect(Collectors.groupingBy(hechoDTO -> hechoDTO.getUbicacion().getLugar().getProvincia(), Collectors.counting()));
 
     String provinciaMayorCantHechos = conteoProvincias.keySet().stream()
         .reduce("",
             (provinciaBuscada, provincia) ->
-                (provinciaBuscada.equals("") || conteoProvincias.get(provincia) > conteoCategorias.get(provinciaBuscada))
+                (provinciaBuscada.equals("") || conteoProvincias.get(provincia) > conteoProvincias.getOrDefault(provinciaBuscada, 0L))
                     ? provincia
                     : provinciaBuscada
         );
+
+
     detalle.setProvinciaMayorCantHechos(provinciaMayorCantHechos);
 //  ¿En qué provincia se presenta la mayor cantidad de hechos de una cierta categoría?
-    Map<String, Long> conteoProvinciasCategoria = hechos.stream()
-        .filter(h -> h.getCategoria() == estadistica.getCategoriaEspecifica())
+    if(estadistica.getCategoriaEspecifica() != null)
+    {
+      Map<String, Long> conteoProvinciasCategoria = hechos.stream()
+        .filter(h -> h.getCategoria() == estadistica.getCategoriaEspecifica() && h.getUbicacion().getLugar().getProvincia() != null)
         .collect(Collectors.groupingBy(
             hecho -> hecho.getUbicacion().getLugar().getProvincia(),
             Collectors.counting()
         ));
-
-    String provinciaMayorCantHechosCategoria = conteoProvincias.keySet().stream()
-        .reduce("",
-            (provinciaBuscada, provincia) ->
-                (provinciaBuscada.equals("") || conteoProvincias.get(provincia) > conteoCategorias.get(provinciaBuscada))
-                    ? provincia
-                    : provinciaBuscada
-        );
-    detalle.setProvinciaMayorCantHechosCategoria(provinciaMayorCantHechosCategoria);
+      System.out.println("Cantidad provincias: " + conteoProvinciasCategoria.size());
+      if (conteoProvinciasCategoria.size() > 0) {
+        String provinciaMayorCantHechosCategoria = conteoProvincias.keySet().stream()
+            .reduce("",
+                (provinciaBuscada, provincia) ->
+                    (provinciaBuscada.equals("") || conteoProvincias.get(provincia) > conteoCategorias.getOrDefault(provinciaBuscada, 0L))
+                        ? provincia
+                        : provinciaBuscada
+            );
+        detalle.setProvinciaMayorCantHechosCategoria(provinciaMayorCantHechosCategoria);
+      }
+  }
     //  ¿A qué hora del día ocurren la mayor cantidad de hechos de una cierta categoría?
     Map<Integer, Long> conteoHorasCategoria = hechos.stream()
         .filter(h -> h.getCategoria() == estadistica.getCategoriaEspecifica())
@@ -81,25 +94,43 @@ public class ConsultadorColeccion {
             hecho -> hecho.getFechaAcontecimiento().getHour(),
             Collectors.counting()
         ));
-
     Integer horaConMasHechos = conteoHorasCategoria.keySet().stream()
-        .reduce(null,
-            (horaBuscada, hora) ->
-                (horaBuscada == null || conteoHorasCategoria.get(hora) > conteoHorasCategoria.get(horaBuscada))
-                    ? hora
-                    : horaBuscada
-        );
+        .reduce((horaBuscada, hora) ->
+            conteoHorasCategoria.get(hora) > conteoHorasCategoria.getOrDefault(horaBuscada, 0L)
+                ? hora
+                : horaBuscada
+        ).orElse(null);
     detalle.setHoraMayorCantHechos(horaConMasHechos);
     return detalle;
   }
 
   private Set<HechoDTO> consultarHechos(String urlColeccion) {
     WebClient webClient = WebClient.builder().baseUrl(urlColeccion).build();
-    return webClient.get()
+    Set<HechoDTO> hechos = webClient.get()
         .uri(uriBuilder -> uriBuilder.path("/hechos").build())
         .retrieve()
         .bodyToFlux(HechoDTO.class)
         .collect(Collectors.toSet())
         .block();
+    hechos.forEach(h -> {
+      //manejo valores nulos de lugar
+      LugarDTO lugar = new LugarDTO();
+      if (h.getUbicacion().getLugar() != null) {
+        lugar = h.getUbicacion().getLugar();
+        if (lugar.getProvincia() == null) {
+          lugar.setProvincia(" ");
+        }
+        if (lugar.getMunicipio() == null) {
+          lugar.setMunicipio(" ");
+        }
+        if (lugar.getDepartamento() == null) {
+          lugar.setDepartamento(" ");
+        }
+      }
+      UbicacionDTO ubicacionDTO = h.getUbicacion();
+      ubicacionDTO.setLugar(lugar);
+      h.setUbicacion(ubicacionDTO);
+    });
+    return hechos;
   }
 }

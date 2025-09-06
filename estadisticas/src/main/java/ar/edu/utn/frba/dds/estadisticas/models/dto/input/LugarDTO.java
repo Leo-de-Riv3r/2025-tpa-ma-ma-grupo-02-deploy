@@ -7,4 +7,5 @@ public class LugarDTO {
   private String departamento;
   private String provincia;
   private String municipio;
+
 }

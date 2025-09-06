@@ -23,6 +23,8 @@ public class EstadisticasService implements IEstadisticasService{
   @Override
   public Estadistica createEstadistica(EstadisticaNuevaDTO dto) {
     Estadistica estadistica = consultadorColeccion.generarEstadistica(dto.getUrlColeccion(), dto.getCategoriaEspecifica());
+    System.out.println("Coleccion: " + estadistica.getNombre());
+    System.out.println("id detalle: " + estadistica.getDetalle().getId());
     return repositoryEstadisticas.save(estadistica);
   }
 
