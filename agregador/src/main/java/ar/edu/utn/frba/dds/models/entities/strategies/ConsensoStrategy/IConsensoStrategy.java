@@ -71,10 +71,10 @@ public abstract class IConsensoStrategy {
         .filter(h -> cumpleConsensoBase(h, fuentes, cantidadMinimaApariciones))
         .collect(Collectors.toSet());
     hechosC.forEach(h -> {
+      //si no existe el hecho en la bd (viene de fuente proxy)
+      //entonces persisto el hecho en la bd
       if (h.getId() == null) {
         em.persist(h);
-      } else {
-        em.merge(h);
       }
     });
 

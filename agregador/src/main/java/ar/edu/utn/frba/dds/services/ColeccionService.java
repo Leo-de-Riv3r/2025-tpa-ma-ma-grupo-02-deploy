@@ -173,8 +173,16 @@ public class ColeccionService {
 
   @Transactional
   public void refrescarHechosCurados() {
+    fuenteService.eliminarHechosObsoletos();
     List <Coleccion> colecciones = coleccionRepository.findAll();
+//    em.createQuery(
+//            "DELETE FROM hecho_consensuado hc WHERE hc.hecho_id IN " +
+//            "(SELECT id from hecho h WHERE h.fuente_id IS NULL)"
+//        )
+//        .executeUpdate();
     colecciones.forEach(coleccion ->  coleccion.refrescarHechosCurados(em));
+    //elimino los hechos con fuente_id nulo porque ya son obsoletos
+
     coleccionRepository.saveAll(colecciones);
   }
 }

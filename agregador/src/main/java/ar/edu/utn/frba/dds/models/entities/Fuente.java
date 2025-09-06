@@ -53,12 +53,16 @@ public abstract class Fuente {
   //@Transient
   protected Set<Hecho> hechos = new HashSet<>();
 
+  @Column
+  @Getter
+  private Integer inactivo;
   @Transient
   protected NormalizadorUbicacionAdapter normalizadorLugar = new GeoRefApiAdapter();
 
   public Fuente(String url, TipoFuente tipoFuente) {
     this.url = url;
     this.tipoFuente = tipoFuente;
+    this.inactivo = 0;
   }
 
   public abstract void refrescarHechos();

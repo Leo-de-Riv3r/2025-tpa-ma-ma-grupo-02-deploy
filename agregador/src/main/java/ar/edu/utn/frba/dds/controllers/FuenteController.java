@@ -4,8 +4,10 @@ import ar.edu.utn.frba.dds.models.dtos.FuenteNuevoDTO;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.services.FuenteService;
 import java.util.List;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,8 +37,8 @@ public class FuenteController {
     fuenteService.actualizarFuentes();
   }
 
-  @DeleteMapping("/fuentes/:id")
-  public Fuente deleteFuente(@RequestParam String idFuente) {
+  @DeleteMapping("/fuentes/{idfuente}")
+  public ResponseEntity<String> deleteFuente(@PathVariable String idFuente) {
     return fuenteService.eliminarFuente(idFuente);
   }
 }

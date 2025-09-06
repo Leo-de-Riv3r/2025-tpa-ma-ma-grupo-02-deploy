@@ -45,7 +45,8 @@ public class Coleccion {
 
   public Set<Hecho> getHechos() {
     Set<Hecho> hechos = new HashSet<>();
-    fuentes.forEach(fuente -> hechos.addAll(fuente.getHechos()));
+    fuentes.stream().filter(f -> f.getInactivo() != 1)
+        .forEach(fuente -> hechos.addAll(fuente.getHechos()));
     return hechos;
   }
 

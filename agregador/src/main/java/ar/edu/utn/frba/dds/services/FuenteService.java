@@ -14,6 +14,7 @@ import jakarta.persistence.Persistence;
 import jakarta.transaction.Transactional;
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -56,9 +57,7 @@ public class FuenteService {
   }
 
   public Fuente getFuente(String id) {
-    return fuenteRepository
-        .findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("Fuente con id " + id + " no encontrada"));
+    return fuenteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Fuente con id " + id + " no encontrada"));
   }
 
   @Transactional
@@ -68,9 +67,15 @@ public class FuenteService {
     fuentes.forEach(fuente -> fuenteRepository.save(fuente));
   }
 
-  public Fuente eliminarFuente(String idFuente) {
+  public ResponseEntity<String> eliminarFuente(String idFuente) {
     Fuente fuente = this.getFuente(idFuente);
     fuenteRepository.deleteById(idFuente);
-    return fuente;
+    return ResponseEntity.ok("Operacion de eliminacion completada");
+  }
+
+  @Transactional
+  public void eliminarHechosObsoletos() {
+    fuenteRepository.eliminarHechosObsoletosDeHechoConsenso();
+    fuenteRepository.eliminarHechosObsoletos();
   }
 }

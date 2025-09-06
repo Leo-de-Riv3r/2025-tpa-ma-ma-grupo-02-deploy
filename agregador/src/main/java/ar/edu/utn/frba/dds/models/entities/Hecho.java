@@ -82,18 +82,6 @@ public class Hecho {
     ubicacion.setLongitud(dto.getLongitud());
     Origen origenExistente = new Origen();
     origenExistente.setTipo(tipoFuente);
-//    try {
-//      origenExistente = em.createQuery(
-//              "SELECT o FROM origen o WHERE o.tipo = :tipo", Origen.class)
-//          .setParameter("tipo", tipoFuente.name())
-//          .getSingleResult();
-//    } catch (jakarta.persistence.NoResultException e) {
-//      // no existe, lo creo y lo persisto
-//      origenExistente = new Origen();
-//      origenExistente.setTipo(tipoFuente);
-//      em.persist(origenExistente);
-//    }
-//    em.close();
     Hecho hecho = new Hecho();
     hecho.setTitulo(dto.getTitulo());
     hecho.setDescripcion(dto.getDescripcion());
