@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.dds.controllers;
 
+import ar.edu.utn.frba.dds.models.dtos.FuenteDTOOutput;
 import ar.edu.utn.frba.dds.models.dtos.FuenteNuevoDTO;
-import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.services.FuenteService;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,12 +22,12 @@ public class FuenteController {
   }
 
   @GetMapping("/fuentes")
-  public List<Fuente> getFuentes() {
+  public List<FuenteDTOOutput> getFuentes() {
     return fuenteService.getFuentes();
   }
 
   @PostMapping("/fuentes")
-  public Fuente createFuente(@RequestBody FuenteNuevoDTO fuenteNuevoDTO) {
+  public FuenteDTOOutput createFuente(@RequestBody FuenteNuevoDTO fuenteNuevoDTO) {
     return fuenteService.createFuente(fuenteNuevoDTO);
   }
 
@@ -37,8 +36,9 @@ public class FuenteController {
     fuenteService.actualizarFuentes();
   }
 
-  @DeleteMapping("/fuentes/{idfuente}")
+  @DeleteMapping("/fuentes/{idFuente}")
   public ResponseEntity<String> deleteFuente(@PathVariable String idFuente) {
+    System.out.println("tipo de dato: " + idFuente);
     return fuenteService.eliminarFuente(idFuente);
   }
 }

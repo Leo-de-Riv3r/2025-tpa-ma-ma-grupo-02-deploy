@@ -24,7 +24,7 @@ public class Coleccion {
   @Column
   private String descripcion;
 
-  @ManyToMany(fetch = FetchType.EAGER)
+  @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name ="coleccion_fuente",
       joinColumns = @JoinColumn(name = "coleccion_id",

@@ -19,7 +19,7 @@ public interface IFuenteRepository extends JpaRepository<Fuente, String> {
   void eliminarHechosObsoletos();
 
   @Modifying
-  @Query("UPDATE Fuente f SET f.inactivo = 1 WHERE f.id = :fuenteId")
-  void deleteById(@Param("fuenteId") Long idFuente);
+  @Query("UPDATE Fuente SET inactivo = 1 WHERE id = :idFuente")
+  void deleteById(@Param("idFuente") String idFuente);
 
 }

@@ -1,18 +1,15 @@
 package ar.edu.utn.frba.dds.services;
 
+import ar.edu.utn.frba.dds.models.dtos.FuenteDTOOutput;
 import ar.edu.utn.frba.dds.models.dtos.FuenteNuevoDTO;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.FuenteDefault;
 import ar.edu.utn.frba.dds.models.entities.FuenteProxyMetamapa;
-import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
-import ar.edu.utn.frba.dds.models.repositories.IColeccionRepository;
 import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.Persistence;
 import jakarta.transaction.Transactional;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,11 +21,12 @@ public class FuenteService {
     this.fuenteRepository = fuenteRepository;
   }
 
-  public List<Fuente> getFuentes() {
-    return fuenteRepository.findAll();
+  public List<FuenteDTOOutput> getFuentes() {
+    List<Fuente> fuentes = fuenteRepository.findAll();
+    return fuentes.stream().map(f -> new FuenteDTOOutput(f.getId(), f.getTipoFuente(), f.getUrl())).toList();
   }
 
-  public Fuente createFuente(FuenteNuevoDTO fuenteDTO) {
+  public FuenteDTOOutput createFuente(FuenteNuevoDTO fuenteDTO) {
     if (fuenteDTO.getTipoFuente() == null || fuenteDTO.getUrl() == null){
       throw new IllegalArgumentException("La url y/o el tipo de fuente estan vacios");
     } else {
@@ -39,12 +37,13 @@ public class FuenteService {
           fuente = new FuenteProxyMetamapa(fuenteDTO.getUrl());
         } else if (tipoFuente == TipoFuente.DINAMICA || tipoFuente == TipoFuente.ESTATICA) {
           fuente = new FuenteDefault(fuenteDTO.getUrl(), tipoFuente);
+          fuente.refrescarHechos();
         } else {
           throw new IllegalArgumentException("Tipo de fuente " + fuenteDTO.getTipoFuente() + " no soportado");
         }
         //limpio los hechos
-        System.out.println("GUARDANDO GFUENTE");
-        return fuenteRepository.save(fuente);
+        Fuente fuenteCreada = fuenteRepository.save(fuente);
+        return new FuenteDTOOutput(fuente.getId(), fuenteCreada.getTipoFuente(), fuente.getUrl());
       } catch (Exception e) {
         e.printStackTrace();
         throw new IllegalArgumentException("Error inesperado");
@@ -62,7 +61,7 @@ public class FuenteService {
 
   @Transactional
   public void actualizarFuentes() {
-    List<Fuente> fuentes = this.getFuentes();
+    List<Fuente> fuentes = fuenteRepository.findAll();
     fuentes.forEach(Fuente::refrescarHechos);
     fuentes.forEach(fuente -> fuenteRepository.save(fuente));
   }
