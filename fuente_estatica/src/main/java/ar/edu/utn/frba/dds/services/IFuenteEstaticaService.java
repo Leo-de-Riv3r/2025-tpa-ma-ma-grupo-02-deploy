@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.DTO.FuenteCsvDTOOutput;
 import ar.edu.utn.frba.dds.models.DTO.HechoDTO;
+import ar.edu.utn.frba.dds.models.entities.Fuente;
 import java.util.List;
 
 public interface IFuenteEstaticaService {
@@ -13,4 +14,8 @@ public interface IFuenteEstaticaService {
   FuenteCsvDTOOutput crearNuevaFuente(String link, String separador);
 
   void eliminarFuente(Long id);
+
+  List<FuenteCsvDTOOutput> obtenerFuentesDTO();
+
+  List<Fuente> getFuentes();
 }

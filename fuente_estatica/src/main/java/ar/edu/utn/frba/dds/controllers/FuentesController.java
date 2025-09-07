@@ -25,15 +25,15 @@ public class FuentesController {
     this.fuenteEstaticaService = fuenteEstaticaService;
   }
 
-  @GetMapping
+  @GetMapping("/{id}/hechos")
   public List<HechoDTO> getHechos(
       @PathVariable(required = true) Long id
       ,@RequestParam(value = "page", required = false, defaultValue = "1") int page,
-      @RequestParam(value = "per_page", required = false, defaultValue = "10") int perPage) {
+      @RequestParam(value = "per_page", required = false, defaultValue = "100") int perPage) {
     return fuenteEstaticaService.getHechos(id, page, perPage);
   }
 
-  @PostMapping("/")
+  @PostMapping("")
   public FuenteCsvDTOOutput crearFuenteCsv (@RequestBody fuenteCsvDTO dtofuente){
     return fuenteEstaticaService.crearNuevaFuente(dtofuente.getLink(), dtofuente.getSeparador());
   }
@@ -42,5 +42,10 @@ public class FuentesController {
   public ResponseEntity<String> eliminarFuente(@PathVariable Long id){
     fuenteEstaticaService.eliminarFuente(id);
     return ResponseEntity.ok("Operacion completada");
+  }
+
+  @GetMapping("")
+  public List<FuenteCsvDTOOutput> obtenerFuentes() {
+    return fuenteEstaticaService.obtenerFuentesDTO();
   }
 }

@@ -9,9 +9,10 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
 @Getter
+@NoArgsConstructor
 @Entity @Table(name = "hecho")
   public class HechoDTO {
   //private Integer id;
@@ -20,7 +21,7 @@ import lombok.Getter;
   private Long id;
   @Column
   private String titulo;
-  @Column
+  @Column(length = 2000)
   private String descripcion;
   @Column
   private String categoria;
@@ -32,4 +33,14 @@ import lombok.Getter;
   private LocalDateTime fecha_hecho;
   @Column
   private LocalDateTime created_at;
+
+  public HechoDTO(String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDateTime fecha_hecho, LocalDateTime created_at) {
+    this.titulo = titulo;
+    this.descripcion = descripcion;
+    this.categoria = categoria;
+    this.latitud = latitud;
+    this.longitud = longitud;
+    this.fecha_hecho = fecha_hecho;
+    this.created_at = created_at;
+  }
 }

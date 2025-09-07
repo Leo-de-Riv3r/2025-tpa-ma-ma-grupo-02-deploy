@@ -37,7 +37,7 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
   public List<HechoDTO> getHechos(Long id, Integer page, Integer per_page) {
     Fuente fuente = fuenteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
     List<HechoDTO> hechos = fuente.getHechos();
-    if (per_page < 1) per_page = 1;
+    if (page < 1) page = 1;
     if (per_page > 100) per_page = 100;
     if (page < 1) page = 1;
     Integer total = hechos.size();
@@ -97,6 +97,17 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
   @Override
   public void eliminarFuente(Long id) {
     fuenteRepository.deleteById(id);
+  }
+
+  @Override
+  public List<FuenteCsvDTOOutput> obtenerFuentesDTO() {
+    List<Fuente> fuentes = this.getFuentes();
+    return fuentes.stream().map(f -> new FuenteCsvDTOOutput(f.getId(), f.getUrl(), f.getHechos().size())).toList();
+  }
+
+  @Override
+  public List<Fuente> getFuentes() {
+    return fuenteRepository.findAll();
   }
 }
 
