@@ -8,6 +8,9 @@ import ar.edu.utn.frba.dds.estadisticas.models.repositories.IRepositoryEstadisti
 import ar.edu.utn.frba.dds.estadisticas.services.IEstadisticasService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -55,5 +58,34 @@ public class EstadisticasService implements IEstadisticasService{
     return repositoryEstadisticas.findById(estadisticaId).orElseThrow(
         () ->  new EntityNotFoundException("Estadistica con id " + estadisticaId + " no encontrada")
     );
+  }
+
+  @Override
+  public String exportarEstadisticasCSV(String rutaArchivo) {
+    List<Estadistica> estadisticas = repositoryEstadisticas.findAll();
+
+    try (PrintWriter writer = new PrintWriter(new FileWriter(rutaArchivo))) {
+      // Cabecera
+      writer.println("Id_estadistica; titulo_coleccion; url ; categoria_especifica ; categoria_mayor_cantidad_hechos ; provincia_mayor_cantidad_hechos ; provincia_mayor_cantidad_hechos_categoria_especific ; hora_con_mayor_cantidad_de_hechos ; cantidad_solicitudes_spam");
+
+      // Datos
+      for (Estadistica e : estadisticas) {
+          writer.printf("%d;%s;%s;%s;%s;%s;%s;%s;%s;%n",
+              e.getId(),
+              e.getNombre(),
+              e.getUrlColeccion(),
+              e.getCategoriaEspecifica(),
+              e.getDetalle().getCategoriaMayoresHechos(),
+              e.getDetalle().getProvinciaMayorCantHechos(),
+              e.getDetalle().getProvinciaMayorCantHechosCategoria(),
+              e.getDetalle().getHoraMayorCantHechos(),
+              e.getDetalle().getSolicitudesSpam()
+          );
+        }
+    } catch (IOException ex) {
+      throw new RuntimeException("Error exportando estadísticas a CSV", ex);
     }
+
+    return rutaArchivo;
+  }
 }
