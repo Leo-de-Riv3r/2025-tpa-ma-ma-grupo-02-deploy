@@ -52,11 +52,11 @@ public class EstadisticasController {
     return estadisticasService.createEstadistica(dto);
   }
 
-//  @PutMapping("/api/estadisticas")
-//  public ResponseEntity<String> actualizarEstadisticas() {
-//    estadisticasService.actualizarEstadisticas();
-//    return ResponseEntity.ok("Estadisticas actualizadas");
-//  }
+  @PutMapping("")
+  public ResponseEntity<String> actualizarEstadisticas() {
+    estadisticasService.actualizarEstadisticas();
+    return ResponseEntity.ok("Estadisticas actualizadas");
+  }
 
   @Operation(summary = "Obtener todas las estadísticas", description = "Devuelve una lista con todas las estadísticas almacenadas.")
   @ApiResponse(responseCode = "200", description = "Lista de estadísticas",

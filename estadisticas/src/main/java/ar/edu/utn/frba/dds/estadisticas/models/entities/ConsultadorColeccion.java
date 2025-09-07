@@ -14,13 +14,18 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 public class ConsultadorColeccion {
-  public Estadistica generarEstadistica(String urlColeccion, String categoriaEspecifica) {
+  public ColeccionDTO consultarLinkColeccion(String urlColeccion){
     WebClient webClient = WebClient.builder().baseUrl(urlColeccion).build();
 
-    ColeccionDTO coleccionDTO = webClient.get()
+    return webClient.get()
         .retrieve()
         .bodyToMono(ColeccionDTO.class)
         .block();
+  }
+  public Estadistica generarEstadistica(String urlColeccion, String categoriaEspecifica) {
+    WebClient webClient = WebClient.builder().baseUrl(urlColeccion).build();
+
+    ColeccionDTO coleccionDTO = this.consultarLinkColeccion(urlColeccion);
     Estadistica estadistica = new Estadistica();
 
     estadistica.setUrlColeccion(urlColeccion);
@@ -28,14 +33,16 @@ public class ConsultadorColeccion {
     estadistica.setCategoriaEspecifica(categoriaEspecifica);
     Set<HechoDTO> hechos = this.consultarHechos(urlColeccion);
 
-    DetalleEstadistica detalles = this.calcularDetalles(estadistica);
+    DetalleEstadistica detalles = this.calcularDetalles(estadistica, urlColeccion);
+
 //    private Number solcitudesSpam;
 //  contar los hechos que esten marcados como spam
+    detalles.setSolicitudesSpam(coleccionDTO.getCantSolicitudesSpam());
     estadistica.setDetalle(detalles);
     return estadistica;
   }
 
-  public DetalleEstadistica calcularDetalles(Estadistica estadistica) {
+  public DetalleEstadistica calcularDetalles(Estadistica estadistica, String urlColeccion) {
     DetalleEstadistica detalle = new DetalleEstadistica();
     Set<HechoDTO> hechos = this.consultarHechos(estadistica.getUrlColeccion());
 //    private String categoriaMayoresHechos;
@@ -101,6 +108,9 @@ public class ConsultadorColeccion {
                 : horaBuscada
         ).orElse(null);
     detalle.setHoraMayorCantHechos(horaConMasHechos);
+
+    ColeccionDTO coleccionDTO = this.consultarLinkColeccion(urlColeccion);
+    detalle.setSolicitudesSpam(coleccionDTO.getCantSolicitudesSpam());
     return detalle;
   }
 

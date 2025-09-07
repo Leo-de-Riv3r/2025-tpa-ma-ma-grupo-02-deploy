@@ -24,5 +24,5 @@ public class DetalleEstadistica {
   @Column
   private Number horaMayorCantHechos;
   @Column
-  private Number solicitudesSpam;
+  private Integer solicitudesSpam;
 }

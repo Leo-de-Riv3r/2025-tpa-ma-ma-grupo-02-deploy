@@ -36,7 +36,7 @@ public class EstadisticasService implements IEstadisticasService{
   public void actualizarEstadisticas(){
     List<Estadistica> estadisticas = repositoryEstadisticas.findAll();
     estadisticas.forEach(estadistica -> {
-      DetalleEstadistica detallesNuevos = consultadorColeccion.calcularDetalles(estadistica);
+      DetalleEstadistica detallesNuevos = consultadorColeccion.calcularDetalles(estadistica, estadistica.getUrlColeccion());
       estadistica.setDetalle(detallesNuevos);
     });
     repositoryEstadisticas.saveAll(estadisticas);
