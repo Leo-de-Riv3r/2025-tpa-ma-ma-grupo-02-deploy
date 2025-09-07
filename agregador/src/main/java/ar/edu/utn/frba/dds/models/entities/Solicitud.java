@@ -63,12 +63,14 @@ public class Solicitud {
   @Getter
   @OneToMany(mappedBy = "solicitud")
   private List<Estado> historial = new ArrayList<>();
-
+  @Column
+  private Integer spam;
   public Solicitud() {
     this.id = UUID.randomUUID().toString();
     this.estadoActual = new Estado();
     this.estadoActual.setSolicitud(this);
     this.fecha = LocalDateTime.now();
+    this.spam = 0;
   }
 
   public Boolean estaFundado() {
@@ -97,5 +99,12 @@ public class Solicitud {
 
   public boolean estaAceptada() {
     return this.estadoActual.getEstado() == TipoEstado.ACEPTADA;
+  }
+
+  public void marcarSpam() {
+    this.spam = 1;
+  }
+  public boolean esSpam() {
+    return this.spam == 1;
   }
 }

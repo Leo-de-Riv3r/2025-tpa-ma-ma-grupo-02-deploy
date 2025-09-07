@@ -2,8 +2,11 @@ package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.externalApi.NormalizadorUbicacionAdapter;
 import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
+import ar.edu.utn.frba.dds.models.dtos.ColeccionDTO;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOEntrada;
+import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
+import ar.edu.utn.frba.dds.models.dtos.FuenteDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
@@ -19,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -26,14 +30,16 @@ import org.springframework.stereotype.Service;
 public class ColeccionService {
   private final IColeccionRepository coleccionRepository;
   private final FuenteService fuenteService;
+  private final SolicitudService solicitudService;
   private NormalizadorUbicacionAdapter normalizadorLugar;
 
   @PersistenceContext
   private EntityManager em;
 
-  public ColeccionService(IColeccionRepository coleccionRepository, FuenteService fuenteService) {
+  public ColeccionService(IColeccionRepository coleccionRepository, FuenteService fuenteService, SolicitudService solicitudService) {
     this.coleccionRepository = coleccionRepository;
     this.fuenteService = fuenteService;
+    this.solicitudService = solicitudService;
   }
 
   public Coleccion createColeccion(ColeccionDTOEntrada dto) {
@@ -61,8 +67,37 @@ public class ColeccionService {
     return coleccionRepository.save(coleccion);
   }
 
+  public List<ColeccionDTOSalida> getColeccionesDTO() {
+    List<Coleccion> colecciones = coleccionRepository.findAll();
+    return colecciones.stream().map(c -> convertirColeccionADTO(c)).toList();
+  }
+
   public List<Coleccion> getColecciones() {
     return coleccionRepository.findAll();
+  }
+  public ColeccionDTOSalida getColeccionById(String coleccionId) {
+    Coleccion coleccion = this.getColeccion(coleccionId);
+    return this.convertirColeccionADTO(coleccion);
+  }
+
+  private ColeccionDTOSalida convertirColeccionADTO(Coleccion coleccion) {
+    ColeccionDTOSalida respuesta = new ColeccionDTOSalida();
+    respuesta.setId(coleccion.getId());
+    respuesta.setTitulo(coleccion.getTitulo());
+    respuesta.setDescripcion(coleccion.getDescripcion());
+    Set<Fuente> fuentes = coleccion.getFuentes();
+    respuesta.setFuentes(fuentes.stream().map(f -> new FuenteDTOOutput(f.getId(), f.getTipoFuente(), f.getUrl())).toList());
+    respuesta.setCantSolicitudesSpam(this.obtenerCantSolicitudesSpam(coleccion.getHechos()));
+    return respuesta;
+  }
+  private Integer obtenerCantSolicitudesSpam(Set<Hecho> hechos) {
+    AtomicReference<Integer> cantidadSolicitudesSpam = new AtomicReference<>(0);
+    Set<String> titulosHechos = hechos.stream().map(h -> h.getTitulo()).collect(Collectors.toSet());
+    titulosHechos.forEach(titulo ->
+    {
+      cantidadSolicitudesSpam.getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(titulo));
+    });
+    return cantidadSolicitudesSpam.get();
   }
 
   public Coleccion getColeccion(String coleccionId) {

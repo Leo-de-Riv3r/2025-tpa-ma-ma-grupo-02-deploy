@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOEntrada;
+import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.FiltroDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
 import ar.edu.utn.frba.dds.models.dtos.SolicitudDTOEntrada;
@@ -55,13 +56,13 @@ public class AgregadorController {
   }
 
   @GetMapping("/colecciones")
-  public List<Coleccion> getColecciones() {
-    return coleccionService.getColecciones();
+  public List<ColeccionDTOSalida> getColecciones() {
+    return coleccionService.getColeccionesDTO();
   }
 
   @GetMapping("/colecciones/{id}")
-  public Coleccion getColeccion(@PathVariable String id) {
-    return coleccionService.getColeccion(id);
+  public ColeccionDTOSalida getColeccion(@PathVariable String id) {
+    return coleccionService.getColeccionById(id);
   }
 
   @PutMapping("/colecciones/{id}")
