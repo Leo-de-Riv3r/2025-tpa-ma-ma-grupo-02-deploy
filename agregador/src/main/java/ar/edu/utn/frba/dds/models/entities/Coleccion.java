@@ -34,7 +34,7 @@ public class Coleccion {
   )
   private Set<Fuente> fuentes;
 
-  @OneToOne(cascade = CascadeType.ALL)
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "algoritmo_id", referencedColumnName = "id")
   private IConsensoStrategy algoritmoConsenso;
 

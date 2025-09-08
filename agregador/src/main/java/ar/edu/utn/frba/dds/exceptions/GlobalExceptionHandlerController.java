@@ -28,4 +28,9 @@ public class GlobalExceptionHandlerController {
   public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
   }
+  //errores de consulta de hechos de fuentes
+  @ExceptionHandler(RuntimeException.class)
+  public ResponseEntity<String> handleRuntimeException(RuntimeException ex){
+    return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ex.getMessage());
+  }
 }

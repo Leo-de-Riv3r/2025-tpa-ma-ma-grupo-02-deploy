@@ -68,6 +68,9 @@ public class FuenteService {
 
   public ResponseEntity<String> eliminarFuente(String idFuente) {
     Fuente fuente = this.getFuente(idFuente);
+    if (fuente == null) {
+      throw new IllegalArgumentException("Fuente con id " + idFuente + " no existente");
+    }
     fuenteRepository.deleteById(idFuente);
     return ResponseEntity.ok("Operacion de eliminacion completada");
   }

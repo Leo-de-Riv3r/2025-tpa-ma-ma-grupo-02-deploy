@@ -38,7 +38,6 @@ public class FuenteController {
 
   @DeleteMapping("/fuentes/{idFuente}")
   public ResponseEntity<String> deleteFuente(@PathVariable String idFuente) {
-    System.out.println("tipo de dato: " + idFuente);
     return fuenteService.eliminarFuente(idFuente);
   }
 }

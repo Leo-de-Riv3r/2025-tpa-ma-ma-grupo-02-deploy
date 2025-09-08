@@ -28,23 +28,27 @@ public class FuenteProxyMetamapa extends Fuente {
 
   @Override
   public Set<Hecho> getHechos() {
-    WebClient webClient = WebClient.builder().baseUrl(url).build();
-    Set<Hecho> hechos = webClient.get()
-        .uri(uriBuilder -> uriBuilder.path("/hechos").build())
-        .retrieve()
-        .bodyToFlux(HechoDTOEntrada.class)
-        .map(hecho -> Hecho.convertirHechoDTOAHecho(hecho, tipoFuente))
-        .collect(Collectors.toSet())
-        .block();
-    System.out.println("Hechos agregados: " + hechos.size());
-    hechos.forEach(hecho -> {
-      Lugar lugar  = this.normalizadorLugar.obtenerLugar(hecho.getUbicacion());
-      Ubicacion nuevaUbi = hecho.getUbicacion();
-      nuevaUbi.setLugar(lugar);
-      hecho.setUbicacion(nuevaUbi);
-      System.out.println("Lugar asignado");
-    });
-    System.out.println("Lugares asignados exitosamente");
-    return hechos;
+    try {
+      WebClient webClient = WebClient.builder().baseUrl(url).build();
+      Set<Hecho> hechos = webClient.get()
+          .uri(uriBuilder -> uriBuilder.path("/hechos").build())
+          .retrieve()
+          .bodyToFlux(HechoDTOEntrada.class)
+          .map(hecho -> Hecho.convertirHechoDTOAHecho(hecho, tipoFuente))
+          .collect(Collectors.toSet())
+          .block();
+      System.out.println("Hechos agregados: " + hechos.size());
+      hechos.forEach(hecho -> {
+        Lugar lugar = this.normalizadorLugar.obtenerLugar(hecho.getUbicacion());
+        Ubicacion nuevaUbi = hecho.getUbicacion();
+        nuevaUbi.setLugar(lugar);
+        hecho.setUbicacion(nuevaUbi);
+        System.out.println("Lugar asignado");
+      });
+      System.out.println("Lugares asignados exitosamente");
+      return hechos;
+    } catch (Exception e) {
+      throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.id);
+    }
   }
 }

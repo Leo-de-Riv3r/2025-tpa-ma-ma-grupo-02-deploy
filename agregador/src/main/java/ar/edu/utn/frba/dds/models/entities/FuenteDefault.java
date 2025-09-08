@@ -22,25 +22,29 @@ public class FuenteDefault extends Fuente {
 
   @Override
   public void refrescarHechos() {
-    this.hechos.clear();
-    WebClient webClient = WebClient.builder().baseUrl(url).build();
-    Set<Hecho> hechos = webClient.get()
-        .uri(uriBuilder -> uriBuilder.path("/hechos").build())
-        .retrieve()
-        .bodyToFlux(HechoDTOEntrada.class)
-        .map(hecho -> Hecho.convertirHechoDTOAHecho(hecho, tipoFuente))
-        .collect(Collectors.toSet())
-        .block();
+    try {
+      this.hechos.clear();
+      WebClient webClient = WebClient.builder().baseUrl(url).build();
+      Set<Hecho> hechos = webClient.get()
+          .uri(uriBuilder -> uriBuilder.path("/hechos").build())
+          .retrieve()
+          .bodyToFlux(HechoDTOEntrada.class)
+          .map(hecho -> Hecho.convertirHechoDTOAHecho(hecho, tipoFuente))
+          .collect(Collectors.toSet())
+          .block();
 
-    assert hechos != null;
+      assert hechos != null;
 
-    hechos.forEach(hecho -> {
-      Lugar lugar  = this.normalizadorLugar.obtenerLugar(hecho.getUbicacion());
-      Ubicacion nuevaUbi = hecho.getUbicacion();
-      nuevaUbi.setLugar(lugar);
-      hecho.setUbicacion(nuevaUbi);
-    });
-    this.hechos.addAll(hechos);
+      hechos.forEach(hecho -> {
+        Lugar lugar = this.normalizadorLugar.obtenerLugar(hecho.getUbicacion());
+        Ubicacion nuevaUbi = hecho.getUbicacion();
+        nuevaUbi.setLugar(lugar);
+        hecho.setUbicacion(nuevaUbi);
+      });
+      this.hechos.addAll(hechos);
+    } catch (Exception e) {
+      throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.id);
+    }
   }
 
   @Override
