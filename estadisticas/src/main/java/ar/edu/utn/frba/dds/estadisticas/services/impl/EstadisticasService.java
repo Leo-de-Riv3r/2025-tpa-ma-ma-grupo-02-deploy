@@ -25,9 +25,10 @@ public class EstadisticasService implements IEstadisticasService{
 
   @Override
   public Estadistica createEstadistica(EstadisticaNuevaDTO dto) {
+    if (dto.getUrlColeccion() == null || dto.getUrlColeccion().isBlank() || dto.getCategoriaEspecifica() == null || dto.getCategoriaEspecifica().isBlank()) {
+      throw new RuntimeException("Url de coleccion y categoria especifica no pueden ser vacias o nulas");
+    }
     Estadistica estadistica = consultadorColeccion.generarEstadistica(dto.getUrlColeccion(), dto.getCategoriaEspecifica());
-    System.out.println("Coleccion: " + estadistica.getNombre());
-    System.out.println("id detalle: " + estadistica.getDetalle().getId());
     return repositoryEstadisticas.save(estadistica);
   }
 
@@ -45,7 +46,8 @@ public class EstadisticasService implements IEstadisticasService{
   @Override
   @Transactional
   public void eliminarEstadistica(Long id) {
-      repositoryEstadisticas.deleteById(id);
+    Estadistica estadistica = this.getEstadisticaById(id);
+    repositoryEstadisticas.deleteById(id);
   }
 
   @Override
