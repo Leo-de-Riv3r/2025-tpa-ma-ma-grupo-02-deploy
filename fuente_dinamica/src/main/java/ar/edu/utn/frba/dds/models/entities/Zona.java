@@ -18,7 +18,11 @@ public class Zona {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "nombre")
     private String nombre;
+
+    @OneToMany
     private Set<Ubicacion> perimetro;
 
     public Boolean pertenece(Ubicacion ubicacion) {
