@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metamapa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/navbar.css">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+  <header>
+    <nav class="nav align-content-center">
+      <i class="uil uil-bars navOpenBtn"></i>
+      <h1 href="#" class="logo">Metamapa</h1>
+      <ul class="nav-links">
+        <i class="uil uil-times navCloseBtn"></i>
+        <li><a href="colecciones.html">Colecciones</a></li>
+        <li><a href="panelControl.html">Panel control</a></li>
+        <li><a href="subirHechoManual.html">Subir hecho manual</a></li>
+        <li><button class="btn btn-dark">Iniciar sesion</button></li>
+        <li><button class="btn btn-light">Registrarse</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="mt-auto p-3 container border border-solid">
+
+    <form class="d-flex flex-column row-gap-5">
+      <div class="mb-3">
+        <label for="exampleInputEmail1" class="form-label">Titulo</label>
+        <input type="email" class="form-control" aria-describedby="emailHelp" placeholder="Ingrese titulo">
+      </div>
+      <div class="mb-3">
+        <label for="exampleInputPassword1" class="form-label">Motivo</label>
+        <textarea class="form-control" placeholder="Ingrese motivo de eliminación (minimo 500 caracteres)" minlength="500"></textarea>
+      </div>
+      <div>
+      <button type="submit" class="btn btn-dark">Solicitar eliminación</button>
+      </div>
+    </form>
+
+  </main>
+  <footer class="p-3 mt-auto container-fluid">
+    <div class="row">
+      <div class="copyrights col-12 col-md-6 col-lg-6 d-flex justify-content-center">
+        <h4>© 2025 Metamapa. Todos los derechos reservados.</h4>
+      </div>
+      <div class="enlaces col-12 col-md-6 col-lg-6 d-flex justify-content-center">
+        <a href="#">Políticas de privacidad</a> |
+        <a href="#">Aviso legal</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+    crossorigin="anonymous"></script>
+    <script src="../js/navbar.js"></script>
+</body>
+
+</html>
