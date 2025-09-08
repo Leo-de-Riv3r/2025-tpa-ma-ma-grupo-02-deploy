@@ -12,4 +12,10 @@ public class ExceptionController {
   public ResponseEntity<String> handleNotFoundEntity(EntityNotFoundException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
+
+  //no pudo conectar a coleccion
+  @ExceptionHandler(RuntimeException.class)
+  public ResponseEntity<String> handlerNotFoundColeccion(RuntimeException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ex.getMessage());
+  }
 }

@@ -4,6 +4,7 @@ import ar.edu.utn.frba.dds.estadisticas.models.dto.input.ColeccionDTO;
 import ar.edu.utn.frba.dds.estadisticas.models.dto.input.HechoDTO;
 import ar.edu.utn.frba.dds.estadisticas.models.dto.input.LugarDTO;
 import ar.edu.utn.frba.dds.estadisticas.models.dto.input.UbicacionDTO;
+import java.net.ConnectException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -16,12 +17,50 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class ConsultadorColeccion {
   public ColeccionDTO consultarLinkColeccion(String urlColeccion){
     WebClient webClient = WebClient.builder().baseUrl(urlColeccion).build();
-
-    return webClient.get()
-        .retrieve()
-        .bodyToMono(ColeccionDTO.class)
-        .block();
+    try {
+      return webClient.get()
+          .retrieve()
+          .bodyToMono(ColeccionDTO.class)
+          .block();
+    } catch (Exception e) {
+      throw new RuntimeException("No se pudo conectar coleccion de url " + urlColeccion);
+    }
   }
+
+  private Set<HechoDTO> consultarHechos(String urlColeccion) {
+    WebClient webClient = WebClient.builder().baseUrl(urlColeccion).build();
+    try {
+      Set<HechoDTO> hechos = webClient.get()
+          .uri(uriBuilder -> uriBuilder.path("/hechos").build())
+          .retrieve()
+          .bodyToFlux(HechoDTO.class)
+          .collect(Collectors.toSet())
+          .block();
+      hechos.forEach(h -> {
+        //manejo valores nulos de lugar
+        LugarDTO lugar = new LugarDTO();
+        if (h.getUbicacion().getLugar() != null) {
+          lugar = h.getUbicacion().getLugar();
+          if (lugar.getProvincia() == null) {
+            lugar.setProvincia(" ");
+          }
+          if (lugar.getMunicipio() == null) {
+            lugar.setMunicipio(" ");
+          }
+          if (lugar.getDepartamento() == null) {
+            lugar.setDepartamento(" ");
+          }
+        }
+        UbicacionDTO ubicacionDTO = h.getUbicacion();
+        ubicacionDTO.setLugar(lugar);
+        h.setUbicacion(ubicacionDTO);
+      });
+      return hechos;
+    } catch (Exception e) {
+      throw new RuntimeException("No se pudo conectar hechos de coleccion url " + urlColeccion);
+    }
+  }
+
   public Estadistica generarEstadistica(String urlColeccion, String categoriaEspecifica) {
     WebClient webClient = WebClient.builder().baseUrl(urlColeccion).build();
 
@@ -114,33 +153,4 @@ public class ConsultadorColeccion {
     return detalle;
   }
 
-  private Set<HechoDTO> consultarHechos(String urlColeccion) {
-    WebClient webClient = WebClient.builder().baseUrl(urlColeccion).build();
-    Set<HechoDTO> hechos = webClient.get()
-        .uri(uriBuilder -> uriBuilder.path("/hechos").build())
-        .retrieve()
-        .bodyToFlux(HechoDTO.class)
-        .collect(Collectors.toSet())
-        .block();
-    hechos.forEach(h -> {
-      //manejo valores nulos de lugar
-      LugarDTO lugar = new LugarDTO();
-      if (h.getUbicacion().getLugar() != null) {
-        lugar = h.getUbicacion().getLugar();
-        if (lugar.getProvincia() == null) {
-          lugar.setProvincia(" ");
-        }
-        if (lugar.getMunicipio() == null) {
-          lugar.setMunicipio(" ");
-        }
-        if (lugar.getDepartamento() == null) {
-          lugar.setDepartamento(" ");
-        }
-      }
-      UbicacionDTO ubicacionDTO = h.getUbicacion();
-      ubicacionDTO.setLugar(lugar);
-      h.setUbicacion(ubicacionDTO);
-    });
-    return hechos;
-  }
 }
