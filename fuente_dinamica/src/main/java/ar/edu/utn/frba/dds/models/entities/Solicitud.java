@@ -30,7 +30,7 @@ public class Solicitud {
     private Motivo motivo;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "hecho_id")
+    @JoinColumn(name = "hecho_id", referencedColumnName = "id")
     private Hecho hecho;
 
     @Enumerated(EnumType.STRING)

@@ -58,7 +58,7 @@ public class ContribucionService implements IContribucionService {
                 throw new ContrasenaIncorrectaException();
             }
 
-            contribuyente.agregarContribucion(hecho.getId());
+            contribuyente.agregarContribucion(hecho);
             contribuyenteRepository.save(contribuyente);
         }
 

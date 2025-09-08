@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @Embeddable
 public class Lugar {
-    @Column(name = "nombre")
+    @Column(name = "nombre_lugar")
     private String nombre;
 
     @Enumerated(EnumType.STRING)

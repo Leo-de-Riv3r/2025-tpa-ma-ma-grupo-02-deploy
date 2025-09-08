@@ -35,7 +35,8 @@ public class Hecho {
     // TODO: ManyToMany??? Esto deberia tener su propia tabla?
     private Set<Etiqueta> etiquetas;
 
-    @Embedded
+    @ManyToOne
+    @JoinColumn(name = "ubicacion_id", referencedColumnName = "id")
     private Ubicacion ubicacion;
 
     @Column(name = "fecha_acontecimiento")
@@ -47,8 +48,9 @@ public class Hecho {
     // TODO: Esto deberia tener su propia tabla?
     private Origen origen;
 
-    // TODO: OneToMany
     @Builder.Default
+    @OneToMany
+    @JoinColumn(name = "hecho_id", referencedColumnName = "id")
     private List<Multimedia> multimedia = new ArrayList<>(List.of());
 
     //

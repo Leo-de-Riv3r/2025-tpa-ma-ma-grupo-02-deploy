@@ -22,12 +22,13 @@ public class Contribuyente {
 
     @Column(name = "password", nullable = false)
     private String password;
-    // TODO: Terminar de implementar relación
+    @OneToMany
+    @JoinColumn(name = "contribuyente_id", referencedColumnName = "id")
     private List<Hecho> contribuciones;
 
 
-    public void agregarContribucion(Long id) {
-        this.contribuciones.add(id);
+    public void agregarContribucion(Hecho hecho) {
+        this.contribuciones.add(hecho);
     }
 
     public boolean tieneHecho(Long id) {
