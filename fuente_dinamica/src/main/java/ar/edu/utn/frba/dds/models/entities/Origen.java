@@ -9,12 +9,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Entity @Table(name = "origen")
+@Entity
+@Table(name = "origen")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Origen {
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -22,10 +27,13 @@ public class Origen {
   @Enumerated(EnumType.STRING)
   @Column(name = "tipo_origen")
   private TipoOrigen tipo;
+
   @Column(name = "nombre_autor")
   private String nombreAutor;
+
   @Column(name = "apellido_autor")
   private String apellidoAutor;
+
   @Column(name = "edad_autor")
   private Integer edadAutor;
 

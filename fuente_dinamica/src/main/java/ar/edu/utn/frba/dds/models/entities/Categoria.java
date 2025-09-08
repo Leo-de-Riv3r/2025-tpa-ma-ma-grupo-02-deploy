@@ -6,7 +6,7 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "categorias")
+@Table(name = "categoria")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,6 +14,7 @@ public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name = "nombre", nullable = false)
     private String nombre;
 }

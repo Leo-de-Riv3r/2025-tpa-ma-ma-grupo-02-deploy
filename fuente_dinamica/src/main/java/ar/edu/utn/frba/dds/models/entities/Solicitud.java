@@ -10,7 +10,7 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "solicitudes")
+@Table(name = "solicitud")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

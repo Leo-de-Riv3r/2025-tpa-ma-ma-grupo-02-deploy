@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "multimedias")
+@Table(name = "multimedia")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

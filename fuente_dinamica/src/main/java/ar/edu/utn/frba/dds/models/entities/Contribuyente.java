@@ -8,7 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "contribuyentes")
+@Table(name = "contribuyente")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,10 +22,10 @@ public class Contribuyente {
 
     @Column(name = "password", nullable = false)
     private String password;
+
     @OneToMany
     @JoinColumn(name = "contribuyente_id", referencedColumnName = "id")
     private List<Hecho> contribuciones;
-
 
     public void agregarContribucion(Hecho hecho) {
         this.contribuciones.add(hecho);

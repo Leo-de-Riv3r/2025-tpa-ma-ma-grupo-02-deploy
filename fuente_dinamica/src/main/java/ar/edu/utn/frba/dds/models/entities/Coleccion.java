@@ -16,20 +16,27 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity @Table(name = "coleccion")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Coleccion {
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "coleccion_titulo", nullable = false)
   private String titulo;
+
   @Column(name = "coleccion_descripcion")
   private String descripcion;
+
   @Transient
   private Set<IFiltroStrategy> criterios;
 
@@ -39,7 +46,7 @@ public class Coleccion {
       joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
       inverseJoinColumns = @JoinColumn(name = "fuente_id", referencedColumnName = "id")
   )
-  private Set<FuenteDeDatos> fuentes; // Esto no deberia ser un strategy entonces?
+  private Set<FuenteDeDatos> fuentes;
 
   public Coleccion(String titulo, String descripcion) {
     this.titulo = titulo;

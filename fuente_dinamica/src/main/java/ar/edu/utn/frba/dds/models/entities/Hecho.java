@@ -32,7 +32,9 @@ public class Hecho {
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
-    // TODO: ManyToMany??? Esto deberia tener su propia tabla?
+    // OneToMany
+    @OneToMany
+    @JoinColumn(name = "hecho_id")
     private Set<Etiqueta> etiquetas;
 
     @ManyToOne
@@ -45,7 +47,8 @@ public class Hecho {
     @Column(name = "fecha_carga")
     private LocalDateTime fechaCarga;
 
-    // TODO: Esto deberia tener su propia tabla?
+    @OneToOne
+    @JoinColumn(name = "origen_id")
     private Origen origen;
 
     @Builder.Default
