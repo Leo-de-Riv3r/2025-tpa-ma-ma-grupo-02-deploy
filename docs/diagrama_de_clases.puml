@@ -166,7 +166,6 @@ class Coleccion {
     - criterios: Set<IFiltroStrategy>
     - fuentes: Set<Fuente>
     - algoritmoConsenso: IAlgoritmoConsenso
-    - hechosConsensuados : List<Hecho>
     + getHechos(criterios: Set<IFiltroStrategy>): Set<Hecho>
     + refrescarHechosCurados(): void
     + getHechosCurados(): Set<Hecho>
@@ -178,6 +177,8 @@ class Coleccion {
 
 abstract class IConsensoStrategy{
   -cumpleConsensoBase(Hecho hecho, Set<Fuente> fuentes, Set<IFiltroStrategy> filtros, Integer cantMin) : Boolean
+  -Integer cantidadMinimaApariciones
+  -List<Hecho> hechosConsensuados
   +Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes, Set<IFiltroStrategy> filtros) : Boolean
 }
 
@@ -222,6 +223,7 @@ class Estado {
    - estado: TipoEstado
    - fechaActualizacion: LocalDateTime
    - supervisor: String
+   - solicitud : Solicitud
 }
 
 class Solicitud {
