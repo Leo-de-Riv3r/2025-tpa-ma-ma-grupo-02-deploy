@@ -1,12 +1,10 @@
 package ar.edu.utn.frba.dds.controllers;
 
-import ar.edu.utn.frba.dds.models.DTO.FuenteCsvDTOOutput;
-import ar.edu.utn.frba.dds.models.DTO.HechoDTO;
-import ar.edu.utn.frba.dds.models.DTO.fuenteCsvDTO;
-import ar.edu.utn.frba.dds.models.utils.ResponseEntityFactory;
+import ar.edu.utn.frba.dds.models.DTO.output.FuenteCsvDTOOutput;
+import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.DTO.input.FuenteCsvDTOInput;
 import ar.edu.utn.frba.dds.services.IFuenteEstaticaService;
 import java.util.List;
-import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +24,7 @@ public class FuentesController {
   }
 
   @GetMapping("/{id}/hechos")
-  public List<HechoDTO> getHechos(
+  public List<Hecho> getHechos(
       @PathVariable(required = true) Long id
       ,@RequestParam(value = "page", required = false, defaultValue = "1") int page,
       @RequestParam(value = "per_page", required = false, defaultValue = "100") int perPage) {
@@ -34,7 +32,7 @@ public class FuentesController {
   }
 
   @PostMapping("")
-  public FuenteCsvDTOOutput crearFuenteCsv (@RequestBody fuenteCsvDTO dtofuente){
+  public FuenteCsvDTOOutput crearFuenteCsv (@RequestBody FuenteCsvDTOInput dtofuente){
     return fuenteEstaticaService.crearNuevaFuente(dtofuente.getLink(), dtofuente.getSeparador());
   }
 

@@ -1,6 +1,5 @@
-package ar.edu.utn.frba.dds.models.DTO;
+package ar.edu.utn.frba.dds.models.DTO.output;
 
-import lombok.Data;
 import lombok.Getter;
 
 @Getter
