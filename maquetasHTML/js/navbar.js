@@ -3,7 +3,7 @@ const nav = document.querySelector(".nav"),
   navCloseBtn = document.querySelector(".navCloseBtn");
 
 navOpenBtn.addEventListener("click", () => {
-  nav.classList.add("openNav");  
+  nav.classList.add("openNav");
 });
 //close navbar
 navCloseBtn.addEventListener("click", () => {

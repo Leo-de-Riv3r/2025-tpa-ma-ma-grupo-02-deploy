@@ -1,42 +1,29 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
-body {
-  background: #f0faff;
-}
-.nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding: 15px 200px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  z-index: 10000;
-}
 .nav,
 .nav .nav-links {
   display: flex;
   align-items: center;
 }
+
 .nav {
   justify-content: space-between;
-  background: #4CAF50;
+  padding: 15px 200px;
+  height: 100%;
 }
+
 a {
   color: #fff;
   text-decoration: none;
 }
-.nav .logo {
-  font-size: 22px;
-  font-weight: 500;
+
+.nav ul {
+  margin: 0;
 }
+
 .nav .nav-links {
   column-gap: 20px;
   list-style: none;
 }
+
 .nav .nav-links a {
   transition: all 0.2s linear;
 }

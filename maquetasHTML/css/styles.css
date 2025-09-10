@@ -2,38 +2,52 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
 }
 
 body {
   font-family: Arial, sans-serif;
   color: #000;
+  background: #f0faff;
 }
 
 header {
-  background: #4CAF50;
+  position: fixed;
+  background: #4caf50;
   color: #fff;
-  padding: 1%;
-  display: flex;
-  justify-content: space-between;
+  top: 0;
+  left: 0;
+  height: 80px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }
 
+main {
+  margin-top: 80px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+}
 
 .main-title {
   text-align: center;
-  background-image: url('../media/metamapa.png');
+  background-image: url("../media/metamapa.png");
   padding: 10%;
   background-size: cover;
   background-position: center;
   color: #3c413e;
   font-size: larger;
-  height: 100dvh;
+  height: 100vh;
   /* ocupa toda la altura de la ventana */
   width: 100%;
 }
 
 .main-title div {
   background-color: #9ec0e2;
-
 }
 
 .about {
@@ -42,18 +56,26 @@ header {
   flex-direction: column;
 }
 
-.about section {
+.about div {
   padding: 2%;
 }
 
 .about .objetivos {
-  background-color: #a2e27d;
+  background-color: #819A91;
   display: flex;
   flex-direction: row;
 }
 
 .about .proposito {
-  background-color: #ccda7f;
+  background-color: #A7C1A8;
+}
+
+.about .demo {
+  background-color: #D1D8BE;
+}
+
+.about .map {
+  background-color: #EEEFE0;
 }
 
 .facts {
@@ -63,28 +85,25 @@ header {
   border-radius: 6px;
 }
 
-
 footer {
-  background: #4CAF50;
+  background: #4caf50;
   color: #fff;
 }
 
 footer .copyrights {
-  color: #222222
+  color: #222222;
 }
-
 
 .grid-content {
   font-family: Arial, sans-serif;
   display: grid;
-  gap:2rem;
-  padding: 3rem;
+  gap: 2rem;
 }
 
-.card{
+.card {
   z-index: 1 !important;
 }
-@media (min-width:680px) {
+@media (min-width: 680px) {
   .grid-content {
     grid-template-columns: repeat(2, 1fr);
   }
