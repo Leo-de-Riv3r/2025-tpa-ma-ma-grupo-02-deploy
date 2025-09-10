@@ -1,12 +1,16 @@
 package ar.edu.utn.frba.dds.services.impl;
 
-import ar.edu.utn.frba.dds.models.DTO.HechoDTO;
+import ar.edu.utn.frba.dds.models.DTO.output.FuenteCsvDTOOutput;
+import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.HechoCsv;
-import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
+import ar.edu.utn.frba.dds.models.entities.Fuente;
+import ar.edu.utn.frba.dds.models.entities.utils.ExtractorHechosCSV;
+import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
 import ar.edu.utn.frba.dds.services.IFuenteEstaticaService;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
+import jakarta.persistence.EntityNotFoundException;
 import java.net.URL;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
@@ -18,53 +22,68 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class FuenteEstaticaService implements IFuenteEstaticaService {
-  private IHechosRepository hechosRepository;
-
-  public FuenteEstaticaService(IHechosRepository hechosRepository) {
-    this.hechosRepository = hechosRepository;
+  private IFuenteRepository fuenteRepository;
+  private ExtractorHechosCSV extractorHechosCSV;
+  public FuenteEstaticaService(IFuenteRepository fuenteRepository, ExtractorHechosCSV extractorHechosCSV) {
+    this.fuenteRepository = fuenteRepository;
+    this.extractorHechosCSV = extractorHechosCSV;
   }
-  public List<HechoDTO> getHechos(Integer page, Integer per_page) {
-    if (per_page < 1) per_page = 1;
+
+  @Override
+  public FuenteCsvDTOOutput getFuente(Long id) {
+    Fuente fuente = fuenteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
+    return new FuenteCsvDTOOutput(fuente.getId(), fuente.getUrl(), fuente.getHechos().size());
+  }
+
+  @Override
+  public List<Hecho> getHechos(Long id, Integer page, Integer per_page) {
+    Fuente fuente = fuenteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
+    List<Hecho> hechos = fuente.getHechos();
+    if (page < 1) page = 1;
     if (per_page > 100) per_page = 100;
-    return hechosRepository.getHechos(page, per_page);
+    if (page < 1) page = 1;
+    Integer total = hechos.size();
+    Integer inicio = (page - 1) * per_page;
+    Integer fin = Math.min(inicio + per_page, total);
+    List <Hecho> hechosPag = List.of();
+    Integer lastPage = (int) Math.ceil((double) total / per_page);
 
-//    return getHechosPag(1, 100)
-//        .flatMapMany(firstPage -> {
-//          int lastPage = firstPage.getLastPage();
-//
-//          return Flux.range(1, lastPage)
-//              .flatMap(pagina -> getHechosPag(pagina, 100))
-//              .flatMap(response -> Flux.fromIterable(response.getData()));
-//        });
+    if (inicio > total) {
+      System.out.println("0-9");
+      hechosPag = hechos.subList(0, 9);
+    } else {
+      System.out.println("Inicio: " + inicio + ". Fin: " + fin);
+      hechosPag = hechos.subList(inicio, fin);
+    }
+    return hechosPag;
   }
 
-  public void extraeryGuardarHechos(String urlCsv, String separador) {
-      try {
-        URL url = new URL(urlCsv);
-        List<HechoDTO> listaHechos = new ArrayList<>();
-        HeaderColumnNameMappingStrategy<HechoCsv> strategy = new HeaderColumnNameMappingStrategy<>();
-        strategy.setType(HechoCsv.class);
+  @Override
+  public FuenteCsvDTOOutput crearNuevaFuente(String link, String separador) {
+    if ( link == null || separador == null || link.isBlank() || separador.isBlank()) {
+      throw new IllegalArgumentException("link de archivo .csv o separador no pueden ser nulos");
+    }
+    Fuente fuente = new Fuente();
+    fuente.setHechos(extractorHechosCSV.obtenerHechosCsv(link, separador));
+    fuente.setUrl(link);
+    Fuente fuenteCreada = fuenteRepository.save(fuente);
+    return new FuenteCsvDTOOutput(fuenteCreada.getId(), link, fuenteCreada.getHechos().size());
+  }
 
-        CsvToBean<HechoCsv> csvToBean = new CsvToBeanBuilder<HechoCsv>(
-            new InputStreamReader(url.openStream()))
-            .withSeparator(',')
-            .withMappingStrategy(strategy)
-            .withIgnoreLeadingWhiteSpace(true)
-            .build();
+  @Override
+  public void eliminarFuente(Long id) {
+    fuenteRepository.deleteById(id);
+  }
 
-        List<HechoCsv> hechos = csvToBean.parse();
+  @Override
+  public List<FuenteCsvDTOOutput> obtenerFuentesDTO() {
+    List<Fuente> fuentes = this.getFuentes();
+    return fuentes.stream().map(f -> new FuenteCsvDTOOutput(f.getId(), f.getUrl(), f.getHechos().size())).toList();
+  }
 
-        hechos.forEach(hecho -> {
-          LocalDateTime fechaHecho = hecho.getFecha().atStartOfDay();
-          HechoDTO hechoDTO = new HechoDTO(hecho.getTitulo(), hecho.getDescripcion(), hecho.getCategoria(), hecho.getLatitud(), hecho.getLongitud(), fechaHecho, LocalDateTime.now());
-          listaHechos.add(hechoDTO);
-        });
-
-        hechosRepository.setHechos(listaHechos);
-      } catch (Exception e) {
-        System.out.println(e.getClass());
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se ha encontrado un archivo csv valido");
-      }
+  @Override
+  public List<Fuente> getFuentes() {
+    return fuenteRepository.findAll();
   }
 }
 

@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.controllers;
 
+import jakarta.persistence.EntityNotFoundException;
 import java.io.FileNotFoundException;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -28,5 +29,10 @@ public class GlobalExceptionHandlerController {
     return ResponseEntity
         .status(HttpStatus.NOT_FOUND)
         .body(e.getMessage());
+  }
+
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<String> handleNotFoundEntity(EntityNotFoundException ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
 }
