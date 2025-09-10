@@ -3,7 +3,6 @@ package ar.edu.utn.frba.dds.estadisticas.controllers;
 import ar.edu.utn.frba.dds.estadisticas.models.dto.input.EstadisticaNuevaDTO;
 import ar.edu.utn.frba.dds.estadisticas.models.entities.Estadistica;
 import ar.edu.utn.frba.dds.estadisticas.services.IEstadisticasService;
-import ar.edu.utn.frba.dds.estadisticas.services.impl.EstadisticasService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,17 +17,14 @@ import java.util.List;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -52,12 +48,6 @@ public class EstadisticasController {
     return estadisticasService.createEstadistica(dto);
   }
 
-  @PutMapping("")
-  public ResponseEntity<String> actualizarEstadisticas() {
-    estadisticasService.actualizarEstadisticas();
-    return ResponseEntity.ok("Estadisticas actualizadas");
-  }
-
   @Operation(summary = "Obtener todas las estadísticas", description = "Devuelve una lista con todas las estadísticas almacenadas.")
   @ApiResponse(responseCode = "200", description = "Lista de estadísticas",
       content = { @Content(mediaType = "application/json",
@@ -76,7 +66,7 @@ public class EstadisticasController {
       @ApiResponse(responseCode = "404", description = "Estadística no encontrada", content = @Content)
   })
   @GetMapping("/{estadisticaId}")
-  public Estadistica getEstadisticas(
+  public Estadistica getEstadistica(
       @Parameter(description = "ID de la estadística a buscar", required = true, example = "1")
       @PathVariable Long estadisticaId) {
     return estadisticasService.getEstadisticaById(estadisticaId);

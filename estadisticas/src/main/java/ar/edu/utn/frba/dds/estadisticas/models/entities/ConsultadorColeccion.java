@@ -72,7 +72,7 @@ public class ConsultadorColeccion {
     estadistica.setCategoriaEspecifica(categoriaEspecifica);
     Set<HechoDTO> hechos = this.consultarHechos(urlColeccion);
 
-    DetalleEstadistica detalles = this.calcularDetalles(estadistica, urlColeccion);
+    DetalleEstadistica detalles = this.calcularDetalles(estadistica);
 
 //    private Number solcitudesSpam;
 //  contar los hechos que esten marcados como spam
@@ -81,7 +81,7 @@ public class ConsultadorColeccion {
     return estadistica;
   }
 
-  public DetalleEstadistica calcularDetalles(Estadistica estadistica, String urlColeccion) {
+  public DetalleEstadistica calcularDetalles(Estadistica estadistica) {
     DetalleEstadistica detalle = new DetalleEstadistica();
     Set<HechoDTO> hechos = this.consultarHechos(estadistica.getUrlColeccion());
 //    private String categoriaMayoresHechos;
@@ -91,7 +91,7 @@ public class ConsultadorColeccion {
     String categoriaMayorCantHechos = conteoCategorias.keySet().stream()
         .reduce("",
             (categoriaBuscada, categoria) ->
-                (categoriaBuscada.equals("") || conteoCategorias.get(categoria) > conteoCategorias.get(categoriaBuscada))
+                (categoriaBuscada.isEmpty() || conteoCategorias.get(categoria) > conteoCategorias.get(categoriaBuscada))
                     ? categoria
                     : categoriaBuscada
         );
@@ -105,7 +105,7 @@ public class ConsultadorColeccion {
     String provinciaMayorCantHechos = conteoProvincias.keySet().stream()
         .reduce("",
             (provinciaBuscada, provincia) ->
-                (provinciaBuscada.equals("") || conteoProvincias.get(provincia) > conteoProvincias.getOrDefault(provinciaBuscada, 0L))
+                (provinciaBuscada.isEmpty() || conteoProvincias.get(provincia) > conteoProvincias.getOrDefault(provinciaBuscada, 0L))
                     ? provincia
                     : provinciaBuscada
         );
@@ -116,17 +116,17 @@ public class ConsultadorColeccion {
     if(estadistica.getCategoriaEspecifica() != null)
     {
       Map<String, Long> conteoProvinciasCategoria = hechos.stream()
-        .filter(h -> h.getCategoria() == estadistica.getCategoriaEspecifica() && h.getUbicacion().getLugar().getProvincia() != null)
+        .filter(h -> Objects.equals(h.getCategoria(), estadistica.getCategoriaEspecifica()) && h.getUbicacion().getLugar().getProvincia() != null)
         .collect(Collectors.groupingBy(
             hecho -> hecho.getUbicacion().getLugar().getProvincia(),
             Collectors.counting()
         ));
-      System.out.println("Cantidad provincias: " + conteoProvinciasCategoria.size());
-      if (conteoProvinciasCategoria.size() > 0) {
+
+      if (!conteoProvinciasCategoria.isEmpty()) {
         String provinciaMayorCantHechosCategoria = conteoProvincias.keySet().stream()
             .reduce("",
                 (provinciaBuscada, provincia) ->
-                    (provinciaBuscada.equals("") || conteoProvincias.get(provincia) > conteoCategorias.getOrDefault(provinciaBuscada, 0L))
+                    (provinciaBuscada.isEmpty() || conteoProvincias.get(provincia) > conteoCategorias.getOrDefault(provinciaBuscada, 0L))
                         ? provincia
                         : provinciaBuscada
             );
@@ -135,7 +135,7 @@ public class ConsultadorColeccion {
   }
     //  ¿A qué hora del día ocurren la mayor cantidad de hechos de una cierta categoría?
     Map<Integer, Long> conteoHorasCategoria = hechos.stream()
-        .filter(h -> h.getCategoria() == estadistica.getCategoriaEspecifica())
+        .filter(h -> Objects.equals(h.getCategoria(), estadistica.getCategoriaEspecifica()))
         .collect(Collectors.groupingBy(
             hecho -> hecho.getFechaAcontecimiento().getHour(),
             Collectors.counting()
@@ -148,7 +148,7 @@ public class ConsultadorColeccion {
         ).orElse(null);
     detalle.setHoraMayorCantHechos(horaConMasHechos);
 
-    ColeccionDTO coleccionDTO = this.consultarLinkColeccion(urlColeccion);
+    ColeccionDTO coleccionDTO = this.consultarLinkColeccion(estadistica.getUrlColeccion());
     detalle.setSolicitudesSpam(coleccionDTO.getCantSolicitudesSpam());
     return detalle;
   }

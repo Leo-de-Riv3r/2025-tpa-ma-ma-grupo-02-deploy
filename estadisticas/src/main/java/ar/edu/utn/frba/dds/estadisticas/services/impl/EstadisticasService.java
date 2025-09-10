@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EstadisticasService implements IEstadisticasService{
-  private IRepositoryEstadisticas repositoryEstadisticas;
-  private ConsultadorColeccion consultadorColeccion;
+  private final IRepositoryEstadisticas repositoryEstadisticas;
+  private final ConsultadorColeccion consultadorColeccion;
   public EstadisticasService(IRepositoryEstadisticas repositoryEstadisticas, ConsultadorColeccion consultadorColeccion) {
     this.repositoryEstadisticas = repositoryEstadisticas;
     this.consultadorColeccion = consultadorColeccion;
@@ -37,7 +37,7 @@ public class EstadisticasService implements IEstadisticasService{
   public void actualizarEstadisticas(){
     List<Estadistica> estadisticas = repositoryEstadisticas.findAll();
     estadisticas.forEach(estadistica -> {
-      DetalleEstadistica detallesNuevos = consultadorColeccion.calcularDetalles(estadistica, estadistica.getUrlColeccion());
+      DetalleEstadistica detallesNuevos = consultadorColeccion.calcularDetalles(estadistica);
       estadistica.setDetalle(detallesNuevos);
     });
     repositoryEstadisticas.saveAll(estadisticas);

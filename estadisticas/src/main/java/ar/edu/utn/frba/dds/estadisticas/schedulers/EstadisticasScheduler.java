@@ -11,8 +11,8 @@ public class EstadisticasScheduler {
     this.estadisticasService = estadisticasService;
   }
 
-  @Scheduled(fixedRate = 3600000) // 1 hora
-  public void refrescarColecciones() {
+  @Scheduled(fixedRate = 7200000) // 2 horas
+  public void actualizarEstadisticas() {
     estadisticasService.actualizarEstadisticas();
   }
 }
