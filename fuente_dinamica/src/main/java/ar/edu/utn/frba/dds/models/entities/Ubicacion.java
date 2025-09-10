@@ -1,19 +1,44 @@
 package ar.edu.utn.frba.dds.models.entities;
 
 
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Entity
+@Table(name = "ubicacion")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Ubicacion {
-  private Double latitud;
-  private Double longitud;
-  private String direccion;
-  private Lugar referenciaLugar;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  public Ubicacion(Double latitud, Double longitud) {
-    this.latitud = latitud;
-    this.longitud = longitud;
-  }
+    @OneToMany(mappedBy = "ubicacion")
+    private List<Hecho> hechosAsociados = new ArrayList<>();
+
+    @Column(name = "latitud")
+    private Double latitud;
+
+    @Column(name = "longitud")
+    private Double longitud;
+
+    @Column(name = "direccion")
+    private String direccion;
+
+    @Embedded
+    private Lugar referenciaLugar;
+
+    public Ubicacion(Double latitud, Double longitud) {
+      this.latitud = latitud;
+      this.longitud = longitud;
+    }
 }

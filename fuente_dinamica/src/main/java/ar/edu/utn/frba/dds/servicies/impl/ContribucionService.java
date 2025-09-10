@@ -11,9 +11,6 @@ import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.repositories.ICategoriaRepository;
 import ar.edu.utn.frba.dds.models.repositories.IContribuyenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
-import ar.edu.utn.frba.dds.models.repositories.impl.CategoriaRepository;
-import ar.edu.utn.frba.dds.models.repositories.impl.ContribuyenteRepository;
-import ar.edu.utn.frba.dds.models.repositories.impl.HechosRepository;
 import ar.edu.utn.frba.dds.servicies.IContribucionService;
 import ar.edu.utn.frba.dds.utils.ContribucionUtils;
 import org.springframework.stereotype.Service;
@@ -25,9 +22,9 @@ public class ContribucionService implements IContribucionService {
     private final ICategoriaRepository categoriaRepository;
 
     public ContribucionService(
-            HechosRepository hechosRepository,
-            ContribuyenteRepository contribuyenteRepository,
-            CategoriaRepository categoriaRepository) {
+            IHechosRepository hechosRepository,
+            IContribuyenteRepository contribuyenteRepository,
+            ICategoriaRepository categoriaRepository) {
         this.hechosRepository = hechosRepository;
         this.contribuyenteRepository = contribuyenteRepository;
         this.categoriaRepository = categoriaRepository;
@@ -35,10 +32,14 @@ public class ContribucionService implements IContribucionService {
 
     @Override
     public ContribucionOutputDTO crearContribucion(ContribucionInputDTO contribucion) {
-        Categoria categoria = categoriaRepository.findByNombre(contribucion.getHecho().getCategoria());
+        var nombreCategoria = contribucion.getHecho().getCategoria();
+
+        Categoria categoria = categoriaRepository.findByNombre(nombreCategoria);
 
         if (categoria == null) {
-            categoria = new Categoria(contribucion.getHecho().getCategoria());
+            categoria = Categoria.builder()
+                    .nombre(nombreCategoria)
+                    .build();
             this.categoriaRepository.save(categoria);
         }
 
@@ -57,7 +58,7 @@ public class ContribucionService implements IContribucionService {
                 throw new ContrasenaIncorrectaException();
             }
 
-            contribuyente.agregarContribucion(hecho.getId());
+            contribuyente.agregarContribucion(hecho);
             contribuyenteRepository.save(contribuyente);
         }
 

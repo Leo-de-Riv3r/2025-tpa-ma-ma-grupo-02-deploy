@@ -1,20 +1,52 @@
 package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.strategies.IFiltroStrategy;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Entity @Table(name = "coleccion")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Coleccion {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(name = "coleccion_titulo", nullable = false)
   private String titulo;
+
+  @Column(name = "coleccion_descripcion")
   private String descripcion;
+
+  @Transient
   private Set<IFiltroStrategy> criterios;
-  private Set<FuenteDeDatos> fuentes; // Esto no deberia ser un strategy entonces?
+
+  @ManyToMany
+  @JoinTable(
+      name = "coleccion_fuente",
+      joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "fuente_id", referencedColumnName = "id")
+  )
+  private Set<FuenteDeDatos> fuentes;
 
   public Coleccion(String titulo, String descripcion) {
     this.titulo = titulo;

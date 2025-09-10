@@ -1,22 +1,34 @@
 package ar.edu.utn.frba.dds.models.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Setter
+@Entity
+@Table(name = "contribuyente")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Contribuyente {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String email;
-    private String password;
-    private List<Long> contribuciones;
 
-    public void agregarContribucion(Long id) {
-        this.contribuciones.add(id);
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @OneToMany
+    @JoinColumn(name = "contribuyente_id", referencedColumnName = "id")
+    private List<Hecho> contribuciones;
+
+    public void agregarContribucion(Hecho hecho) {
+        this.contribuciones.add(hecho);
     }
 
     public boolean tieneHecho(Long id) {

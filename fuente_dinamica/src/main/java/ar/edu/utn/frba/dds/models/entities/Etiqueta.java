@@ -1,12 +1,20 @@
 package ar.edu.utn.frba.dds.models.entities;
 
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Getter
+@Setter
+@Entity
+@Table(name = "etiqueta")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Etiqueta {
-  private final String nombre;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  public Etiqueta(String nombre) {
-    this.nombre = nombre;
-  }
+    @Column(name = "nombre")
+    private String nombre;
 }

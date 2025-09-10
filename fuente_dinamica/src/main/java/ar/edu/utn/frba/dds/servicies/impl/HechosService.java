@@ -28,9 +28,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class HechosService implements IHechosService {
-  private IHechosRepository hechosRepository;
-  private IContribuyenteRepository contribuyenteRepository;
-  private ISolicitudesRepository solicitudesRepository;
+  private final IHechosRepository hechosRepository;
+  private final IContribuyenteRepository contribuyenteRepository;
+  private final ISolicitudesRepository solicitudesRepository;
 
   public HechosService(
           IHechosRepository hechosRepository,
@@ -43,7 +43,10 @@ public class HechosService implements IHechosService {
 
   @Override
   public void modificarHecho(SolicitudModificacionInputDTO solicitudModificacion) {
-    var hecho = hechosRepository.findById(solicitudModificacion.getHecho().getId());
+    var hecho = hechosRepository
+            .findById(solicitudModificacion.getHecho().getId())
+            .orElseThrow(() -> new RuntimeException("Hecho no encontrado con id: " + solicitudModificacion.getHecho().getId()));
+
     var contribuyenteDto = solicitudModificacion.getContribuyente();
 
     if (!ContribucionUtils.tieneCredenciales(contribuyenteDto)) {
@@ -64,10 +67,16 @@ public class HechosService implements IHechosService {
     agregarNuevaSolicitud(solicitudModificacion, hecho);
   }
 
-  private void agregarNuevaSolicitud(SolicitudModificacionInputDTO _solicitud, Hecho hecho) {
-    var solicitud = new Solicitud(_solicitud.getTitulo(), _solicitud.getTexto(), hecho, _solicitud.getContribuyente().getNombre());
-    solicitud.setMotivo(Motivo.MODIFICACION);
-    solicitudesRepository.save(solicitud);
+  private void agregarNuevaSolicitud(SolicitudModificacionInputDTO solicitudDTO, Hecho hecho) {
+      var solicitud = Solicitud.builder()
+              .titulo(solicitudDTO.getTitulo())
+              .texto(solicitudDTO.getTexto())
+              .hecho(hecho)
+              .responsable(solicitudDTO.getContribuyente().getNombre())
+              .build();
+
+      solicitud.setMotivo(Motivo.MODIFICACION);
+      solicitudesRepository.save(solicitud);
   }
 
   private boolean sePuedeEditarHecho(Hecho hecho) {
@@ -86,10 +95,10 @@ public class HechosService implements IHechosService {
 
   @Override
   public HechoOutputDTO getHechoById(Long id) {
-    Hecho hecho = hechosRepository.findById(id);
-    if (hecho == null) {
-      throw new RuntimeException("No existe hecho con ese id");
-    }
+    Hecho hecho = hechosRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Hecho no encontrado con id: " + id));
+
     return HechoMapper.toHechoOutputDTO(hecho);
   }
 
@@ -98,14 +107,20 @@ public class HechosService implements IHechosService {
     Hecho hecho = Hecho.builder()
         .titulo(hechoDto.getTitulo())
         .descripcion(hechoDto.getDescripcion())
-        .categoria(new Categoria(hechoDto.getCategoria()))
+        .categoria(Categoria.builder()
+                .nombre(hechoDto.getCategoria())
+                .build())
         .ubicacion(new Ubicacion(hechoDto.getLatitud(), hechoDto.getLongitud()))
         .fechaAcontecimiento(LocalDateTime.parse(hechoDto.getFechaAcontecimiento(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
         .build();
-
+        // TODO: Armar repositorio para multimedia y persistirlo
       hechoDto.getMultimedia().forEach(multimediaInputDTO -> {
-            Multimedia multimediaDto = new Multimedia(multimediaInputDTO.getNombre(), multimediaInputDTO.getRuta(), Formato.fromString(multimediaInputDTO.getFormato()));
-            hecho.addMultimedia(multimediaDto);
+          var multimedia = Multimedia.builder()
+                  .nombre(multimediaInputDTO.getNombre())
+                  .ruta(multimediaInputDTO.getRuta())
+                  .formato(Formato.fromString(multimediaInputDTO.getFormato()))
+                  .build();
+            hecho.addMultimedia(multimedia);
       }
       );
     Hecho hechoGuardado = hechosRepository.save(hecho);
