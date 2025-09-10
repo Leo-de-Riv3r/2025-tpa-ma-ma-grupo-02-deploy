@@ -43,6 +43,7 @@ IConsensoStrategy ..> Hecho
 IConsensoStrategy ..> Fuente
 IConsensoStrategy ..> IFiltroStrategy
 Fuente --> Hecho
+Ubicacion --> Lugar
 
 class Etiqueta {
     - etiqueta : String
@@ -51,8 +52,13 @@ class Etiqueta {
 class Ubicacion {
     - latitud: Double
     - longitud: Double
-    - direccion: String
-    - nombre: String
+    - lugar : Lugar
+}
+
+class Lugar {
+    - provincia: String
+    - municipio: String
+    - departamento: String
 }
 
 class Origen {
