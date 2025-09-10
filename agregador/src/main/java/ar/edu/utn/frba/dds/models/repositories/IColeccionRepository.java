@@ -6,19 +6,8 @@ import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface IColeccionRepository {
-  Coleccion createColeccion(ColeccionDTO dto);
-  List<Coleccion> getColecciones();
-  Optional<Coleccion> findById(String coleccionId);
-  Coleccion updateColeccion(String coleccionId, ColeccionDTO dto);
-  Coleccion deleteColeccion(String coleccionId);
+public interface IColeccionRepository extends JpaRepository<Coleccion, String> {
 
-  void refrescarHechosCurados();
-
-  void addCriterio(String coleccionId, IFiltroStrategy criterio);
-  void removeCriterio(String coleccionId, IFiltroStrategy criterio);
-
-  void addFuente(String coleccionId, Fuente fuente);
-  void removeFuente(String coleccionId, String fuenteId);
 }
