@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.dds.models.dtos;
 
-import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
+import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOOutput;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;

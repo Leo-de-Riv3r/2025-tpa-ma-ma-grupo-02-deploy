@@ -1,29 +1,35 @@
 package ar.edu.utn.frba.dds.models.entities.factories;
-
-import ar.edu.utn.frba.dds.models.dtos.FiltroDTOEntrada;
+import ar.edu.utn.frba.dds.models.dtos.input.FiltroDTOEntrada;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroCategoria;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroDepartamento;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFechaAcontecimiento;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFechaReporte;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroMunicipio;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroProvincia;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroTitulo;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroUbicacion;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 public class FiltroStrategyFactory {
   public static IFiltroStrategy fromDTO(FiltroDTOEntrada dto) {
-    return switch (dto.getTipoFiltro()) {
+  try {
+    TipoFiltro tipoFiltro = TipoFiltro.valueOf(dto.getTipoFiltro());
+    return switch (tipoFiltro) {
       case FILTRO_TITULO -> new FiltroTitulo(dto.getValor());
       case FILTRO_CATEGORIA -> new FiltroCategoria(dto.getValor());
-      case FILTRO_FECHA_ACONTECIMIENTO_INICIO, FILTRO_FECHA_ACONTECIMIENTO_FIN ->
+      case FILTRO_FECHA_ACONTECIMIENTO ->
           new FiltroFechaAcontecimiento(dto.getFechaInicio(), dto.getFechaFin());
-      case FILTRO_FECHA_REPORTE_INICIO, FILTRO_FECHA_REPORTE_FIN ->
-          new FiltroFechaReporte(dto.getFechaInicio(), dto.getFechaFin());
-      case FILTRO_UBICACION -> new FiltroUbicacion(dto.getLatitud(), dto.getLongitud());
+      case FILTRO_FECHA_REPORTE -> new FiltroFechaReporte(dto.getFechaInicio(), dto.getFechaFin());
+      case FILTRO_PROVINCIA -> new FiltroProvincia(dto.getProvincia());
+      case FILTRO_DEPARTAMENTO -> new FiltroDepartamento(dto.getDepartamento());
+      case FILTRO_MUNICIPIO -> new FiltroMunicipio(dto.getMunicipio());
     };
+  } catch (Exception e) {
+    throw new IllegalArgumentException("Tipo de filtro " + dto.getTipoFiltro() + " no soportada");
+  }
   }
 
   public static Set<IFiltroStrategy> fromParams(
@@ -32,7 +38,9 @@ public class FiltroStrategyFactory {
       LocalDateTime fechaReporteHasta,
       LocalDateTime fechaAcontecimientoDesde,
       LocalDateTime fechaAcontecimientoHasta,
-      String ubicacion
+      String provincia,
+      String municipio,
+      String departamento
   ) {
     Set<IFiltroStrategy> filtros = new HashSet<>();
 
@@ -45,15 +53,16 @@ public class FiltroStrategyFactory {
     if (fechaReporteDesde != null || fechaReporteHasta != null)
       filtros.add(new FiltroFechaReporte(fechaReporteDesde, fechaReporteHasta));
 
-    if (ubicacion != null && ubicacion.contains(",")) {
-      try {
-        String[] partes = ubicacion.split(",");
-        Double lat = Double.parseDouble(partes[0].trim());
-        Double lon = Double.parseDouble(partes[1].trim());
-        filtros.add(new FiltroUbicacion(lat, lon));
-      } catch (NumberFormatException e) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ubicación malformateada. Usar 'latitud,longitud'");
-      }
+    if (provincia != null) {
+      filtros.add(new FiltroProvincia(provincia));
+    }
+
+    if (municipio != null) {
+      filtros.add(new FiltroMunicipio(municipio));
+    }
+
+    if (departamento != null) {
+      filtros.add(new FiltroDepartamento(departamento));
     }
 
     return filtros;

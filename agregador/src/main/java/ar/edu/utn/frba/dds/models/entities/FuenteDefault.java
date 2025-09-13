@@ -5,6 +5,8 @@ import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -23,14 +25,14 @@ public class FuenteDefault extends Fuente {
   @Override
   public void refrescarHechos() {
     try {
-      this.hechos.clear();
+      //this.hechos.clear();
       WebClient webClient = WebClient.builder().baseUrl(url).build();
-      Set<Hecho> hechos = webClient.get()
+      List<Hecho> hechos = webClient.get()
           .uri(uriBuilder -> uriBuilder.path("/hechos").build())
           .retrieve()
           .bodyToFlux(HechoDTOEntrada.class)
           .map(hecho -> Hecho.convertirHechoDTOAHecho(hecho, tipoFuente))
-          .collect(Collectors.toSet())
+          .collect(Collectors.toList())
           .block();
 
       assert hechos != null;
@@ -41,12 +43,18 @@ public class FuenteDefault extends Fuente {
         nuevaUbi.setLugar(lugar);
         hecho.setUbicacion(nuevaUbi);
       });
-      this.hechos.addAll(hechos);
+      //solo agrego hechos nuevos segun titulo categoria y descripcion
+      hechos = hechos.stream().filter(h -> !this.existeHecho(h)).toList();
+      if (!hechos.isEmpty()) this.hechos.addAll(hechos);
     } catch (Exception e) {
       throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.id);
     }
   }
 
+  public Boolean existeHecho(Hecho hecho) {
+    return this.hechos.stream()
+        .anyMatch(h -> Objects.equals(h.getTitulo(), hecho.getTitulo()) && Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion()));
+  }
   @Override
   public Set<Hecho> getHechos() {
     return hechos;

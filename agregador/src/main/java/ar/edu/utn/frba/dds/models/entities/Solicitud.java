@@ -65,10 +65,18 @@ public class Solicitud {
   private List<Estado> historial = new ArrayList<>();
   @Column
   private Integer spam;
+
+  @ManyToOne
+  @JoinColumn(name="hecho_id", referencedColumnName = "id")
+  private Hecho hecho;
+
   public Solicitud() {
     this.id = UUID.randomUUID().toString();
-    this.estadoActual = new Estado();
-    this.estadoActual.setSolicitud(this);
+    Estado estado = new Estado();
+    estado.setSolicitud(this);
+    this.estadoActual = estado;
+    this.supervisor = "";
+    this.responsable = "";
     this.fecha = LocalDateTime.now();
     this.spam = 0;
   }

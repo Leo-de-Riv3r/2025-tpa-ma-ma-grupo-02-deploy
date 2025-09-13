@@ -24,6 +24,17 @@ public class Coleccion {
   @Column
   private String descripcion;
 
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
+  private Set<IFiltroStrategy> criterios = new HashSet<>();
+
+  @ManyToMany
+  @JoinTable(
+      name = "hecho_filtrado",
+      joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id")
+  )
+  private Set<Hecho> hechosFiltrados = new HashSet<>();
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name ="coleccion_fuente",
@@ -57,17 +68,15 @@ public class Coleccion {
   }
 
   public Set<Hecho> getHechosCurados() {
-//    if (algoritmoConsenso !=null && algoritmoConsenso.getHechosCurados().isEmpty()) {
-//      refrescarHechosCurados();
-//      return algoritmoConsenso.getHechosCurados();
-//    } else{
-//      return this.getHechos();
-//    }
     if (algoritmoConsenso != null) {
       return algoritmoConsenso.getHechosCurados();
     } else {
       return new HashSet<>();
     }
+  }
+
+  public void addCriterio(IFiltroStrategy filtro) {
+    this.criterios.add(filtro);
   }
 
   public void addFuente(Fuente fuente) {

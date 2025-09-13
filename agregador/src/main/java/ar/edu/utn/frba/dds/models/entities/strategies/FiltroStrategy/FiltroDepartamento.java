@@ -9,18 +9,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-public class FiltroCategoria extends IFiltroStrategy {
+@Getter @Setter
+public class FiltroDepartamento extends IFiltroStrategy{
   @Column
-  private String nombreCategoria;
+  private String departamento;
 
-  public FiltroCategoria(String nombreCategoria) {
-    this.nombreCategoria = nombreCategoria;
-    this.tipoFiltro = TipoFiltro.FILTRO_CATEGORIA;
+  public FiltroDepartamento(String departamento) {
+    this.departamento = departamento;this.tipoFiltro = TipoFiltro.FILTRO_DEPARTAMENTO;
   }
   @Override
-  public Boolean cumpleFiltro(Hecho hecho) {
-    return hecho.getCategoria().equalsIgnoreCase(nombreCategoria);
+  public Boolean cumpleFiltro(Hecho hecho){
+    return hecho.getUbicacion().getLugar().getDepartamento().equalsIgnoreCase(departamento);
   }
 }

@@ -1,19 +1,19 @@
 package ar.edu.utn.frba.dds.services;
 
-import ar.edu.utn.frba.dds.externalApi.NormalizadorUbicacionAdapter;
 import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
-import ar.edu.utn.frba.dds.models.dtos.ColeccionDTO;
-import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOEntrada;
+import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
-import ar.edu.utn.frba.dds.models.dtos.FuenteDTOOutput;
+import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
+import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import ar.edu.utn.frba.dds.models.repositories.IColeccionRepository;
+import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
@@ -31,15 +31,16 @@ public class ColeccionService {
   private final IColeccionRepository coleccionRepository;
   private final FuenteService fuenteService;
   private final SolicitudService solicitudService;
-  private NormalizadorUbicacionAdapter normalizadorLugar;
+  private final IHechoRepository hechoRepository;
 
   @PersistenceContext
   private EntityManager em;
 
-  public ColeccionService(IColeccionRepository coleccionRepository, FuenteService fuenteService, SolicitudService solicitudService) {
+  public ColeccionService(IColeccionRepository coleccionRepository, FuenteService fuenteService, SolicitudService solicitudService, IHechoRepository hechoRepository) {
     this.coleccionRepository = coleccionRepository;
     this.fuenteService = fuenteService;
     this.solicitudService = solicitudService;
+    this.hechoRepository = hechoRepository;
   }
 
   public Coleccion createColeccion(ColeccionDTOEntrada dto) {
@@ -64,6 +65,11 @@ public class ColeccionService {
       });
       coleccion.setFuentes(fuentes);
     }
+
+    if(dto.getFiltros() != null) {
+      Set<IFiltroStrategy> filtros = dto.getFiltros().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
+      filtros.forEach(f -> coleccion.addCriterio(f));
+    }
     return coleccionRepository.save(coleccion);
   }
 
@@ -75,7 +81,8 @@ public class ColeccionService {
   public List<Coleccion> getColecciones() {
     return coleccionRepository.findAll();
   }
-  public ColeccionDTOSalida getColeccionById(String coleccionId) {
+
+  public ColeccionDTOSalida getColeccionDTO(String coleccionId) {
     Coleccion coleccion = this.getColeccion(coleccionId);
     return this.convertirColeccionADTO(coleccion);
   }
@@ -92,10 +99,8 @@ public class ColeccionService {
   }
   private Integer obtenerCantSolicitudesSpam(Set<Hecho> hechos) {
     AtomicReference<Integer> cantidadSolicitudesSpam = new AtomicReference<>(0);
-    Set<String> titulosHechos = hechos.stream().map(h -> h.getTitulo()).collect(Collectors.toSet());
-    titulosHechos.forEach(titulo ->
-    {
-      cantidadSolicitudesSpam.getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(titulo));
+    hechos .forEach(h -> {
+      cantidadSolicitudesSpam.getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(h.getId()));
     });
     return cantidadSolicitudesSpam.get();
   }
@@ -184,7 +189,11 @@ public class ColeccionService {
           .collect(Collectors.toSet()) : null;
     }
 
-    return hechos;
+    return hechos.stream().filter(h -> hechoRepetido(h)).collect(Collectors.toSet());
+  }
+
+  public Boolean hechoRepetido(Hecho h) {
+  return hechoRepository.existsByTituloAndDescripcionAndCategoria(h.getTitulo(), h.getDescripcion(), h.getCategoria());
   }
 
   public void addFuente(String coleccionId, FuenteDTO dto) {
@@ -206,9 +215,9 @@ public class ColeccionService {
     updateColeccion(coleccionId, dto);
   }
 
+  //OK
   @Transactional
   public void refrescarHechosCurados() {
-    fuenteService.eliminarHechosObsoletos();
     List <Coleccion> colecciones = coleccionRepository.findAll();
 //    em.createQuery(
 //            "DELETE FROM hecho_consensuado hc WHERE hc.hecho_id IN " +
@@ -219,5 +228,11 @@ public class ColeccionService {
     //elimino los hechos con fuente_id nulo porque ya son obsoletos
 
     coleccionRepository.saveAll(colecciones);
+  }
+
+  public void addCriterio(String id, IFiltroStrategy filtro) {
+    Coleccion coleccion = this.getColeccion(id);
+    coleccion.addCriterio(filtro);
+    coleccionRepository.save(coleccion);
   }
 }

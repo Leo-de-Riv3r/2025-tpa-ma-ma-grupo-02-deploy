@@ -1,15 +1,15 @@
-package ar.edu.utn.frba.dds.models.dtos;
+package ar.edu.utn.frba.dds.models.dtos.input;
 
-import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
 public class FiltroDTOEntrada {
-  private TipoFiltro tipoFiltro;
+  private String tipoFiltro;
   private String valor;              // para título o categoría
   private LocalDateTime fechaInicio; // para filtros de fecha
   private LocalDateTime fechaFin;
-  private Double latitud;           // para ubicación
-  private Double longitud;
+  private String provincia;
+  private String municipio;
+  private String departamento;
 }

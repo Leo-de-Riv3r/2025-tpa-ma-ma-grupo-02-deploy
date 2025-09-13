@@ -1,29 +1,37 @@
 package ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
 @Getter
-public abstract class FiltroFecha implements IFiltroStrategy {
-
+public abstract class FiltroFecha extends IFiltroStrategy {
+  @Column
   private LocalDateTime fechaInicio;
+  @Column
   private LocalDateTime fechaFinal;
+  @Transient
   private final Function<Hecho, LocalDateTime> extractorFecha;
 
-  public FiltroFecha(LocalDateTime fechaInicio, LocalDateTime fechaFinal, Function<Hecho, LocalDateTime> extractorFecha) {
+  public FiltroFecha(LocalDateTime fechaInicio, LocalDateTime fechaFinal, Function<Hecho, LocalDateTime> extractorFecha, TipoFiltro tipoFiltro) {
     if (fechaInicio != null && fechaFinal != null && fechaInicio.isAfter(fechaFinal)) {
       throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin");
     }
     this.fechaInicio = fechaInicio;
     this.fechaFinal = fechaFinal;
     this.extractorFecha = extractorFecha;
+    this.tipoFiltro = tipoFiltro;
   }
 
   @Override
-  public boolean cumpleFiltro(Hecho hecho) {
+  public Boolean cumpleFiltro(Hecho hecho) {
     LocalDateTime fecha = extractorFecha.apply(hecho);
 
     if (fechaInicio != null && fechaFinal != null) {

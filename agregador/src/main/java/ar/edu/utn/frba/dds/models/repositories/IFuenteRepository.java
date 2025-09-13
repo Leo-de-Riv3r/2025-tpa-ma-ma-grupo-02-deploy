@@ -10,16 +10,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IFuenteRepository extends JpaRepository<Fuente, String> {
   @Modifying
-  @Query(value = "DELETE FROM hecho_consensuado hc WHERE hc.hecho_id IN " +
-      "(SELECT id from hecho h WHERE h.fuente_id IS NULL)", nativeQuery = true)
-  void eliminarHechosObsoletosDeHechoConsenso();
-
-  @Modifying
   @Query(value = "DELETE FROM hecho h WHERE H.fuente_id IS NULL", nativeQuery = true)
   void eliminarHechosObsoletos();
 
   @Modifying
   @Query("UPDATE Fuente SET inactivo = 1 WHERE id = :idFuente")
   void deleteById(@Param("idFuente") String idFuente);
+
+  boolean existsByUrl(String url);
+
 
 }

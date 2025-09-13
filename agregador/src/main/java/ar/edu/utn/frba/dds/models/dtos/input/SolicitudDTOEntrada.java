@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.models.dtos;
+package ar.edu.utn.frba.dds.models.dtos.input;
 
 import lombok.Data;
 
@@ -7,5 +7,5 @@ public class SolicitudDTOEntrada {
   private String titulo;
   private String texto;
   private String responsable;
-  private String tituloHecho;
+  private Long idHecho;
 }

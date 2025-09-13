@@ -58,14 +58,6 @@ public abstract class IConsensoStrategy {
   public abstract Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes);
 
   public void actualizarHechos(Set<Hecho> hechos, Set<Fuente> fuentes, EntityManager em) {
-
-    //remover hechos antiguos
-//    for (Hecho viejo : this.hechosConsensuados) {
-//      if (viejo.getId() != null) {
-//        em.remove(em.contains(viejo) ? viejo : em.merge(viejo));
-//        em.remove(viejo);
-//      }
-//    }
     this.hechosConsensuados.clear();
     Set<Hecho> hechosC = hechos.stream()
         .filter(h -> cumpleConsensoBase(h, fuentes, cantidadMinimaApariciones))

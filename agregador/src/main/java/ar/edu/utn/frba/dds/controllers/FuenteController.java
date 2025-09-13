@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.dds.controllers;
 
-import ar.edu.utn.frba.dds.models.dtos.FuenteDTOOutput;
+import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOOutput;
 import ar.edu.utn.frba.dds.models.dtos.FuenteNuevoDTO;
 import ar.edu.utn.frba.dds.services.FuenteService;
 import java.util.List;

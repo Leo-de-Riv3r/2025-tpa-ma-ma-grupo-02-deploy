@@ -24,8 +24,10 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -68,4 +70,9 @@ public abstract class Fuente {
   public abstract void refrescarHechos();
 
   public abstract Set<Hecho> getHechos();
+
+  public void setHechos(List<Hecho> hechos) {
+    this.hechos.clear();
+    this.hechos.addAll(hechos);
+  }
 }

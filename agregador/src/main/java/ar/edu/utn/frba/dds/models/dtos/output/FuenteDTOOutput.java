@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.models.dtos;
+package ar.edu.utn.frba.dds.models.dtos.output;
 
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import lombok.Data;
