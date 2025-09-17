@@ -9,17 +9,22 @@ import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
+import ar.edu.utn.frba.dds.models.entities.utils.ColeccionConverter;
+import ar.edu.utn.frba.dds.models.entities.utils.FuenteConverter;
 import ar.edu.utn.frba.dds.models.repositories.IColeccionRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,21 +34,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class ColeccionService {
   private final IColeccionRepository coleccionRepository;
-  private final FuenteService fuenteService;
   private final SolicitudService solicitudService;
   private final IHechoRepository hechoRepository;
 
   @PersistenceContext
   private EntityManager em;
 
-  public ColeccionService(IColeccionRepository coleccionRepository, FuenteService fuenteService, SolicitudService solicitudService, IHechoRepository hechoRepository) {
+  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository) {
     this.coleccionRepository = coleccionRepository;
-    this.fuenteService = fuenteService;
     this.solicitudService = solicitudService;
     this.hechoRepository = hechoRepository;
   }
 
-  public Coleccion createColeccion(ColeccionDTOEntrada dto) {
+  public ColeccionDTOSalida createColeccion(ColeccionDTOEntrada dto) {
     Coleccion coleccion = new Coleccion();
     coleccion.setTitulo(dto.getTitulo());
     coleccion.setDescripcion(dto.getDescripcion());
@@ -60,7 +63,7 @@ public class ColeccionService {
     if (dto.getFuentes() != null) {
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
-        Fuente fuente = fuenteService.getFuente(fuenteDTO.getId());
+        Fuente fuente = FuenteConverter.fromDto(fuenteDTO);
         fuentes.add(fuente);
       });
       coleccion.setFuentes(fuentes);
@@ -70,12 +73,13 @@ public class ColeccionService {
       Set<IFiltroStrategy> filtros = dto.getFiltros().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
       filtros.forEach(f -> coleccion.addCriterio(f));
     }
-    return coleccionRepository.save(coleccion);
+    Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+    return ColeccionConverter.fromEntity(coleccionGuardada);
   }
 
   public List<ColeccionDTOSalida> getColeccionesDTO() {
     List<Coleccion> colecciones = coleccionRepository.findAll();
-    return colecciones.stream().map(c -> convertirColeccionADTO(c)).toList();
+    return colecciones.stream().map(c -> ColeccionConverter.fromEntity(c)).toList();
   }
 
   public List<Coleccion> getColecciones() {
@@ -84,19 +88,9 @@ public class ColeccionService {
 
   public ColeccionDTOSalida getColeccionDTO(String coleccionId) {
     Coleccion coleccion = this.getColeccion(coleccionId);
-    return this.convertirColeccionADTO(coleccion);
+    return ColeccionConverter.fromEntity(coleccion);
   }
 
-  private ColeccionDTOSalida convertirColeccionADTO(Coleccion coleccion) {
-    ColeccionDTOSalida respuesta = new ColeccionDTOSalida();
-    respuesta.setId(coleccion.getId());
-    respuesta.setTitulo(coleccion.getTitulo());
-    respuesta.setDescripcion(coleccion.getDescripcion());
-    Set<Fuente> fuentes = coleccion.getFuentes();
-    respuesta.setFuentes(fuentes.stream().map(f -> new FuenteDTOOutput(f.getId(), f.getTipoFuente(), f.getUrl())).toList());
-    respuesta.setCantSolicitudesSpam(this.obtenerCantSolicitudesSpam(coleccion.getHechos()));
-    return respuesta;
-  }
   private Integer obtenerCantSolicitudesSpam(Set<Hecho> hechos) {
     AtomicReference<Integer> cantidadSolicitudesSpam = new AtomicReference<>(0);
     hechos .forEach(h -> {
@@ -124,7 +118,7 @@ public class ColeccionService {
     if (dto.getFuentes() != null) {
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
-        Fuente fuente = fuenteService.getFuente(fuenteDTO.getId());
+        Fuente fuente = FuenteConverter.fromDto(fuenteDTO);
         fuentes.add(fuente);
       });
       coleccion.limpiarFuentes();
@@ -146,12 +140,26 @@ public class ColeccionService {
     coleccionRepository.deleteById(coleccionId);
   }
 
-//  public void refrescoColecciones() {
-//    List <Coleccion> colecciones = this.getColecciones();
-//    colecciones.forEach(coleccion -> coleccion.getFuentes().forEach(fuente -> refrescoColecciones()));
-//  }
+  @Transactional
+  public void refrescoColecciones() {
+    List <Coleccion> colecciones = this.getColecciones();
+    colecciones.forEach(coleccion -> coleccion.getFuentes().forEach(fuente -> {
+      fuente.refrescarHechos();
+      Set<Hecho> hechosFuente = fuente.getHechos();
 
-  public Set<Hecho> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros) {
+      hechosFuente.forEach(h -> {
+        //hecho nuevo no persistido
+          //logica para hallar categoria
+          Optional<String> categoriaEncontrada = hechoRepository.buscarCategoriaNormalizada(h.getCategoria());
+          if (categoriaEncontrada.isPresent()) {
+            h.setCategoria(categoriaEncontrada.get());
+          }
+      });
+    }));
+    this.coleccionRepository.saveAll(colecciones);
+  }
+
+  public Set<Hecho> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros, String textoTitulo) {
     Set<Hecho> hechos = Set.of();
     if (coleccionId != null) {
       Optional<Coleccion> coleccion = coleccionRepository.findById(coleccionId);
@@ -162,42 +170,53 @@ public class ColeccionService {
       }
     }
 
-    if (hechos == null || hechos.isEmpty()) {
-      List<Coleccion> colecciones = this.getColecciones();
-      for (Coleccion coleccion : colecciones) {
-        Set<Hecho> hechosDeColeccion = navegacionCurada
-            ? coleccion.getHechosCurados()
-            : coleccion.getHechos();
-        if (hechosDeColeccion != null && !hechosDeColeccion.isEmpty()) {
-          if (hechos != null) {
-            hechos.addAll(hechosDeColeccion);
-          }
-        }
-      }
+    if (coleccionId == null ) {
+      //List<Hecho> hechosBusqeda = hechoRepository.busquedaTexto(textoTitulo);
     }
 
     if (page != null && perPage != null) {
-      return hechos != null ? hechos.stream()
+      hechos =  hechos != null ? hechos.stream()
           .skip((long) (page - 1) * perPage)
           .limit(perPage)
           .collect(HashSet::new, HashSet::add, HashSet::addAll) : null;
     }
 
     if (filtros != null) {
-      return hechos != null ? hechos.stream()
+      hechos = hechos != null ? hechos.stream()
           .filter(h -> h.cumpleFiltros(filtros))
           .collect(Collectors.toSet()) : null;
     }
 
-    return hechos.stream().filter(h -> hechoRepetido(h)).collect(Collectors.toSet());
+    //Set<Hecho> finalHechos = hechos;
+    //return hechos.stream().filter(h -> hechoRepetido(h)).collect(Collectors.toSet());
+    hechos = hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
+    return filtrarDuplicados(hechos);
+    //filtrar hechos que no esten repetidos para mejorar las vistas
   }
 
-  public Boolean hechoRepetido(Hecho h) {
-  return hechoRepository.existsByTituloAndDescripcionAndCategoria(h.getTitulo(), h.getDescripcion(), h.getCategoria());
-  }
+    public static Set<Hecho> filtrarDuplicados(Set<Hecho> hechos) {
+      Set<String> vistos = new HashSet<>();
+      Set<Hecho> resultado = new HashSet<>();
+
+      for (Hecho hecho : hechos) {
+        // Genero una "clave única" combinando los atributos relevantes
+        String clave = hecho.getTitulo() + "|"
+            + hecho.getDescripcion() + "|"
+            + hecho.getCategoria() + "|"
+            + hecho.getFechaAcontecimiento();
+
+        if (!vistos.contains(clave)) {
+          vistos.add(clave);
+          resultado.add(hecho);
+        }
+      }
+
+      return resultado;
+    }
+
 
   public void addFuente(String coleccionId, FuenteDTO dto) {
-    Fuente fuente = fuenteService.getFuente(dto.getId());
+    Fuente fuente = FuenteConverter.fromDto(dto);
     Coleccion coleccion = this.getColeccion(coleccionId);
     coleccion.addFuente(fuente);
     coleccionRepository.save(coleccion);
@@ -226,7 +245,6 @@ public class ColeccionService {
 //        .executeUpdate();
     colecciones.forEach(coleccion ->  coleccion.refrescarHechosCurados(em));
     //elimino los hechos con fuente_id nulo porque ya son obsoletos
-
     coleccionRepository.saveAll(colecciones);
   }
 

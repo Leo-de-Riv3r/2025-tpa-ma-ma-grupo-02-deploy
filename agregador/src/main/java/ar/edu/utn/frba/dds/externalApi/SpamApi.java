@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.services;
+package ar.edu.utn.frba.dds.externalApi;
 
 import ar.edu.utn.frba.dds.models.dtos.SpamDetectorRequestDTO;
 import ar.edu.utn.frba.dds.models.dtos.SpamDetectorResponseDTO;
@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 
 @Component
-public class SpamService {
+public class SpamApi {
   private String url = "https://api.oopspam.com/v1/spamdetection";
   private WebClient webClient;
 

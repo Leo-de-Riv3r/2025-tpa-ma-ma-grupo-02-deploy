@@ -25,6 +25,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -64,7 +65,6 @@ public abstract class Fuente {
   public Fuente(String url, TipoFuente tipoFuente) {
     this.url = url;
     this.tipoFuente = tipoFuente;
-    this.inactivo = 0;
   }
 
   public abstract void refrescarHechos();
@@ -74,5 +74,10 @@ public abstract class Fuente {
   public void setHechos(List<Hecho> hechos) {
     this.hechos.clear();
     this.hechos.addAll(hechos);
+  }
+
+  public Boolean existeHecho(Hecho hecho) {
+    return this.hechos.stream()
+        .anyMatch(h -> Objects.equals(h.getTitulo(), hecho.getTitulo()) && Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion()));
   }
 }

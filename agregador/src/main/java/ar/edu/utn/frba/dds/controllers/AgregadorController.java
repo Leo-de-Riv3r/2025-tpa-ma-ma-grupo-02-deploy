@@ -7,7 +7,6 @@ import ar.edu.utn.frba.dds.models.dtos.input.FiltroDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
-import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
@@ -16,7 +15,6 @@ import ar.edu.utn.frba.dds.services.SolicitudService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,10 +40,9 @@ public class AgregadorController {
 
   //CRUD COLECCIONES
   @PostMapping("/colecciones")
-  public ResponseEntity<Coleccion> createColeccion(@RequestBody ColeccionDTOEntrada dto) {
-    Coleccion coleccionCreada = coleccionService.createColeccion(dto);
+  public ResponseEntity<ColeccionDTOSalida> createColeccion(@RequestBody ColeccionDTOEntrada dto) {
+    ColeccionDTOSalida coleccionCreada = coleccionService.createColeccion(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body(coleccionCreada);
-
   }
 
   @GetMapping("/colecciones")
@@ -71,10 +68,10 @@ public class AgregadorController {
   @GetMapping("/hechos")
   public Set<Hecho> getHechos(
       @RequestParam(required = false) Integer page,
-      @RequestParam(required = false) Integer per_page
+      @RequestParam(required = false) Integer per_page,
+      @RequestParam(required = false) String textoBusqueda
   ) {
-    Set<Hecho> hechos = coleccionService.getHechos(null, false, page, per_page, null);
-    return hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
+    return coleccionService.getHechos(null, false, page, per_page, null, textoBusqueda);
   }
 
   @GetMapping("/colecciones/{id}/hechos")
@@ -103,8 +100,7 @@ public class AgregadorController {
         departamento
     );
 
-    Set<Hecho> hechos = coleccionService.getHechos(id, curados, page, per_page, filtros);
-    return hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
+    return coleccionService.getHechos(id, curados, page, per_page, filtros, null);
   }
 
   @PutMapping("/colecciones/{id}/algoritmo")

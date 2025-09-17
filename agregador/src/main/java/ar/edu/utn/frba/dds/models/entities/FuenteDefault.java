@@ -3,6 +3,7 @@ package ar.edu.utn.frba.dds.models.entities;
 import ar.edu.utn.frba.dds.externalApi.NormalizadorUbicacionAdapter;
 import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
+import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import java.util.List;
@@ -31,30 +32,22 @@ public class FuenteDefault extends Fuente {
           .uri(uriBuilder -> uriBuilder.path("/hechos").build())
           .retrieve()
           .bodyToFlux(HechoDTOEntrada.class)
-          .map(hecho -> Hecho.convertirHechoDTOAHecho(hecho, tipoFuente))
+          .map(hecho -> HechoConverter.fromDTO(hecho, tipoFuente))
           .collect(Collectors.toList())
           .block();
 
       assert hechos != null;
-
-      hechos.forEach(hecho -> {
-        Lugar lugar = this.normalizadorLugar.obtenerLugar(hecho.getUbicacion());
-        Ubicacion nuevaUbi = hecho.getUbicacion();
-        nuevaUbi.setLugar(lugar);
-        hecho.setUbicacion(nuevaUbi);
-      });
       //solo agrego hechos nuevos segun titulo categoria y descripcion
       hechos = hechos.stream().filter(h -> !this.existeHecho(h)).toList();
       if (!hechos.isEmpty()) this.hechos.addAll(hechos);
+
+      //normalizacion hechos
+
     } catch (Exception e) {
       throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.id);
     }
   }
 
-  public Boolean existeHecho(Hecho hecho) {
-    return this.hechos.stream()
-        .anyMatch(h -> Objects.equals(h.getTitulo(), hecho.getTitulo()) && Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion()));
-  }
   @Override
   public Set<Hecho> getHechos() {
     return hechos;

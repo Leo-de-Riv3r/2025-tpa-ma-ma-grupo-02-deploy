@@ -19,7 +19,7 @@ public class FiltroTitulo extends IFiltroStrategy {
   private String titulo;
 
   public FiltroTitulo (String titulo) {
-    if (titulo.isBlank() || titulo == null) {
+    if (titulo.isBlank()) {
       throw  new IllegalArgumentException("Titulo no puede ser nulo");
     }
     this.titulo = titulo;

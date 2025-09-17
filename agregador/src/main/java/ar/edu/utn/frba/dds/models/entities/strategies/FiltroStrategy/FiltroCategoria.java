@@ -16,6 +16,9 @@ public class FiltroCategoria extends IFiltroStrategy {
   private String nombreCategoria;
 
   public FiltroCategoria(String nombreCategoria) {
+    if (nombreCategoria.isBlank()){
+      throw new IllegalArgumentException("Provincia no puede ser nula");
+    }
     this.nombreCategoria = nombreCategoria;
     this.tipoFiltro = TipoFiltro.FILTRO_CATEGORIA;
   }

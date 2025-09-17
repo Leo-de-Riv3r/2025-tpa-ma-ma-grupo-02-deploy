@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.services;
 
+import ar.edu.utn.frba.dds.externalApi.SpamApi;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
@@ -16,10 +17,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class SolicitudService {
   private final ISolicitudRepository solicitudesEliminacionRepo;
-  private final SpamService detectorSpam;
+  private final SpamApi detectorSpam;
   private final IHechoRepository hechosRepository;
   private final SolicitudConverter solicitudConverter;
-  public SolicitudService(ISolicitudRepository solicitudesEliminacionRepo, SpamService detectorSpam, IHechoRepository hechosRepository) {
+  public SolicitudService(ISolicitudRepository solicitudesEliminacionRepo, SpamApi detectorSpam, IHechoRepository hechosRepository) {
     this.solicitudesEliminacionRepo = solicitudesEliminacionRepo;
     this.detectorSpam = detectorSpam;
     this.hechosRepository = hechosRepository;

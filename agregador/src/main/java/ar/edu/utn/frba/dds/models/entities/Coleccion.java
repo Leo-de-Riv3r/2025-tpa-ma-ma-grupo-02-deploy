@@ -2,7 +2,9 @@ package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,21 +30,9 @@ public class Coleccion {
   @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
   private Set<IFiltroStrategy> criterios = new HashSet<>();
 
-  @ManyToMany
-  @JoinTable(
-      name = "hecho_filtrado",
-      joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
-      inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id")
-  )
+  @OneToMany(cascade = CascadeType.ALL)
   private Set<Hecho> hechosFiltrados = new HashSet<>();
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name ="coleccion_fuente",
-      joinColumns = @JoinColumn(name = "coleccion_id",
-      referencedColumnName = "id"),
-      inverseJoinColumns =  @JoinColumn(name = "fuente_id",
-      referencedColumnName = "id")
-  )
+  @OneToMany(cascade = CascadeType.ALL)
   private Set<Fuente> fuentes;
 
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -58,12 +48,30 @@ public class Coleccion {
     Set<Hecho> hechos = new HashSet<>();
     fuentes.stream().filter(f -> f.getInactivo() != 1)
         .forEach(fuente -> hechos.addAll(fuente.getHechos()));
-    return hechos;
+
+    //filtro duplicados segun titulo categoria descripcion y fecha acontecimiento
+    Set<String> vistos = new HashSet<>();
+    Set<Hecho> resultado = new HashSet<>();
+
+    for (Hecho hecho : hechos) {
+      // Genero una "clave única" combinando los atributos relevantes
+      String clave = hecho.getTitulo() + "|"
+          + hecho.getDescripcion() + "|"
+          + hecho.getCategoria() + "|"
+          + hecho.getFechaAcontecimiento();
+
+      if (!vistos.contains(clave)) {
+        vistos.add(clave);
+        resultado.add(hecho);
+      }
+    }
+
+    return resultado;
   }
 
   public void refrescarHechosCurados(EntityManager em) {
     if (algoritmoConsenso != null) {
-      algoritmoConsenso.actualizarHechos(this.getHechos(), fuentes, em);
+      algoritmoConsenso.actualizarHechos(this.getHechos(), fuentes);
     }
   }
 
@@ -86,12 +94,16 @@ public class Coleccion {
   public void removeFuente(String idFuente) {
     fuentes.removeIf(fuente -> EqualsBuilder.reflectionEquals(fuente.getId(), idFuente));
   }
-
   public void limpiarFuentes() {
     this.fuentes.clear();
   }
-
   public void setearFuentes(Set<Fuente> fuentes) {
     this.fuentes.addAll(fuentes);
+  }
+
+  public void refrescarHechosFiltrados() {
+    this.hechosFiltrados.clear();
+    Set<Hecho> hechos = this.getHechos();
+    this.hechosFiltrados.addAll(hechos.stream().filter(h -> h.cumpleFiltros(this.criterios)).collect(Collectors.toSet()));
   }
 }

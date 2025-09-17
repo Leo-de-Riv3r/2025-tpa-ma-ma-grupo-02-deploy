@@ -19,7 +19,7 @@ public class FiltroProvincia extends IFiltroStrategy{
   private String provincia;
 
   public FiltroProvincia(String provincia) {
-    if (provincia.isBlank() || provincia == null){
+    if (provincia.isBlank()){
       throw new IllegalArgumentException("Provincia no puede ser nula");
     }
     this.provincia = provincia;

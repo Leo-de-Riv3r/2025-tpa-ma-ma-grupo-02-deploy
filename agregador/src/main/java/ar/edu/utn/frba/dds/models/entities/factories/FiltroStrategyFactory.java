@@ -21,11 +21,11 @@ public class FiltroStrategyFactory {
       case FILTRO_TITULO -> new FiltroTitulo(dto.getValor());
       case FILTRO_CATEGORIA -> new FiltroCategoria(dto.getValor());
       case FILTRO_FECHA_ACONTECIMIENTO ->
-          new FiltroFechaAcontecimiento(dto.getFechaInicio(), dto.getFechaFin());
-      case FILTRO_FECHA_REPORTE -> new FiltroFechaReporte(dto.getFechaInicio(), dto.getFechaFin());
-      case FILTRO_PROVINCIA -> new FiltroProvincia(dto.getProvincia());
-      case FILTRO_DEPARTAMENTO -> new FiltroDepartamento(dto.getDepartamento());
-      case FILTRO_MUNICIPIO -> new FiltroMunicipio(dto.getMunicipio());
+          new FiltroFechaAcontecimiento(dto.getFechaInicio().atStartOfDay(), dto.getFechaFin().atStartOfDay());
+      case FILTRO_FECHA_REPORTE -> new FiltroFechaReporte(dto.getFechaInicio().atStartOfDay(), dto.getFechaFin().atStartOfDay());
+      case FILTRO_PROVINCIA -> new FiltroProvincia(dto.getValor());
+      case FILTRO_DEPARTAMENTO -> new FiltroDepartamento(dto.getValor());
+      case FILTRO_MUNICIPIO -> new FiltroMunicipio(dto.getValor());
     };
   } catch (Exception e) {
     throw new IllegalArgumentException("Tipo de filtro " + dto.getTipoFiltro() + " no soportada");

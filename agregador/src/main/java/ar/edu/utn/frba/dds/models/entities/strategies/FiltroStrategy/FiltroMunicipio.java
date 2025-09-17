@@ -16,6 +16,9 @@ public class FiltroMunicipio extends IFiltroStrategy{
 
 
   public FiltroMunicipio(String municipio) {
+    if (municipio.isBlank()){
+      throw new IllegalArgumentException("Municipio no puede ser nula");
+    }
     this.tipoFiltro = TipoFiltro.FILTRO_MUNICIPIO;
     this.municipio = municipio;
   }

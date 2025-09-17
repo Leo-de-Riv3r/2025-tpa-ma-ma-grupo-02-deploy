@@ -15,7 +15,11 @@ public class FiltroDepartamento extends IFiltroStrategy{
   private String departamento;
 
   public FiltroDepartamento(String departamento) {
-    this.departamento = departamento;this.tipoFiltro = TipoFiltro.FILTRO_DEPARTAMENTO;
+    if (departamento.isBlank()){
+      throw new IllegalArgumentException("Provincia no puede ser nula");
+    }
+    this.departamento = departamento;
+    this.tipoFiltro = TipoFiltro.FILTRO_DEPARTAMENTO;
   }
   @Override
   public Boolean cumpleFiltro(Hecho hecho){
