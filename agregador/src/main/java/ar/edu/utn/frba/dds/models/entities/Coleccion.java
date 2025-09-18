@@ -30,9 +30,12 @@ public class Coleccion {
   @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
   private Set<IFiltroStrategy> criterios = new HashSet<>();
 
-  @OneToMany(cascade = CascadeType.ALL)
+  @ManyToMany
+  @JoinTable(joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
+  inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id"))
   private Set<Hecho> hechosFiltrados = new HashSet<>();
   @OneToMany(cascade = CascadeType.ALL)
+  @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
   private Set<Fuente> fuentes;
 
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -46,7 +49,7 @@ public class Coleccion {
 
   public Set<Hecho> getHechos() {
     Set<Hecho> hechos = new HashSet<>();
-    fuentes.stream().filter(f -> f.getInactivo() != 1)
+    fuentes.stream()
         .forEach(fuente -> hechos.addAll(fuente.getHechos()));
 
     //filtro duplicados segun titulo categoria descripcion y fecha acontecimiento

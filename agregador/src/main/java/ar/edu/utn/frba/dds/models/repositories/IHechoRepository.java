@@ -16,9 +16,9 @@ public interface IHechoRepository extends JpaRepository<Hecho, Long> {
   //List<Hecho> busquedaTexto(String textoTitulo);
   //logica para normalizar categoria
   @Query(value =
-    "SELECT categoria" +
-    "FROM hecho" +
-    "WHERE MATCH(categoria, titulo) AGAINST (:categoria) >= 5"+
+    "SELECT categoria " +
+    "FROM hecho " +
+    "WHERE MATCH(categoria, titulo) AGAINST (:categoria) >= 5 "+
     "ORDER BY MATCH(categoria, titulo) AGAINST (:categoria) DESC LIMIT 1"
     , nativeQuery = true)
   Optional<String> buscarCategoriaNormalizada(@Param("categoria") String categoria);

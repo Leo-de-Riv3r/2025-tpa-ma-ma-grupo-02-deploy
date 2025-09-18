@@ -3,8 +3,13 @@ package ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Getter;
 
@@ -12,6 +17,9 @@ import java.time.LocalDateTime;
 import java.util.function.Function;
 
 @Getter
+@Entity @Table(name="filtroFecha")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo_filtro_fecha")
 public abstract class FiltroFecha extends IFiltroStrategy {
   @Column
   private LocalDateTime fechaInicio;

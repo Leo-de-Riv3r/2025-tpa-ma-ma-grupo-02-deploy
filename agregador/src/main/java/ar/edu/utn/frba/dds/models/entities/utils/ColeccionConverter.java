@@ -12,28 +12,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ColeccionConverter {
-  private static SolicitudService solicitudService = null;
-
-  public ColeccionConverter(SolicitudService solicitudService) {
-    ColeccionConverter.solicitudService = solicitudService;
+  private final FuenteConverter fuenteConverter;
+  public ColeccionConverter(FuenteConverter fuenteConverter) {
+    this.fuenteConverter = fuenteConverter;
   }
 
-  public static ColeccionDTOSalida fromEntity(Coleccion coleccion) {
+  public  ColeccionDTOSalida fromEntity(Coleccion coleccion) {
     ColeccionDTOSalida respuesta = new ColeccionDTOSalida();
     respuesta.setId(coleccion.getId());
     respuesta.setTitulo(coleccion.getTitulo());
     respuesta.setDescripcion(coleccion.getDescripcion());
     Set<Fuente> fuentes = coleccion.getFuentes();
-    respuesta.setFuentes(fuentes.stream().map(f -> new FuenteDTOOutput(f.getId(), f.getTipoFuente(), f.getUrl())).toList());
-    respuesta.setCantSolicitudesSpam(obtenerCantSolicitudesSpam(coleccion.getHechos()));
+    respuesta.setFuentes(fuentes.stream().map(fuenteConverter::fromEntity).toList());
     return respuesta;
-  }
-
-  private static Integer obtenerCantSolicitudesSpam(Set<Hecho> hechos) {
-    AtomicReference<Integer> cantidadSolicitudesSpam = new AtomicReference<>(0);
-    hechos .forEach(h -> {
-      cantidadSolicitudesSpam.getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(h.getId()));
-    });
-    return cantidadSolicitudesSpam.get();
   }
 }

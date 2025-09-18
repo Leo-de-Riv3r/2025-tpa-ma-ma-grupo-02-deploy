@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.dds.models.entities;
 
-import ar.edu.utn.frba.dds.externalApi.NormalizadorUbicacionAdapter;
 import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
@@ -23,7 +22,7 @@ public class FuenteProxyMetamapa extends Fuente {
   }
 
   @Override
-  public void refrescarHechos() {
+  public void refrescarHechos(HechoConverter hechoConverter) {
     try {
       //this.hechos.clear();
       WebClient webClient = WebClient.builder().baseUrl(url).build();
@@ -31,10 +30,15 @@ public class FuenteProxyMetamapa extends Fuente {
           .uri(uriBuilder -> uriBuilder.path("/hechos").build())
           .retrieve()
           .bodyToFlux(HechoDTOEntrada.class)
-          .map(hecho -> HechoConverter.fromDTO(hecho, tipoFuente))
+          .map(hecho -> hechoConverter.fromDTO(hecho, tipoFuente))
           .collect(Collectors.toList())
           .block();
 
+      hechos.forEach((h -> {
+        Ubicacion ubicacionNueva = h.getUbicacion();
+        ubicacionNueva.setLugar(hechoConverter.obtenerLugar(ubicacionNueva));
+        h.setUbicacion(ubicacionNueva);
+      }));
       assert hechos != null;
       //solo agrego hechos nuevos segun titulo categoria y descripcion
       hechos = hechos.stream().filter(h -> !this.existeHecho(h)).toList();

@@ -56,7 +56,7 @@ public class AgregadorController {
   }
 
   @PutMapping("/colecciones/{id}")
-  public void updateColeccion(@PathVariable String id, @RequestParam ColeccionDTOEntrada dto) {
+  public void updateColeccion(@PathVariable String id, @RequestBody ColeccionDTOEntrada dto) {
     coleccionService.updateColeccion(id, dto);
   }
 
@@ -134,6 +134,10 @@ public class AgregadorController {
     coleccionService.refrescarHechosCurados();
   }
 
+  @PutMapping("/colecciones/normaliza")
+  public void actualiza() {
+    coleccionService.refrescoColecciones();
+  }
   //SOLICITUDES
   @PostMapping("/solicitudes")
   public ResponseEntity<String> agregarSolicitud(@RequestBody SolicitudDTOEntrada dto) {

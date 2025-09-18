@@ -5,11 +5,20 @@ import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.FuenteDefault;
 import ar.edu.utn.frba.dds.models.entities.FuenteProxyMetamapa;
+import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import jakarta.persistence.EntityExistsException;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FuenteConverter {
-  public static Fuente fromDto(FuenteDTO fuenteDTO) {
+  private final HechoConverter hechoConverter;
+
+  public FuenteConverter(HechoConverter hechoConverter) {
+    this.hechoConverter = hechoConverter;
+  }
+
+  public Fuente fromDto(FuenteDTO fuenteDTO) {
     if (fuenteDTO.getTipoFuente() == null || fuenteDTO.getUrl() == null){
       throw new IllegalArgumentException("La url y/o el tipo de fuente estan vacios");
     }
@@ -20,10 +29,14 @@ public class FuenteConverter {
           //fuente.cambiarHechos(fuente.getHechos());
         } else if (tipoFuente == TipoFuente.DINAMICA || tipoFuente == TipoFuente.ESTATICA) {
           fuente = new FuenteDefault(fuenteDTO.getUrl(), tipoFuente);
-          fuente.refrescarHechos();
+          fuente.refrescarHechos(hechoConverter);
         } else {
           throw new IllegalArgumentException("Tipo de fuente " + fuenteDTO.getTipoFuente() + " no soportado");
         }
         return fuente;
     }
+
+  public FuenteDTOOutput fromEntity(Fuente f) {
+    return new FuenteDTOOutput(f.getId(), f.getTipoFuente(), f.getUrl(), f.getHechos().size());
   }
+}

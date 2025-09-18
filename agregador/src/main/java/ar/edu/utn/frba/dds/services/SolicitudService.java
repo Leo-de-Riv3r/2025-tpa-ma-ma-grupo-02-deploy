@@ -20,11 +20,11 @@ public class SolicitudService {
   private final SpamApi detectorSpam;
   private final IHechoRepository hechosRepository;
   private final SolicitudConverter solicitudConverter;
-  public SolicitudService(ISolicitudRepository solicitudesEliminacionRepo, SpamApi detectorSpam, IHechoRepository hechosRepository) {
+  public SolicitudService(ISolicitudRepository solicitudesEliminacionRepo, SpamApi detectorSpam, IHechoRepository hechosRepository, SolicitudConverter solicitudConverter) {
     this.solicitudesEliminacionRepo = solicitudesEliminacionRepo;
     this.detectorSpam = detectorSpam;
     this.hechosRepository = hechosRepository;
-    this.solicitudConverter = new SolicitudConverter(hechosRepository);
+    this.solicitudConverter = solicitudConverter;
   }
 
   @Transactional

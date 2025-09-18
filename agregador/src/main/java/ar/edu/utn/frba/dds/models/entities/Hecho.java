@@ -76,23 +76,6 @@ public class Hecho {
 //  private static EntityManagerFactory emf =
 //      Persistence.createEntityManagerFactory("AMD");
 //  private static EntityManager em = emf.createEntityManager();
-  public static Hecho convertirHechoDTOAHecho(HechoDTOEntrada dto, TipoFuente tipoFuente) {
-    Ubicacion ubicacion = new Ubicacion();
-    ubicacion.setLatitud(dto.getLatitud());
-    ubicacion.setLongitud(dto.getLongitud());
-    Origen origenExistente = new Origen();
-    origenExistente.setTipo(tipoFuente);
-    Hecho hecho = new Hecho();
-    hecho.setTitulo(dto.getTitulo());
-    hecho.setDescripcion(dto.getDescripcion());
-    hecho.setCategoria(dto.getCategoria());
-    hecho.setUbicacion(ubicacion);
-    hecho.setFechaAcontecimiento(dto.getFechaHecho());
-    hecho.setFechaCarga(dto.getCreatedAt());
-    hecho.setOrigen(origenExistente);
-
-    return hecho;
-  }
 
   public boolean cumpleFiltros(Set<IFiltroStrategy> filtros) {
     return filtros == null || filtros.isEmpty() || filtros.stream().allMatch(f -> f.cumpleFiltro(this));

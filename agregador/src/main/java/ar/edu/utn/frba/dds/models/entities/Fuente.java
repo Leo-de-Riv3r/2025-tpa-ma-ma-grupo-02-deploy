@@ -2,12 +2,8 @@ package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.externalApi.GeoRefApiAdapter;
 import ar.edu.utn.frba.dds.externalApi.NormalizadorUbicacionAdapter;
-import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
-import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
-import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
-import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
+import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -18,8 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -28,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -56,18 +49,12 @@ public abstract class Fuente {
   //@Transient
   protected Set<Hecho> hechos = new HashSet<>();
 
-  @Column
-  @Getter
-  private Integer inactivo;
-  @Transient
-  protected NormalizadorUbicacionAdapter normalizadorLugar = new GeoRefApiAdapter();
-
   public Fuente(String url, TipoFuente tipoFuente) {
     this.url = url;
     this.tipoFuente = tipoFuente;
   }
 
-  public abstract void refrescarHechos();
+  public abstract void refrescarHechos(HechoConverter hechoConverter);
 
   public abstract Set<Hecho> getHechos();
 

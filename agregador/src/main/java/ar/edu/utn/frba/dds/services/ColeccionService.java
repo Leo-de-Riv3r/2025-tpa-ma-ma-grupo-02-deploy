@@ -4,46 +4,49 @@ import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
-import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
-import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import ar.edu.utn.frba.dds.models.entities.utils.ColeccionConverter;
 import ar.edu.utn.frba.dds.models.entities.utils.FuenteConverter;
+import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
 import ar.edu.utn.frba.dds.models.repositories.IColeccionRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @Service
 public class ColeccionService {
   private final IColeccionRepository coleccionRepository;
   private final SolicitudService solicitudService;
   private final IHechoRepository hechoRepository;
-
+  private final FuenteConverter fuenteConverter;
+  private final ColeccionConverter coleccionConverter;
+  private final HechoConverter hechoConverter;
   @PersistenceContext
   private EntityManager em;
 
-  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository) {
+  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter) {
     this.coleccionRepository = coleccionRepository;
     this.solicitudService = solicitudService;
     this.hechoRepository = hechoRepository;
+    this.fuenteConverter = fuenteConverter;
+    this.coleccionConverter = coleccionConverter;
+    this.hechoConverter = hechoConverter;
   }
 
   public ColeccionDTOSalida createColeccion(ColeccionDTOEntrada dto) {
@@ -63,7 +66,7 @@ public class ColeccionService {
     if (dto.getFuentes() != null) {
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
-        Fuente fuente = FuenteConverter.fromDto(fuenteDTO);
+        Fuente fuente = fuenteConverter.fromDto(fuenteDTO);
         fuentes.add(fuente);
       });
       coleccion.setFuentes(fuentes);
@@ -74,12 +77,12 @@ public class ColeccionService {
       filtros.forEach(f -> coleccion.addCriterio(f));
     }
     Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
-    return ColeccionConverter.fromEntity(coleccionGuardada);
+    return coleccionConverter.fromEntity(coleccionGuardada);
   }
 
   public List<ColeccionDTOSalida> getColeccionesDTO() {
     List<Coleccion> colecciones = coleccionRepository.findAll();
-    return colecciones.stream().map(c -> ColeccionConverter.fromEntity(c)).toList();
+    return colecciones.stream().map(c -> coleccionConverter.fromEntity(c)).toList();
   }
 
   public List<Coleccion> getColecciones() {
@@ -88,7 +91,9 @@ public class ColeccionService {
 
   public ColeccionDTOSalida getColeccionDTO(String coleccionId) {
     Coleccion coleccion = this.getColeccion(coleccionId);
-    return ColeccionConverter.fromEntity(coleccion);
+    ColeccionDTOSalida respuesta = coleccionConverter.fromEntity(coleccion);
+    respuesta.setCantSolicitudesSpam(this.obtenerCantSolicitudesSpam(coleccion.getHechos()));
+    return respuesta;
   }
 
   private Integer obtenerCantSolicitudesSpam(Set<Hecho> hechos) {
@@ -108,7 +113,7 @@ public class ColeccionService {
   @Transactional
   public void updateColeccion(String coleccionId, ColeccionDTOEntrada dto) {
     Coleccion coleccion = this.getColeccion(coleccionId);
-
+    System.out.println("ACTUALIZAR COLECCION");
     if (dto.getTitulo() != null) {
       coleccion.setTitulo(dto.getTitulo());
     }
@@ -118,7 +123,7 @@ public class ColeccionService {
     if (dto.getFuentes() != null) {
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
-        Fuente fuente = FuenteConverter.fromDto(fuenteDTO);
+        Fuente fuente = fuenteConverter.fromDto(fuenteDTO);
         fuentes.add(fuente);
       });
       coleccion.limpiarFuentes();
@@ -144,7 +149,7 @@ public class ColeccionService {
   public void refrescoColecciones() {
     List <Coleccion> colecciones = this.getColecciones();
     colecciones.forEach(coleccion -> coleccion.getFuentes().forEach(fuente -> {
-      fuente.refrescarHechos();
+      fuente.refrescarHechos(hechoConverter);
       Set<Hecho> hechosFuente = fuente.getHechos();
 
       hechosFuente.forEach(h -> {
@@ -216,7 +221,7 @@ public class ColeccionService {
 
 
   public void addFuente(String coleccionId, FuenteDTO dto) {
-    Fuente fuente = FuenteConverter.fromDto(dto);
+    Fuente fuente = fuenteConverter.fromDto(dto);
     Coleccion coleccion = this.getColeccion(coleccionId);
     coleccion.addFuente(fuente);
     coleccionRepository.save(coleccion);
