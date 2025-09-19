@@ -1,8 +1,8 @@
 package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
+import ar.edu.utn.frba.dds.models.enums.EstadoHecho;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +45,10 @@ public class Hecho {
     private LocalDateTime fechaAcontecimiento;
 
     @Column(name = "fecha_carga")
-    private LocalDateTime fechaCarga;
+    private LocalDateTime fechaCarga = LocalDateTime.now();
+
+    @Column(name = "fecha_ultima_modificacion")
+    private LocalDateTime fechaUltimaModificacion;
 
     @OneToOne
     @JoinColumn(name = "origen_id")
@@ -56,10 +59,24 @@ public class Hecho {
     @JoinColumn(name = "hecho_id", referencedColumnName = "id")
     private List<Multimedia> multimedia = new ArrayList<>(List.of());
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false)
+    @Builder.Default
+    private EstadoHecho estadoHecho = EstadoHecho.PENDIENTE;
+
     //
     @Builder.Default
     @Column(name = "eliminado")
     private Boolean eliminado = Boolean.FALSE;
+
+    @Column(name = "motivo_rechazo", columnDefinition = "TEXT")
+    private String motivoRechazo = null;
+
+    @Column(name = "sugerencias", columnDefinition = "TEXT")
+    private String sugerencias = null;
+
+    @Column(name = "revisado_por")
+    private String revisadoPor = null;
 
   @Override
   public boolean equals(Object o) {
@@ -77,15 +94,54 @@ public class Hecho {
   }
 
   public void actualizarDesde(HechoInputDTO dto) {
-    if (dto.getTitulo() != null) {
-      titulo = dto.getTitulo();
+    if (dto.getTitulo() != null && !dto.getTitulo().isBlank()) {
+      this.titulo = dto.getTitulo();
     }
-    if (dto.getDescripcion() != null) {
-      descripcion = dto.getDescripcion();
+    if (dto.getDescripcion() != null && !dto.getDescripcion().isBlank()) {
+      this.descripcion = dto.getDescripcion();
     }
+    if (dto.getCategoria() != null) {
+      this.categoria = Categoria.builder()
+          .nombre(dto.getCategoria())
+          .build();
+    }
+    if (dto.getLatitud() != null && dto.getLongitud() != null) {
+      this.ubicacion = new Ubicacion(dto.getLatitud(), dto.getLongitud());
+    }
+    this.fechaUltimaModificacion = LocalDateTime.now();
   }
 
   public void addMultimedia(Multimedia multimediaNueva) {
     multimedia.add(multimediaNueva);
+  }
+
+  public boolean estaAceptado() {
+    return
+        this.estadoHecho == EstadoHecho.ACEPTADO || this.estadoHecho == EstadoHecho.ACEPTADO_CON_SUGERENCIAS;
+  }
+
+  public void aceptar(String supervisor) {
+      this.estadoHecho = EstadoHecho.ACEPTADO;
+      this.revisadoPor = supervisor;
+  }
+
+  public void aceptarConSugerencias(String supervisor, String sugerencias) {
+      this.estadoHecho = EstadoHecho.ACEPTADO_CON_SUGERENCIAS;
+      this.revisadoPor = supervisor;
+      this.sugerencias = sugerencias;
+  }
+
+  public void rechazar(String supervisor, String motivoRechazo) {
+      this.estadoHecho = EstadoHecho.RECHAZADO;
+      this.revisadoPor = supervisor;
+      this.motivoRechazo = motivoRechazo;
+  }
+
+  public boolean estaPendiente() {
+    return this.estadoHecho == EstadoHecho.PENDIENTE;
+  }
+
+  public boolean estaRechazado() {
+    return this.estadoHecho == EstadoHecho.RECHAZADO;
   }
 }

@@ -10,7 +10,6 @@ entity "Hecho" {
   *titulo: VARCHAR(30)
   *descripcion: VARCHAR(30)
   *categoria_id <<FK>>
-  *fuente_id <<FK>>
   *ubicacion_id <<FK>>
   *contribuyente_id <<FK>>
   *fecha_acontecimiento: DATETIME()
@@ -25,11 +24,6 @@ entity "Categoria" {
 }
 
 Categoria ||--|| Hecho
-
-entity "FuenteDeDatos" as Fuente {
-  *id: INTEGER(9) <<PK>>
-  --
-}
 
 entity "Contribuyente" {
   *id: INTEGER(9) <<PK>>
@@ -70,18 +64,7 @@ entity "Origen" {
 
 }
 
-entity "Coleccion" {
-    *id: INTEGER(9) <<PK>>
-    --
-    *coleccion_titulo: VARCHAR(30)
-    *coleccion_descripcion: VARCHAR(256)
-}
 
-entity "coleccion_fuente" {
-    *coleccion_id: INTEGER(9) <<PK, FK>>
-    *fuente_id: INTEGER(9) <<PK, FK>>
-    --
-}
 
 entity "Ubicacion" {
     *id: INTEGER(9) <<PK>>
@@ -97,15 +80,9 @@ Hecho ||--o{ Multimedia
 Hecho ||--|| Solicitud
 Hecho }|--|| Ubicacion
 
-
-Fuente ||--|{ Hecho
 Origen ||--|{ Hecho
 
 Contribuyente ||--|{ Hecho
-
-Coleccion ||--|{ coleccion_fuente
-Fuente ||--|{ coleccion_fuente
-
 
 
 

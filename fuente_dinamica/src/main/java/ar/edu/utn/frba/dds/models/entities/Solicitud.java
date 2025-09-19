@@ -1,9 +1,8 @@
 package ar.edu.utn.frba.dds.models.entities;
 
-import ar.edu.utn.frba.dds.models.enums.Estado;
+import ar.edu.utn.frba.dds.models.enums.EstadoSolicitud;
 import java.time.LocalDateTime;
 
-import ar.edu.utn.frba.dds.models.enums.Motivo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,10 +24,6 @@ public class Solicitud {
     @Column(name = "texto", columnDefinition = "TEXT")
     private String texto;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "motivo")
-    private Motivo motivo;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "hecho_id", referencedColumnName = "id")
     private Hecho hecho;
@@ -36,7 +31,7 @@ public class Solicitud {
     @Enumerated(EnumType.STRING)
     @Column(name = "estado")
     @Builder.Default
-    private Estado estado = Estado.PENDIENTE;
+    private EstadoSolicitud estadoSolicitud = EstadoSolicitud.PENDIENTE;
 
     @Column(name = "fecha")
     @Builder.Default
@@ -53,10 +48,10 @@ public class Solicitud {
   }
 
     public void rechazar() {
-        this.estado = Estado.RECHAZADA; // TODO: Chequear esto.
+        this.estadoSolicitud = EstadoSolicitud.RECHAZADA; // TODO: Chequear esto.
     }
 
     public void aceptar() {
-        this.estado = Estado.ACEPTADA; // TODO: Chequear esto.
+        this.estadoSolicitud = EstadoSolicitud.ACEPTADA; // TODO: Chequear esto.
     }
 }

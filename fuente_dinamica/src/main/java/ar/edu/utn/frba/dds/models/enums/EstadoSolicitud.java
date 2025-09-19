@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.dds.models.enums;
 
-public enum Estado {
+public enum EstadoSolicitud {
   PENDIENTE,
   ACEPTADA,
   RECHAZADA

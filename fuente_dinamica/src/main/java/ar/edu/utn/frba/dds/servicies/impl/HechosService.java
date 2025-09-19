@@ -4,16 +4,17 @@ import ar.edu.utn.frba.dds.mappers.HechoMapper;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.MultimediaInputDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudModificacionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoPagDTO;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoRevisionOutputDTO;
 import ar.edu.utn.frba.dds.models.entities.Categoria;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Multimedia;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.enums.Formato;
-import ar.edu.utn.frba.dds.models.enums.Motivo;
 import ar.edu.utn.frba.dds.models.repositories.IContribuyenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
@@ -41,7 +42,7 @@ public class HechosService implements IHechosService {
     this.solicitudesRepository = solicitudesRepository;
   }
 
-  @Override
+  /*@Override
   public void modificarHecho(SolicitudModificacionInputDTO solicitudModificacion) {
     var hecho = hechosRepository
             .findById(solicitudModificacion.getHecho().getId())
@@ -67,6 +68,8 @@ public class HechosService implements IHechosService {
     agregarNuevaSolicitud(solicitudModificacion, hecho);
   }
 
+   */
+
   private void agregarNuevaSolicitud(SolicitudModificacionInputDTO solicitudDTO, Hecho hecho) {
       var solicitud = Solicitud.builder()
               .titulo(solicitudDTO.getTitulo())
@@ -75,7 +78,6 @@ public class HechosService implements IHechosService {
               .responsable(solicitudDTO.getContribuyente().getNombre())
               .build();
 
-      solicitud.setMotivo(Motivo.MODIFICACION);
       solicitudesRepository.save(solicitud);
   }
 
@@ -86,11 +88,12 @@ public class HechosService implements IHechosService {
 
   @Override
   public List<HechoOutputDTO> getHechos() {
-    List<Hecho> hechos = hechosRepository.findAll();
+    List<Hecho> hechos = hechosRepository.findHechosAceptados();
 
     return hechos.stream()
-        .map(HechoMapper::toHechoOutputDTO)
-        .collect(Collectors.toList());
+            .filter(hecho -> !hecho.getEliminado())
+            .map(HechoMapper::toHechoOutputDTO)
+            .collect(Collectors.toList());
   }
 
   @Override
@@ -134,6 +137,84 @@ public class HechosService implements IHechosService {
         .fecha_hecho(hechoGuardado.getFechaAcontecimiento())
         .created_at(hechoGuardado.getFechaCarga())
         .build();
+  }
+
+  // Métodos para revisión de admins
+
+  @Override
+  public List<HechoRevisionOutputDTO> getHechosPendientes() {
+    List<Hecho> hechosPendientes = hechosRepository.findHechosPendientes();
+
+    return hechosPendientes.stream()
+        .map((this::toHechoRevisionOutputDTO))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public HechoRevisionOutputDTO aceptarHecho(Long id, RevisionInputDTO revisionDto) {
+    Hecho hecho = hechosRepository.findById(id)
+            .orElseThrow(()-> new RuntimeException("Hecho no encontrado con id: " + id));
+
+    if (!hecho.estaPendiente()) {
+      throw new RuntimeException("El hecho ya fue revisado anteriormente");
+    }
+
+    hecho.aceptar(revisionDto.getSupervisor());
+    Hecho hechoActualizado = hechosRepository.save(hecho);
+
+    return toHechoRevisionOutputDTO(hechoActualizado);
+  }
+
+  @Override
+  public HechoRevisionOutputDTO aceptarHechoConSugerencias(Long id, RevisionInputDTO revisionDto) {
+    Hecho hecho = hechosRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Hecho no encontrado con id: " + id));
+
+    if (!hecho.estaPendiente()) {
+      throw new RuntimeException("El hecho ya fue revisado anteriormente");
+    }
+
+    if (hecho.getEliminado()) {
+      throw new RuntimeException("No se puede aceptar un hecho eliminado");
+    }
+
+    hecho.aceptarConSugerencias(revisionDto.getSupervisor(), revisionDto.getComentario());
+    Hecho hechoActualizado = hechosRepository.save(hecho);
+
+    return toHechoRevisionOutputDTO(hechoActualizado);
+  }
+
+  @Override
+  public HechoRevisionOutputDTO rechazarHecho(Long id, RevisionInputDTO revisionDto) {
+    Hecho hecho = hechosRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Hecho no encontrado con id: " + id));
+
+    if (!hecho.estaPendiente()) {
+      throw new RuntimeException("El hecho ya fue revisado anteriormente");
+    }
+
+    hecho.rechazar(revisionDto.getSupervisor(), revisionDto.getComentario());
+    Hecho hechoActualizado = hechosRepository.save(hecho);
+
+    return toHechoRevisionOutputDTO(hechoActualizado);
+  }
+
+  private HechoRevisionOutputDTO toHechoRevisionOutputDTO(Hecho hecho) {
+    return HechoRevisionOutputDTO.builder()
+            .id(hecho.getId())
+            .titulo(hecho.getTitulo())
+            .descripcion(hecho.getDescripcion())
+            .categoria(hecho.getCategoria().getNombre())
+            .latitud(hecho.getUbicacion().getLatitud())
+            .longitud((hecho.getUbicacion().getLongitud()))
+            .fecha_acontecimiento(hecho.getFechaAcontecimiento())
+            .fecha_carga(hecho.getFechaCarga())
+            .estado_hecho(hecho.getEstadoHecho())
+            .motivo_rechazo(hecho.getMotivoRechazo())
+            .sugerencias(hecho.getSugerencias())
+            .fecha_revision(null) //debería agregarlo a hecho?
+            .revisado_por(hecho.getRevisadoPor())
+            .build();
   }
 }
 
