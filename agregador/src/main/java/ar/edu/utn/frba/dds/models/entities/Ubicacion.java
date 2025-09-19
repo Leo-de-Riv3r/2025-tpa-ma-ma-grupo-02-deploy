@@ -1,27 +1,37 @@
 package ar.edu.utn.frba.dds.models.entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
+//@Embeddable
+@Embeddable
 public class Ubicacion {
-  private final Double latitud;
-  private final Double longitud;
-  private String direccion;
-  private String nombre;
+  //@Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+  @Column
+  private Double latitud;
+  @Column
+  private  Double longitud;
+  @Embedded
+  private Lugar lugar;
 
-  public Ubicacion(Double latitud, Double longitud) {
-    this.latitud = latitud;
-    this.longitud = longitud;
+  public Ubicacion() {
   }
 
-  public Ubicacion(Double latitud, Double longitud, String direccion, String nombre) {
-    this.latitud = latitud;
-    this.longitud = longitud;
-    this.direccion = direccion;
-    this.nombre = nombre;
-  }
 
   public Boolean mismaUbicacion(Double latitud, Double longitud) {
     return this.latitud.equals(latitud) && this.longitud.equals(longitud);

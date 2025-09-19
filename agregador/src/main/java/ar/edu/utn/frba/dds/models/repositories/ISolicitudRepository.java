@@ -3,15 +3,8 @@ package ar.edu.utn.frba.dds.models.repositories;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ISolicitudRepository {
-  void createSolicitud(Solicitud solicitud);
+public interface ISolicitudRepository extends JpaRepository<Solicitud, String> {
 
-  void aceptarSolicitud(String id, String supervisor);
-
-  void rechazarSolicitud(String id, String supervisor);
-
-  boolean hechoEliminado(Hecho hecho);
-
-  List<Solicitud> getSolicitudes();
 }
