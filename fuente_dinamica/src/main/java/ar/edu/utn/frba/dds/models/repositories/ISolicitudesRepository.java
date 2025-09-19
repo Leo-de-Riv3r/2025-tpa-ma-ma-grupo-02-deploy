@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface ISolicitudesRepository extends JpaRepository<Solicitud,Long> {
-    List<Solicitud> findByEstado(EstadoSolicitud estadoSolicitud);
+    List<Solicitud> findByEstadoSolicitud(EstadoSolicitud estadoSolicitud);
 
     @Query("SELECT s FROM Solicitud s WHERE s.estadoSolicitud = 'PENDIENTE'")
     List<Solicitud> findSolicitudesPendientes();
