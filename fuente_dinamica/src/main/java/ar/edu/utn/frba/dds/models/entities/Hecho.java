@@ -37,7 +37,7 @@ public class Hecho {
     @JoinColumn(name = "hecho_id")
     private Set<Etiqueta> etiquetas;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "ubicacion_id", referencedColumnName = "id")
     private Ubicacion ubicacion;
 
@@ -50,7 +50,7 @@ public class Hecho {
     @Column(name = "fecha_ultima_modificacion")
     private LocalDateTime fechaUltimaModificacion;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "origen_id")
     private Origen origen;
 

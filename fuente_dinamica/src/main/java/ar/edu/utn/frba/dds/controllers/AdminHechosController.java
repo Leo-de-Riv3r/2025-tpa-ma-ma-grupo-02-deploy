@@ -25,7 +25,7 @@ public class AdminHechosController {
   @PutMapping("/{id}/aceptar")
   public ResponseEntity<HechoRevisionOutputDTO> aceptarHecho(@PathVariable Long id, @RequestBody RevisionInputDTO revisionDto) {
     try {
-      HechoRevisionOutputDTO hechoAceptado = hechosService.aceptarHecho(id,revisionDto);
+      HechoRevisionOutputDTO hechoAceptado = hechosService.aceptarHecho(id, revisionDto);
       return ResponseEntity.ok(hechoAceptado);
     } catch (RuntimeException e) {
       return ResponseEntity.badRequest().build();

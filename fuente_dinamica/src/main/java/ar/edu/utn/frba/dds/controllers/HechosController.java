@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HechosController {
   private final IHechosService hechosService;
 
-  public HechosController(HechosService hechosService) {
+  public HechosController(IHechosService hechosService) {
     this.hechosService = hechosService;
   }
 

@@ -1,6 +1,10 @@
 package ar.edu.utn.frba.dds.models.dtos.input;
 
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import lombok.Data;
 
 import java.util.List;
@@ -13,6 +17,10 @@ public class HechoInputDTO {
   private String categoria;
   private Double latitud;
   private Double longitud;
+
+  @JsonSetter(nulls = Nulls.AS_EMPTY)
   private List<MultimediaInputDTO> multimedia;
-  private String fechaAcontecimiento;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private LocalDateTime fechaAcontecimiento;
 }

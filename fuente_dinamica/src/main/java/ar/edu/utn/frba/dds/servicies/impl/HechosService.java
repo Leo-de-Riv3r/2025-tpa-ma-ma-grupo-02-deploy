@@ -114,7 +114,7 @@ public class HechosService implements IHechosService {
                 .nombre(hechoDto.getCategoria())
                 .build())
         .ubicacion(new Ubicacion(hechoDto.getLatitud(), hechoDto.getLongitud()))
-        .fechaAcontecimiento(LocalDateTime.parse(hechoDto.getFechaAcontecimiento(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+        .fechaAcontecimiento(hechoDto.getFechaAcontecimiento())
         .build();
         // TODO: Armar repositorio para multimedia y persistirlo
       hechoDto.getMultimedia().forEach(multimediaInputDTO -> {
