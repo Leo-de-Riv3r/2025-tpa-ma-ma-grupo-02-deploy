@@ -10,10 +10,12 @@ import jakarta.persistence.Table;
 import java.util.Timer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Entity @Table(name = "filtroProvincia")
+@NoArgsConstructor
 public class FiltroProvincia extends IFiltroStrategy{
   @Column
   private String provincia;

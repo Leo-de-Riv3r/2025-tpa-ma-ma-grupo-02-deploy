@@ -5,7 +5,9 @@ import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.FiltroDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
@@ -65,13 +67,13 @@ public class AgregadorController {
     coleccionService.deleteColeccion(id);
   }
 
+  //ver esto
   @GetMapping("/hechos")
   public Set<Hecho> getHechos(
       @RequestParam(required = false) Integer page,
-      @RequestParam(required = false) Integer per_page,
-      @RequestParam(required = false) String textoBusqueda
+      @RequestParam(required = false) Integer per_page
   ) {
-    return coleccionService.getHechos(null, false, page, per_page, null, textoBusqueda);
+    return coleccionService.getHechos(null, false, page, per_page, null);
   }
 
   @GetMapping("/colecciones/{id}/hechos")
@@ -100,7 +102,7 @@ public class AgregadorController {
         departamento
     );
 
-    return coleccionService.getHechos(id, curados, page, per_page, filtros, null);
+    return coleccionService.getHechos(id, curados, page, per_page, filtros);
   }
 
   @PutMapping("/colecciones/{id}/algoritmo")
@@ -128,15 +130,28 @@ public class AgregadorController {
     return ResponseEntity.ok("Filtro agregado correctamente");
   }
 
-  //prueba
-  @PutMapping("/colecciones")
+  @PutMapping("/colecciones/normaliza")
   public void actualizarHechosCurados() {
     coleccionService.refrescarHechosCurados();
   }
 
-  @PutMapping("/colecciones/normaliza")
-  public void actualiza() {
-    coleccionService.refrescoColecciones();
+  @PutMapping("/colecciones")
+  public void actualiza() {coleccionService.refrescoFuentes();}
+
+  //HECHOS
+  @GetMapping("/hechos/{idHecho}")
+  public ResponseEntity<HechoDtoSalida> obtenerHecho(
+      @PathVariable Long idHecho) {
+    HechoDtoSalida respuesta = coleccionService.getHechoDto(idHecho);
+    return ResponseEntity.ok(respuesta);
+  }
+
+  @GetMapping("/hechos/{idHecho}/detalles")
+  public ResponseEntity<HechoDetallesDtoSalida> obtenerDetallesHecho(
+      @PathVariable long idHecho
+  ) {
+    HechoDetallesDtoSalida respuesta = coleccionService.getHechoDtoDetalles(idHecho);
+    return ResponseEntity.ok(respuesta);
   }
   //SOLICITUDES
   @PostMapping("/solicitudes")

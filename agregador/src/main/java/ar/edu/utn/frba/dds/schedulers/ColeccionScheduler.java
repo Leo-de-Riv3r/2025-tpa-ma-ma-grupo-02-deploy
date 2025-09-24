@@ -11,13 +11,17 @@ public class ColeccionScheduler {
     this.coleccionesService = coleccionesService;
   }
 
+  //refresco fuentes directamente porque pueden repetirse entre colecciones
   @Scheduled(fixedRate = 3600000) // 1 hora
   public void refrescarColecciones() {
-    coleccionesService.refrescoColecciones();
+    coleccionesService.refrescoFuentes();
+    coleccionesService.refrescarHechosFiltrados();
   }
 
   @Scheduled(fixedRate = 86400000) // 24 horas
   public void refrescarHechosCurados() {
     coleccionesService.refrescarHechosCurados();
   }
+
+  //agregar cronjob para actualizar hechos filtrados
 }

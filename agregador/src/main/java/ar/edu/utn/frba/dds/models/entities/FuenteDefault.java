@@ -22,7 +22,7 @@ public class FuenteDefault extends Fuente {
   }
 
   @Override
-  public void refrescarHechos(HechoConverter hechoConverter) {
+  public Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter) {
     try {
       //this.hechos.clear();
       WebClient webClient = WebClient.builder().baseUrl(url).build();
@@ -42,8 +42,7 @@ public class FuenteDefault extends Fuente {
 
       assert hechos != null;
       //solo agrego hechos nuevos segun titulo categoria y descripcion
-      hechos = hechos.stream().filter(h -> !this.existeHecho(h)).toList();
-      if (!hechos.isEmpty()) this.hechos.addAll(hechos);
+      return hechos.stream().filter(h -> !this.existeHecho(h)).collect(Collectors.toSet());
     } catch (Exception e) {
       throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.id);
     }

@@ -30,12 +30,17 @@ public class Coleccion {
   @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
   private Set<IFiltroStrategy> criterios = new HashSet<>();
 
-  @ManyToMany
-  @JoinTable(joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @JoinTable(
+  name="hecho_filtrado",joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
   inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id"))
   private Set<Hecho> hechosFiltrados = new HashSet<>();
-  @OneToMany(cascade = CascadeType.ALL)
-  @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
+
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @JoinTable(name = "coleccion_fuente",
+      joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "fuente_id", referencedColumnName = "id")
+  )
   private Set<Fuente> fuentes;
 
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -51,7 +56,6 @@ public class Coleccion {
     Set<Hecho> hechos = new HashSet<>();
     fuentes.stream()
         .forEach(fuente -> hechos.addAll(fuente.getHechos()));
-
     //filtro duplicados segun titulo categoria descripcion y fecha acontecimiento
     Set<String> vistos = new HashSet<>();
     Set<Hecho> resultado = new HashSet<>();
@@ -68,8 +72,11 @@ public class Coleccion {
         resultado.add(hecho);
       }
     }
-
-    return resultado;
+    if (!criterios.isEmpty()) {
+      return resultado.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet());
+    } else {
+      return resultado;
+    }
   }
 
   public void refrescarHechosCurados(EntityManager em) {
@@ -77,7 +84,12 @@ public class Coleccion {
       algoritmoConsenso.actualizarHechos(this.getHechos(), fuentes);
     }
   }
-
+  public Set<Hecho> getHechosFiltrados() {
+    if (!criterios.isEmpty()){
+      return this.getHechos().stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet());
+    }
+    else return new HashSet<>();
+  }
   public Set<Hecho> getHechosCurados() {
     if (algoritmoConsenso != null) {
       return algoritmoConsenso.getHechosCurados();
@@ -104,9 +116,14 @@ public class Coleccion {
     this.fuentes.addAll(fuentes);
   }
 
-  public void refrescarHechosFiltrados() {
+  public void actualizarHechosFiltrados() {
     this.hechosFiltrados.clear();
-    Set<Hecho> hechos = this.getHechos();
-    this.hechosFiltrados.addAll(hechos.stream().filter(h -> h.cumpleFiltros(this.criterios)).collect(Collectors.toSet()));
+    Set<Hecho> hechosColeccion = this.getHechos();
+    this.hechosFiltrados.addAll(hechosColeccion.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet()));
+  }
+
+  public void setearCriterios(Set<IFiltroStrategy> filtros) {
+    this.criterios.clear();
+    this.criterios.addAll(filtros);
   }
 }

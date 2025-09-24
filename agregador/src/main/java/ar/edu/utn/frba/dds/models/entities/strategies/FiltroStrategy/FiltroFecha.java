@@ -15,11 +15,13 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.function.Function;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity @Table(name="filtroFecha")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "tipo_filtro_fecha")
+@NoArgsConstructor(force = true)
 public abstract class FiltroFecha extends IFiltroStrategy {
   @Column
   private LocalDateTime fechaInicio;

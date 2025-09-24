@@ -9,11 +9,13 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity @Table(name="filtroTitulo")
+@NoArgsConstructor
 public class FiltroTitulo extends IFiltroStrategy {
   @Column
   private String titulo;

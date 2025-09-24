@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.entities.enums.TipoEstado;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,7 +28,7 @@ import lombok.Setter;
 @Table(name = "solicitud")
 public class Solicitud {
   @Id
-  private String id;
+  private Long id;
   @Column
   @Getter
   @Setter
@@ -57,7 +58,7 @@ public class Solicitud {
   //one to many
   @Getter
   @Setter
-  @OneToOne
+  @OneToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "estado_id", referencedColumnName = "id")
   private Estado estadoActual;
   @Getter
@@ -71,7 +72,6 @@ public class Solicitud {
   private Hecho hecho;
 
   public Solicitud() {
-    this.id = UUID.randomUUID().toString();
     Estado estado = new Estado();
     estado.setSolicitud(this);
     this.estadoActual = estado;

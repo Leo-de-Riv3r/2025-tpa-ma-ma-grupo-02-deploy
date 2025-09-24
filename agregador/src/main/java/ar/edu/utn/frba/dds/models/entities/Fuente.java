@@ -14,6 +14,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -45,8 +47,12 @@ public abstract class Fuente {
   @Column
   protected TipoFuente tipoFuente;
 
-  @OneToMany(cascade = CascadeType.ALL) @JoinColumn(name = "fuente_id" , referencedColumnName = "id")
-  //@Transient
+  @ManyToMany
+  @JoinTable(
+      name = "fuente_hecho",
+      joinColumns = @JoinColumn(name = "fuente_id" , referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id")
+  )
   protected Set<Hecho> hechos = new HashSet<>();
 
   public Fuente(String url, TipoFuente tipoFuente) {
@@ -54,17 +60,18 @@ public abstract class Fuente {
     this.tipoFuente = tipoFuente;
   }
 
-  public abstract void refrescarHechos(HechoConverter hechoConverter);
+  public abstract Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter);
 
   public abstract Set<Hecho> getHechos();
-
-  public void setHechos(List<Hecho> hechos) {
-    this.hechos.clear();
-    this.hechos.addAll(hechos);
-  }
 
   public Boolean existeHecho(Hecho hecho) {
     return this.hechos.stream()
         .anyMatch(h -> Objects.equals(h.getTitulo(), hecho.getTitulo()) && Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion()));
   }
+
+  public void addHechos(Set<Hecho> hechos) {
+    this.hechos.addAll(hechos);
+  }
+
+  public void addHecho(Hecho hecho) {this.hechos.add(hecho);}
 }

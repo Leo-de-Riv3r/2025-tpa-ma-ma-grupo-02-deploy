@@ -1,18 +1,16 @@
 package ar.edu.utn.frba.dds.models.entities.utils;
 
-import ar.edu.utn.frba.dds.externalApi.GeoRefApiAdapter;
-import ar.edu.utn.frba.dds.externalApi.NormalizadorUbicacionAdapter;
 import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.LugarDTO;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Lugar;
 import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 @Component
 public class HechoConverter {
@@ -24,6 +22,8 @@ public class HechoConverter {
     ubicacion.setLongitud(dto.getLongitud());
     Origen origenExistente = new Origen();
     origenExistente.setTipo(tipoFuente);
+    origenExistente.setNombreAutor("---");
+    origenExistente.setApellidoAutor("---");
     Hecho hecho = new Hecho();
     hecho.setTitulo(dto.getTitulo());
     hecho.setDescripcion(dto.getDescripcion());
@@ -39,8 +39,6 @@ public class HechoConverter {
   public Lugar obtenerLugar(Ubicacion ubicacion) {
     String url = "https://apis.datos.gob.ar/georef/api/ubicacion";
     WebClient webClient = WebClient.builder().baseUrl(url).build();
-    System.out.println("latitud: " + ubicacion.getLatitud());
-    System.out.println("longitud: " + ubicacion.getLongitud());
     LugarDTO ubi = webClient.get()
         .uri(uriBuilder -> uriBuilder
             .queryParam("lat", ubicacion.getLatitud())
@@ -52,12 +50,41 @@ public class HechoConverter {
 
     //convertir dto a lugar/
     Lugar lugar = new Lugar();
-
     assert ubi != null;
     lugar.setDepartamento(ubi.getUbicacion().getDepartamento().getNombre());
     lugar.setProvincia(ubi.getUbicacion().getProvincia().getNombre());
     lugar.setMunicipio(ubi.getUbicacion().getMunicipio().getNombre());
-    System.out.println(lugar);
     return lugar;
+  }
+
+  public HechoDtoSalida fromEntity(Hecho hecho) {
+    HechoDtoSalida hechoDtoSalida = new HechoDtoSalida();
+    hechoDtoSalida.setTitulo(hecho.getTitulo());
+    hechoDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
+    hechoDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
+    hechoDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+    hechoDtoSalida.setCategoria(hecho.getCategoria());
+    hechoDtoSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
+    hechoDtoSalida.setFechaCarga(hecho.getFechaCarga());
+    return hechoDtoSalida;
+  }
+
+  public HechoDetallesDtoSalida fromEntityDetails(Hecho hecho) {
+    //
+    HechoDetallesDtoSalida hechoDetallesDtoSalida = new HechoDetallesDtoSalida();
+    hechoDetallesDtoSalida.setId(hecho.getId());
+    hechoDetallesDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
+    hechoDetallesDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+    hechoDetallesDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
+    hechoDetallesDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
+    hechoDetallesDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
+    hechoDetallesDtoSalida.setCategoria(hecho.getCategoria());
+    hechoDetallesDtoSalida.setFechaCarga(hecho.getFechaCarga());
+    hechoDetallesDtoSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
+    hechoDetallesDtoSalida.setDescripcion(hecho.getDescripcion());
+    hechoDetallesDtoSalida.setMultimedia(hecho.getMultimedia());
+    hechoDetallesDtoSalida.setTitulo(hecho.getTitulo());
+    hechoDetallesDtoSalida.setTipoOrigen(hecho.getOrigen().getTipo());
+    return hechoDetallesDtoSalida;
   }
 }

@@ -26,10 +26,8 @@ public class FuenteConverter {
         Fuente fuente;
         if (tipoFuente == TipoFuente.PROXY_METAMAPA) {
           fuente = new FuenteProxyMetamapa(fuenteDTO.getUrl());
-          //fuente.cambiarHechos(fuente.getHechos());
         } else if (tipoFuente == TipoFuente.DINAMICA || tipoFuente == TipoFuente.ESTATICA) {
           fuente = new FuenteDefault(fuenteDTO.getUrl(), tipoFuente);
-          fuente.refrescarHechos(hechoConverter);
         } else {
           throw new IllegalArgumentException("Tipo de fuente " + fuenteDTO.getTipoFuente() + " no soportado");
         }

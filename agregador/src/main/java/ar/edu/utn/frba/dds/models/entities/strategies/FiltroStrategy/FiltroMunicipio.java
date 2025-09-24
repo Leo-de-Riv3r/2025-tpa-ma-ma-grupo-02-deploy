@@ -9,10 +9,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Entity @Table(name = "filtroMunicipio")
+@NoArgsConstructor
 public class FiltroMunicipio extends IFiltroStrategy{
   @Column
   private String municipio;
