@@ -5,11 +5,12 @@ import lombok.Setter;
 
 @Setter @Getter
 public class HechoDtoSalida {
+  private Long id;
   private String titulo;
   private String categoria;
   private String provincia;
   private String municipio;
   private String departamento;
-  private LocalDateTime fechaAcontecimiento;
-  private LocalDateTime fechaCarga;
+  private Double latitud;
+  private Double longitud;
 }

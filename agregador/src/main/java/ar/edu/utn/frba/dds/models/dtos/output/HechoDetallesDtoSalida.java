@@ -21,5 +21,5 @@ public class HechoDetallesDtoSalida {
   private TipoFuente tipoOrigen;
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
-  private List<Multimedia> multimedia;
+  private List<MultimediaDtoOutput> multimedia;
 }

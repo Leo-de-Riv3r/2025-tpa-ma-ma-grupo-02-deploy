@@ -5,6 +5,7 @@ import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroCateg
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroDepartamento;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFechaAcontecimiento;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFechaReporte;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFuente;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroMunicipio;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroProvincia;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroTitulo;
@@ -26,6 +27,7 @@ public class FiltroStrategyFactory {
       case FILTRO_PROVINCIA -> new FiltroProvincia(dto.getValor());
       case FILTRO_DEPARTAMENTO -> new FiltroDepartamento(dto.getValor());
       case FILTRO_MUNICIPIO -> new FiltroMunicipio(dto.getValor());
+      case FILTRO_FUENTE -> new FiltroFuente(dto.getTipoFuente());
     };
   } catch (Exception e) {
     throw new IllegalArgumentException("Tipo de filtro " + dto.getTipoFiltro() + " no soportada");

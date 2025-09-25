@@ -223,7 +223,7 @@ public class ColeccionService {
   }
 
 
-  public Set<Hecho> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros) {
+  public Set<HechoDtoSalida> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros) {
     Set<Hecho> hechos = new HashSet<>();
     if (coleccionId != null) {
       Optional<Coleccion> coleccion = coleccionRepository.findById(coleccionId);
@@ -258,7 +258,7 @@ public class ColeccionService {
     //Set<Hecho> finalHechos = hechos;
     //return hechos.stream().filter(h -> hechoRepetido(h)).collect(Collectors.toSet());
     hechos = hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
-    return filtrarDuplicados(hechos);
+    return filtrarDuplicados(hechos).stream().map(h -> hechoConverter.fromEntity(h)).collect(Collectors.toSet());
     //filtrar hechos que no esten repetidos para mejorar las vistas
   }
 
@@ -330,7 +330,7 @@ public class ColeccionService {
     return hechoConverter.fromEntity(hecho);
   }
 
-  public HechoDetallesDtoSalida getHechoDtoDetalles(long idHecho) {
+  public HechoDetallesDtoSalida getHechoDtoDetalles(Long idHecho) {
     Hecho hecho = this.getHechoById(idHecho);
     return hechoConverter.fromEntityDetails(hecho);
   }

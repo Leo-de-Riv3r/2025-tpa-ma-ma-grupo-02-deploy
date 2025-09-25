@@ -4,11 +4,17 @@ import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.LugarDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.MultimediaDtoOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Lugar;
+import ar.edu.utn.frba.dds.models.entities.Multimedia;
 import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
+import ar.edu.utn.frba.dds.models.entities.enums.Formato;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -32,7 +38,24 @@ public class HechoConverter {
     hecho.setFechaAcontecimiento(dto.getFechaHecho());
     hecho.setFechaCarga(dto.getCreatedAt());
     hecho.setOrigen(origenExistente);
-    //aplico normalizacion de categoria
+
+    if (dto.getMultimedia() != null || !dto.getMultimedia().isEmpty()) {
+      List<Multimedia> listaMultimedia = new ArrayList<>();
+      dto.getMultimedia().forEach(multimediaDtoInput -> {
+        Multimedia multimedia = new Multimedia();
+        multimedia.setNombre(multimediaDtoInput.getNombre());
+        multimedia.setRuta(multimediaDtoInput.getRuta());
+        try {
+          Formato formato = Formato.valueOf(multimediaDtoInput.getFormato().toUpperCase());
+          multimedia.setFormato(formato);
+        } catch (Exception e){
+          throw new IllegalArgumentException("Tipo de formato " + multimediaDtoInput + " no soportado");
+        }
+      });
+
+      hecho.setMultimedia(listaMultimedia);
+    }
+
     return hecho;
   }
 
@@ -59,13 +82,14 @@ public class HechoConverter {
 
   public HechoDtoSalida fromEntity(Hecho hecho) {
     HechoDtoSalida hechoDtoSalida = new HechoDtoSalida();
+    hechoDtoSalida.setId(hecho.getId());
     hechoDtoSalida.setTitulo(hecho.getTitulo());
     hechoDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
     hechoDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
     hechoDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
     hechoDtoSalida.setCategoria(hecho.getCategoria());
-    hechoDtoSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
-    hechoDtoSalida.setFechaCarga(hecho.getFechaCarga());
+    hechoDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
+    hechoDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
     return hechoDtoSalida;
   }
 
@@ -82,9 +106,20 @@ public class HechoConverter {
     hechoDetallesDtoSalida.setFechaCarga(hecho.getFechaCarga());
     hechoDetallesDtoSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
     hechoDetallesDtoSalida.setDescripcion(hecho.getDescripcion());
-    hechoDetallesDtoSalida.setMultimedia(hecho.getMultimedia());
     hechoDetallesDtoSalida.setTitulo(hecho.getTitulo());
     hechoDetallesDtoSalida.setTipoOrigen(hecho.getOrigen().getTipo());
+
+    if (hecho.getMultimedia() != null) {
+      List<MultimediaDtoOutput> listaMultimedia = new ArrayList<>();
+      hecho.getMultimedia().forEach(multimedia -> {
+        MultimediaDtoOutput multimediaDtoOutput = new MultimediaDtoOutput();
+        multimediaDtoOutput.setNombre(multimedia.getNombre());
+        multimediaDtoOutput.setRuta(multimedia.getRuta());
+        multimediaDtoOutput.setFormato(multimedia.getFormato().toString());
+        listaMultimedia.add(multimediaDtoOutput);
+      });
+      hechoDetallesDtoSalida.setMultimedia(listaMultimedia);
+    }
     return hechoDetallesDtoSalida;
   }
 }

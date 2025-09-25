@@ -69,7 +69,7 @@ public class AgregadorController {
 
   //ver esto
   @GetMapping("/hechos")
-  public Set<Hecho> getHechos(
+  public Set<HechoDtoSalida> getHechos(
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer per_page
   ) {
@@ -77,7 +77,7 @@ public class AgregadorController {
   }
 
   @GetMapping("/colecciones/{id}/hechos")
-  public Set<Hecho> getHechos(
+  public Set<HechoDtoSalida> getHechos(
       @PathVariable String id,
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer per_page,
