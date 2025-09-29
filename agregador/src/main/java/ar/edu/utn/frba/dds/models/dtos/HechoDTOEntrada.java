@@ -31,5 +31,6 @@ public class HechoDTOEntrada {
   private LocalDateTime createdAt;
   @JsonProperty("updated_at")
   private LocalDateTime updatedAt;
+  private Long idAutor;
   private List<MultimediaDtoInput> multimedia;
 }

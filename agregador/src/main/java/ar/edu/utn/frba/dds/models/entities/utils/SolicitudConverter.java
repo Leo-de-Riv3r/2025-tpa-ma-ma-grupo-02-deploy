@@ -22,7 +22,6 @@ public class SolicitudConverter {
       throw new IllegalArgumentException("Falta llenar campos obligatorios");
     }
     Solicitud solicitud = new Solicitud();
-    solicitud.setResponsable(dtoSolicitud.getResponsable());
     solicitud.setTitulo(dtoSolicitud.getTitulo());
     solicitud.setTexto(dtoSolicitud.getTexto());
     //buscar id de hecho
@@ -42,8 +41,6 @@ public class SolicitudConverter {
     dto.setMotivo(solicitud.getTexto());
     dto.setFecha(solicitud.getFecha());
     dto.setEstadoActual(solicitud.getEstadoActual().getEstado().toString());
-    dto.setResponsable(solicitud.getResponsable());
-    dto.setSupervisor(solicitud.getSupervisor());
     dto.setEsSpam(solicitud.getSpam());
     dto.setIdHecho(solicitud.getHecho().getId());
 

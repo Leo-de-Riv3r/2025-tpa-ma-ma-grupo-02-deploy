@@ -33,26 +33,25 @@ public class SolicitudService {
     Solicitud solicitudGuardada = solicitudesEliminacionRepo.save(solicitud);
     if (detectorSpam.esSpam(solicitud.getTexto()) || !solicitud.estaFundado()) {
       this.marcarComospam(solicitudGuardada.getId());
-      this.rechazarSolicitud(solicitudGuardada.getId(), "automatico");
+      this.rechazarSolicitud(solicitudGuardada.getId());
     }
   }
 
-  private void marcarComospam(String id) {
+  private void marcarComospam(Long id) {
     Solicitud solicitud = this.getSolicitud(id);
     solicitud.marcarSpam();
     solicitudesEliminacionRepo.save(solicitud);
   }
 
-  public void rechazarSolicitud(String id, String supervisor) {
+  public void rechazarSolicitud(Long id) {
     Solicitud solicitud = this.getSolicitud(id);
-    solicitud.rechazar(supervisor);
+    solicitud.rechazar();
     solicitudesEliminacionRepo.save(solicitud);
   }
 
-  public void aceptarSolicitud(String id, String supervisor) {
+  public void aceptarSolicitud(Long id) {
     Solicitud solicitud = this.getSolicitud(id);
-    solicitud.setSupervisor(supervisor);
-    solicitud.aceptar(supervisor);
+    solicitud.aceptar();
     solicitudesEliminacionRepo.save(solicitud);
   }
 
@@ -61,7 +60,7 @@ public class SolicitudService {
     return solicitudes.stream().anyMatch(solicitud -> solicitud.getHecho().getId() == hecho.getId());
   }
 
-  public Solicitud getSolicitud(String solicitudId) {
+  public Solicitud getSolicitud(Long solicitudId) {
     return solicitudesEliminacionRepo.findById(solicitudId).orElseThrow(() -> new EntityNotFoundException("Solicitud con id " + solicitudId + " no encontrado"));
   }
 
@@ -80,7 +79,7 @@ public class SolicitudService {
     return cantSolicitudesSpam.get();
   }
 
-  public SolicitudDTOOutput getSolicitudDto(String id) {
+  public SolicitudDTOOutput getSolicitudDto(Long id) {
     Solicitud solicitud = getSolicitud(id);
     return solicitudConverter.fromEntity(solicitud);
   }

@@ -8,7 +8,6 @@ import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFecha
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFuente;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroMunicipio;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroProvincia;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroTitulo;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -19,7 +18,6 @@ public class FiltroStrategyFactory {
   try {
     TipoFiltro tipoFiltro = TipoFiltro.valueOf(dto.getTipoFiltro());
     return switch (tipoFiltro) {
-      case FILTRO_TITULO -> new FiltroTitulo(dto.getValor());
       case FILTRO_CATEGORIA -> new FiltroCategoria(dto.getValor());
       case FILTRO_FECHA_ACONTECIMIENTO ->
           new FiltroFechaAcontecimiento(dto.getFechaInicio().atStartOfDay(), dto.getFechaFin().atStartOfDay());

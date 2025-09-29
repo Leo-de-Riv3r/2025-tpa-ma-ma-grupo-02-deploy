@@ -28,8 +28,10 @@ public class HechoConverter {
     ubicacion.setLongitud(dto.getLongitud());
     Origen origenExistente = new Origen();
     origenExistente.setTipo(tipoFuente);
-    origenExistente.setNombreAutor("---");
-    origenExistente.setApellidoAutor("---");
+    if (dto.getIdAutor() != null) {
+      origenExistente.setIdAutor(dto.getIdAutor());
+    }
+
     Hecho hecho = new Hecho();
     hecho.setTitulo(dto.getTitulo());
     hecho.setDescripcion(dto.getDescripcion());
@@ -38,8 +40,7 @@ public class HechoConverter {
     hecho.setFechaAcontecimiento(dto.getFechaHecho());
     hecho.setFechaCarga(dto.getCreatedAt());
     hecho.setOrigen(origenExistente);
-
-    if (dto.getMultimedia() != null || !dto.getMultimedia().isEmpty()) {
+    if (dto.getMultimedia() != null) {
       List<Multimedia> listaMultimedia = new ArrayList<>();
       dto.getMultimedia().forEach(multimediaDtoInput -> {
         Multimedia multimedia = new Multimedia();
@@ -61,6 +62,7 @@ public class HechoConverter {
 
   public Lugar obtenerLugar(Ubicacion ubicacion) {
     String url = "https://apis.datos.gob.ar/georef/api/ubicacion";
+
     WebClient webClient = WebClient.builder().baseUrl(url).build();
     LugarDTO ubi = webClient.get()
         .uri(uriBuilder -> uriBuilder
@@ -84,9 +86,17 @@ public class HechoConverter {
     HechoDtoSalida hechoDtoSalida = new HechoDtoSalida();
     hechoDtoSalida.setId(hecho.getId());
     hechoDtoSalida.setTitulo(hecho.getTitulo());
-    hechoDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
-    hechoDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
-    hechoDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+    if (hecho.getUbicacion().getLugar()!=null) {
+      if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
+        hechoDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
+      }
+      if (hecho.getUbicacion().getLugar().getMunicipio() != null) {
+        hechoDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
+      }
+      if (hecho.getUbicacion().getLugar().getProvincia() != null) {
+        hechoDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+      }
+    }
     hechoDtoSalida.setCategoria(hecho.getCategoria());
     hechoDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
     hechoDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
@@ -97,9 +107,16 @@ public class HechoConverter {
     //
     HechoDetallesDtoSalida hechoDetallesDtoSalida = new HechoDetallesDtoSalida();
     hechoDetallesDtoSalida.setId(hecho.getId());
-    hechoDetallesDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
-    hechoDetallesDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
-    hechoDetallesDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
+
+    if(hecho.getUbicacion().getLugar().getDepartamento() != null) {
+      hechoDetallesDtoSalida.setDescripcion(hecho.getUbicacion().getLugar().getDepartamento());
+    }
+    if(hecho.getUbicacion().getLugar().getMunicipio() != null) {
+      hechoDetallesDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
+    }
+    if (hecho.getUbicacion().getLugar().getProvincia() != null) {
+      hechoDetallesDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+    }
     hechoDetallesDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
     hechoDetallesDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
     hechoDetallesDtoSalida.setCategoria(hecho.getCategoria());

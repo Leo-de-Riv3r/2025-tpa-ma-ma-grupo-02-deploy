@@ -8,9 +8,9 @@ public class HechoDtoSalida {
   private Long id;
   private String titulo;
   private String categoria;
-  private String provincia;
-  private String municipio;
-  private String departamento;
+  private String provincia="";
+  private String municipio="";
+  private String departamento="";
   private Double latitud;
   private Double longitud;
 }

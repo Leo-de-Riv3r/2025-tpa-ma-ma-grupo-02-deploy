@@ -13,8 +13,10 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Table;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Entity @Table(name="filtro")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class IFiltroStrategy {

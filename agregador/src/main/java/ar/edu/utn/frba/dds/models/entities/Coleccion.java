@@ -26,17 +26,17 @@ public class Coleccion {
   @Column
   private String descripcion;
 
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
   private Set<IFiltroStrategy> criterios = new HashSet<>();
 
-  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
   @JoinTable(
   name="hecho_filtrado",joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
   inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id"))
   private Set<Hecho> hechosFiltrados = new HashSet<>();
 
-  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
   @JoinTable(name = "coleccion_fuente",
       joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
       inverseJoinColumns = @JoinColumn(name = "fuente_id", referencedColumnName = "id")

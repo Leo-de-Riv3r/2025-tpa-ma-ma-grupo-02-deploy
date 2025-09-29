@@ -8,9 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IOrigenRepository extends JpaRepository<Origen, Long> {
-  Optional<Origen> findByTipoAndNombreAutorAndApellidoAutor(
-      TipoFuente tipo,
-      String nombreAutor,
-      String apellidoAutor
-  );
+  Optional<Origen> findByTipoAndIdAutor(TipoFuente tipo, Long idAutor);
 }

@@ -1,13 +1,16 @@
 package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
+import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.FiltroDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDto;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
@@ -67,17 +70,8 @@ public class AgregadorController {
     coleccionService.deleteColeccion(id);
   }
 
-  //ver esto
-  @GetMapping("/hechos")
-  public Set<HechoDtoSalida> getHechos(
-      @RequestParam(required = false) Integer page,
-      @RequestParam(required = false) Integer per_page
-  ) {
-    return coleccionService.getHechos(null, false, page, per_page, null);
-  }
-
   @GetMapping("/colecciones/{id}/hechos")
-  public Set<HechoDtoSalida> getHechos(
+  public PaginacionDto<HechoDtoSalida> getHechos(
       @PathVariable String id,
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer per_page,
@@ -145,7 +139,12 @@ public class AgregadorController {
     HechoDtoSalida respuesta = coleccionService.getHechoDto(idHecho);
     return ResponseEntity.ok(respuesta);
   }
-
+//  @PutMapping("/hechos/{idHecho}")
+//  public ResponseEntity<String> actualizarHecho (
+//      @PathVariable Long idHecho, @RequestBody HechoUpdateDto hechoDto) {
+//    coleccionService.actualizarHecho(idHecho, hechoDto);
+//    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Hecho actualizado");
+//  }
   @GetMapping("/hechos/{idHecho}/detalles")
   public ResponseEntity<HechoDetallesDtoSalida> obtenerDetallesHecho(
       @PathVariable long idHecho
@@ -167,23 +166,21 @@ public class AgregadorController {
 
   @GetMapping("solicitudes/{id}")
   public SolicitudDTOOutput getSolicitud(
-      @PathVariable String id
+      @PathVariable Long id
   ){
     return solicitudService.getSolicitudDto(id);
   }
   @PutMapping("/solicitudes/{id}/aceptar")
   public void aceptarSolicitud(
-      @PathVariable String id,
-      @RequestParam(required = true) String supervisor
+      @PathVariable Long id
   ) {
-    solicitudService.aceptarSolicitud(id, supervisor);
+    solicitudService.aceptarSolicitud(id);
   }
 
   @PutMapping("/solicitudes/{id}/denegar")
   public void rechazarSolicitud(
-      @PathVariable String id,
-      @RequestParam(required = true) String supervisor
+      @PathVariable Long id
   ) {
-    solicitudService.rechazarSolicitud(id, supervisor);
+    solicitudService.rechazarSolicitud(id);
   }
 }

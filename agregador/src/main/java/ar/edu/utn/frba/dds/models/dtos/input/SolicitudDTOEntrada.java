@@ -4,8 +4,7 @@ import lombok.Data;
 
 @Data
 public class SolicitudDTOEntrada {
+  private Long idHecho;
   private String titulo;
   private String texto;
-  private String responsable;
-  private Long idHecho;
 }

@@ -21,19 +21,9 @@ public class Origen {
   @Getter
   @Setter
   @Column
-  private String nombreAutor;
-  @Getter
-  @Setter
-  @Column
-  private String apellidoAutor;
-  @Getter
-  @Setter
-  @Column
-  private Integer edadAutor;
+  private Long idAutor;
 
   public Origen() {
-    this.apellidoAutor = null;
-    this.edadAutor=null;
-    this.nombreAutor=null;
+    this.idAutor = 0L;
   }
 }

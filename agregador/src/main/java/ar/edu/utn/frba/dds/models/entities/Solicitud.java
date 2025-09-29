@@ -7,6 +7,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -28,6 +30,7 @@ import lombok.Setter;
 @Table(name = "solicitud")
 public class Solicitud {
   @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   @Column
   @Getter
@@ -37,24 +40,10 @@ public class Solicitud {
   @Getter
   @Setter
   private String texto;
-  //aca podria tener hecho y hacer un many to one
-  @Column
-  @Getter
-  @Setter
-  private String tituloHecho;
-
   @Column
   @Setter
   @Getter
   private LocalDateTime fecha;
-  @Column
-  @Getter
-  @Setter
-  private String responsable;
-  @Column
-  @Getter
-  @Setter
-  private String supervisor;
   //one to many
   @Getter
   @Setter
@@ -75,8 +64,6 @@ public class Solicitud {
     Estado estado = new Estado();
     estado.setSolicitud(this);
     this.estadoActual = estado;
-    this.supervisor = "";
-    this.responsable = "";
     this.fecha = LocalDateTime.now();
     this.spam = 0;
   }
@@ -85,16 +72,14 @@ public class Solicitud {
     return texto.length() >= 500;
   }
 
-  public void rechazar(String supervisor) {
+  public void rechazar() {
     Estado nuevoEstado = new Estado();
-    nuevoEstado.setSupervisor(supervisor);
     nuevoEstado.setEstado(TipoEstado.RECHAZADA);
     this.cambiarEstado(nuevoEstado);
   }
 
-  public void aceptar(String supervisor) {
+  public void aceptar() {
     Estado nuevoEstado = new Estado();
-    nuevoEstado.setSupervisor(supervisor);
     nuevoEstado.setEstado(TipoEstado.ACEPTADA);
     this.cambiarEstado(nuevoEstado);
   }

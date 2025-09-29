@@ -10,6 +10,7 @@ import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -47,7 +48,7 @@ public abstract class Fuente {
   @Column
   protected TipoFuente tipoFuente;
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "fuente_hecho",
       joinColumns = @JoinColumn(name = "fuente_id" , referencedColumnName = "id"),

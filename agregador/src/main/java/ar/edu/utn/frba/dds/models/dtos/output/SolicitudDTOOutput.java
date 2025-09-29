@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SolicitudDTOOutput {
-    private String id;
+    private Long id;
     private String titulo;
     private String motivo;
     private LocalDateTime fecha;

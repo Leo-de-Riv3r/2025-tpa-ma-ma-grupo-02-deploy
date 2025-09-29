@@ -4,8 +4,10 @@ import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDto;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
@@ -24,7 +26,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -207,10 +213,8 @@ public class ColeccionService {
       if (hechoExistente.isPresent()) {
         hechoFinal = hechoExistente.get();
       } else {
-        origenRepo.findByTipoAndNombreAutorAndApellidoAutor(
-            h.getOrigen().getTipo(),
-            h.getOrigen().getNombreAutor(),
-            h.getOrigen().getApellidoAutor()
+        origenRepo.findByTipoAndIdAutor(
+            h.getOrigen().getTipo(), h.getOrigen().getIdAutor()
         ).ifPresent(h::setOrigen);
 
         hechoRepository.buscarCategoriaNormalizada(h.getCategoria())
@@ -223,8 +227,8 @@ public class ColeccionService {
   }
 
 
-  public Set<HechoDtoSalida> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros) {
-    Set<Hecho> hechos = new HashSet<>();
+  public PaginacionDto<HechoDtoSalida> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros) {
+    Set<Hecho> hechos = new LinkedHashSet<>();
     if (coleccionId != null) {
       Optional<Coleccion> coleccion = coleccionRepository.findById(coleccionId);
       if (navegacionCurada) {
@@ -242,24 +246,56 @@ public class ColeccionService {
       hechos.addAll(hechosColecciones);
     }
 
-    if (page != null && perPage != null) {
-      hechos =  hechos != null ? hechos.stream()
-          .skip((long) (page - 1) * perPage)
-          .limit(perPage)
-          .collect(HashSet::new, HashSet::add, HashSet::addAll) : null;
-    }
-
     if (filtros != null) {
       hechos = hechos != null ? hechos.stream()
           .filter(h -> h.cumpleFiltros(filtros))
           .collect(Collectors.toSet()) : null;
     }
 
-    //Set<Hecho> finalHechos = hechos;
-    //return hechos.stream().filter(h -> hechoRepetido(h)).collect(Collectors.toSet());
     hechos = hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
-    return filtrarDuplicados(hechos).stream().map(h -> hechoConverter.fromEntity(h)).collect(Collectors.toSet());
-    //filtrar hechos que no esten repetidos para mejorar las vistas
+    hechos = filtrarDuplicados(hechos);
+
+    // Excluir hechos eliminados y duplicados
+    hechos = hechos.stream()
+        .filter(h -> !solicitudService.hechoEliminado(h))
+        .collect(Collectors.toSet());
+
+    hechos = filtrarDuplicados(hechos);
+
+    // Convertir a lista para poder paginar
+    List<Hecho> hechosList = new ArrayList<>(hechos);
+    hechosList.sort(Comparator.comparing(Hecho::getId));
+    // Configuración de paginación
+    Integer defaultPerPage = 100;
+    Integer maxPerPage = 100;
+
+    Integer size = (perPage == null || perPage < 1) ? defaultPerPage : Math.min(perPage, maxPerPage);
+    int totalElements = hechosList.size();
+    int totalPages = (int) Math.ceil((double) totalElements / size);
+
+    int currentPage = (page == null || page < 1) ? 1 : page;
+    if (currentPage > totalPages && totalPages > 0) {
+      currentPage = totalPages; // Si la página pedida es mayor que la última, usamos la última
+    }
+    // Calcular índices para sublista
+    int fromIndex = (currentPage - 1) * size;
+    int toIndex = Math.min(fromIndex + size, totalElements);
+
+    List<HechoDtoSalida> hechosPaginados = new ArrayList<>();
+    if (fromIndex < totalElements) {
+      hechosPaginados = hechosList.subList(fromIndex, toIndex)
+          .stream()
+          .map(hecho -> hechoConverter.fromEntity(hecho))
+          .collect(Collectors.toList());
+    }
+
+    return new PaginacionDto<>(
+        hechosPaginados,
+        currentPage,
+        size,
+        totalPages
+    );
+
   }
 
     public static Set<Hecho> filtrarDuplicados(Set<Hecho> hechos) {
@@ -306,11 +342,7 @@ public class ColeccionService {
   @Transactional
   public void refrescarHechosCurados() {
     List <Coleccion> colecciones = coleccionRepository.findAll();
-//    em.createQuery(
-//            "DELETE FROM hecho_consensuado hc WHERE hc.hecho_id IN " +
-//            "(SELECT id from hecho h WHERE h.fuente_id IS NULL)"
-//        )
-//        .executeUpdate();
+
     colecciones.forEach(coleccion ->  coleccion.refrescarHechosCurados(em));
     //elimino los hechos con fuente_id nulo porque ya son obsoletos
     coleccionRepository.saveAll(colecciones);
@@ -346,4 +378,25 @@ public class ColeccionService {
     //elimino los hechos con fuente_id nulo porque ya son obsoletos
     coleccionRepository.saveAll(colecciones);
   }
+
+//  public void actualizarHecho(Long idHecho, HechoUpdateDto hechoDto) {
+//    Hecho hecho = this.getHechoById(idHecho);
+//    if(hechoDto.getTitulo() != null) {
+//      hecho.setTitulo(hechoDto.getTitulo());
+//    }
+//    if(hechoDto.getDescripcion() != null) {
+//      hecho.setDescripcion(hechoDto.getDescripcion());
+//    }
+//    if(hechoDto.getFechaHecho() != null) {
+//      hecho.setFechaAcontecimiento(hechoDto.getFechaHecho().atStartOfDay());
+//    }
+//    if(hechoDto.getLatitud() != null) {
+//      hecho.setUbicacion();
+//    }
+//    if(hechoDto.getMultimedia() != null) {
+//
+//    }
+//
+//    hechoRepository.save(hecho);
+//  }
 }

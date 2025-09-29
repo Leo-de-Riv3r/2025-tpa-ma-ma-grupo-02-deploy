@@ -5,6 +5,7 @@ import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,13 +45,16 @@ public class FuenteDefault extends Fuente {
       //solo agrego hechos nuevos segun titulo categoria y descripcion
       return hechos.stream().filter(h -> !this.existeHecho(h)).collect(Collectors.toSet());
     } catch (Exception e) {
-      throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.id);
+      throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.getUrl());
     }
   }
 
   @Override
   public Set<Hecho> getHechos() {
-    return hechos;
+
+    return hechos.stream()
+        .sorted(Comparator.comparing(Hecho::getId))
+        .collect(Collectors.toSet());
   }
 }
 
