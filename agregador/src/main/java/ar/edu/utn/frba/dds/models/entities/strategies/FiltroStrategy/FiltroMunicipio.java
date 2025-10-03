@@ -13,23 +13,23 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
-@Entity
-@Table(name = "filtroCategoria")
+@Entity @Table(name = "filtroMunicipio")
 @NoArgsConstructor
-public class FiltroCategoria extends IFiltroStrategy {
+public class FiltroMunicipio extends IFiltroStrategy{
   @Column
-  private String nombreCategoria;
+  private String municipio;
 
-  public FiltroCategoria(String nombreCategoria) {
-    if (nombreCategoria.isBlank()){
-      throw new IllegalArgumentException("Provincia no puede ser nula");
+
+  public FiltroMunicipio(String municipio) {
+    if (municipio.isBlank()){
+      throw new IllegalArgumentException("Municipio no puede ser nula");
     }
-    this.nombreCategoria = nombreCategoria;
-    this.tipoFiltro = TipoFiltro.FILTRO_CATEGORIA;
+    this.tipoFiltro = TipoFiltro.FILTRO_MUNICIPIO;
+    this.municipio = municipio;
   }
+
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
-    return hecho.getCategoria().equalsIgnoreCase(nombreCategoria);
+    return hecho.getUbicacion().getLugar().getMunicipio().equalsIgnoreCase(municipio);
   }
 }

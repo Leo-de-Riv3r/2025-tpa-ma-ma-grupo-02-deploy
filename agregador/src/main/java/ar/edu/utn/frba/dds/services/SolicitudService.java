@@ -1,74 +1,86 @@
 package ar.edu.utn.frba.dds.services;
 
+import ar.edu.utn.frba.dds.externalApi.SpamApi;
+import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
+import ar.edu.utn.frba.dds.models.entities.utils.SolicitudConverter;
+import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SolicitudService {
-  private ISolicitudRepository hechosSolicitudesRepository;
-  private final SpamService detectorSpam;
-
-  public SolicitudService(ISolicitudRepository hechosSolicitudesRepository, SpamService detectorSpam) {
-    this.hechosSolicitudesRepository = hechosSolicitudesRepository;
+  private final ISolicitudRepository solicitudesEliminacionRepo;
+  private final SpamApi detectorSpam;
+  private final IHechoRepository hechosRepository;
+  private final SolicitudConverter solicitudConverter;
+  public SolicitudService(ISolicitudRepository solicitudesEliminacionRepo, SpamApi detectorSpam, IHechoRepository hechosRepository, SolicitudConverter solicitudConverter) {
+    this.solicitudesEliminacionRepo = solicitudesEliminacionRepo;
     this.detectorSpam = detectorSpam;
+    this.hechosRepository = hechosRepository;
+    this.solicitudConverter = solicitudConverter;
   }
 
   @Transactional
-  public void createSolicitud(Solicitud solicitud) {
-    Solicitud solicitudGuardada = hechosSolicitudesRepository.save(solicitud);
+  public void createSolicitud(SolicitudDTOEntrada dtoSolicitud) {
+    Solicitud solicitud = solicitudConverter.fromDto(dtoSolicitud);
+    Solicitud solicitudGuardada = solicitudesEliminacionRepo.save(solicitud);
     if (detectorSpam.esSpam(solicitud.getTexto()) || !solicitud.estaFundado()) {
-      this.marcarComospam(solicitud.getId());
-      this.rechazarSolicitud(solicitud.getId(), "automatico");
+      this.marcarComospam(solicitudGuardada.getId());
+      this.rechazarSolicitud(solicitudGuardada.getId());
     }
   }
 
-  private void marcarComospam(String id) {
+  private void marcarComospam(Long id) {
     Solicitud solicitud = this.getSolicitud(id);
     solicitud.marcarSpam();
-    hechosSolicitudesRepository.save(solicitud);
+    solicitudesEliminacionRepo.save(solicitud);
   }
 
-  public void rechazarSolicitud(String id, String supervisor) {
+  public void rechazarSolicitud(Long id) {
     Solicitud solicitud = this.getSolicitud(id);
-    solicitud.rechazar(supervisor);
-    hechosSolicitudesRepository.save(solicitud);
+    solicitud.rechazar();
+    solicitudesEliminacionRepo.save(solicitud);
   }
 
-  public void aceptarSolicitud(String id, String supervisor) {
+  public void aceptarSolicitud(Long id) {
     Solicitud solicitud = this.getSolicitud(id);
-    solicitud.aceptar(supervisor);
-    hechosSolicitudesRepository.save(solicitud);
+    solicitud.aceptar();
+    solicitudesEliminacionRepo.save(solicitud);
   }
 
   public Boolean hechoEliminado(Hecho hecho) {
-    List <Solicitud> solicitudes = this.getSolicitudes();
-    return solicitudes.stream().anyMatch(solicitud -> EqualsBuilder.reflectionEquals(solicitud.getTituloHecho(), hecho.getTitulo()));
+    List <Solicitud> solicitudes = solicitudesEliminacionRepo.findAll();
+    return solicitudes.stream().anyMatch(solicitud -> solicitud.getHecho().getId() == hecho.getId());
   }
 
-  public Solicitud getSolicitud(String solicitudId) {
-    return hechosSolicitudesRepository.findById(solicitudId).orElseThrow(() -> new EntityNotFoundException("Solicitud con id " + solicitudId + " no encontrado"));
-  }
-  public List<Solicitud> getSolicitudes() {
-    return hechosSolicitudesRepository.findAll();
+  public Solicitud getSolicitud(Long solicitudId) {
+    return solicitudesEliminacionRepo.findById(solicitudId).orElseThrow(() -> new EntityNotFoundException("Solicitud con id " + solicitudId + " no encontrado"));
   }
 
-  public Integer cantidadSolicitudesSpam(String titulo) {
-    //filtro las solicitudes que son spam, luego cuento las que tienen titulo del hecho buscado.
+  public List<SolicitudDTOOutput> getSolicitudes() {
+    return solicitudesEliminacionRepo.findAll().stream().map(solicitud -> solicitudConverter.fromEntity(solicitud)).toList();
+  }
+
+  public Integer cantidadSolicitudesSpam(Long idHecho) {
     AtomicReference<Integer> cantSolicitudesSpam = new AtomicReference<>(0);
-    List<Solicitud> solicitudes = this.getSolicitudes().stream().filter(Solicitud::esSpam).toList();
+    List<Solicitud> solicitudes = solicitudesEliminacionRepo.findAll().stream().filter(s -> s.esSpam()).toList();
     solicitudes.forEach(s -> {
-      if (Objects.equals(s.getTituloHecho(), titulo)) {
+      if (s.getHecho().getId() == idHecho) {
         cantSolicitudesSpam.getAndSet(cantSolicitudesSpam.get() + 1);
       }
     });
     return cantSolicitudesSpam.get();
+  }
+
+  public SolicitudDTOOutput getSolicitudDto(Long id) {
+    Solicitud solicitud = getSolicitud(id);
+    return solicitudConverter.fromEntity(solicitud);
   }
 }

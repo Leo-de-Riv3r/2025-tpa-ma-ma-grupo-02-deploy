@@ -7,29 +7,29 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.util.Timer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
-@Entity
-@Table(name = "filtroCategoria")
+@Entity @Table(name = "filtroProvincia")
 @NoArgsConstructor
-public class FiltroCategoria extends IFiltroStrategy {
+public class FiltroProvincia extends IFiltroStrategy{
   @Column
-  private String nombreCategoria;
+  private String provincia;
 
-  public FiltroCategoria(String nombreCategoria) {
-    if (nombreCategoria.isBlank()){
+  public FiltroProvincia(String provincia) {
+    if (provincia.isBlank()){
       throw new IllegalArgumentException("Provincia no puede ser nula");
     }
-    this.nombreCategoria = nombreCategoria;
-    this.tipoFiltro = TipoFiltro.FILTRO_CATEGORIA;
+    this.provincia = provincia;
+    this.tipoFiltro = TipoFiltro.FILTRO_PROVINCIA;
   }
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
-    return hecho.getCategoria().equalsIgnoreCase(nombreCategoria);
+    return hecho.getUbicacion().getLugar().getProvincia().equalsIgnoreCase(provincia);
   }
+
 }

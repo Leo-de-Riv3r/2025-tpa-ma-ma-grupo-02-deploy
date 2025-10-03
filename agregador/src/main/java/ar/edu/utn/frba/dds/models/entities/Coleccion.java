@@ -2,7 +2,9 @@ package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,13 +26,20 @@ public class Coleccion {
   @Column
   private String descripcion;
 
-  @ManyToMany(fetch = FetchType.LAZY)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
+  private Set<IFiltroStrategy> criterios = new HashSet<>();
+
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
   @JoinTable(
-      name ="coleccion_fuente",
-      joinColumns = @JoinColumn(name = "coleccion_id",
-      referencedColumnName = "id"),
-      inverseJoinColumns =  @JoinColumn(name = "fuente_id",
-      referencedColumnName = "id")
+  name="hecho_filtrado",joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
+  inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id"))
+  private Set<Hecho> hechosFiltrados = new HashSet<>();
+
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+  @JoinTable(name = "coleccion_fuente",
+      joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "fuente_id", referencedColumnName = "id")
   )
   private Set<Fuente> fuentes;
 
@@ -45,29 +54,52 @@ public class Coleccion {
 
   public Set<Hecho> getHechos() {
     Set<Hecho> hechos = new HashSet<>();
-    fuentes.stream().filter(f -> f.getInactivo() != 1)
+    fuentes.stream()
         .forEach(fuente -> hechos.addAll(fuente.getHechos()));
-    return hechos;
+    //filtro duplicados segun titulo categoria descripcion y fecha acontecimiento
+    Set<String> vistos = new HashSet<>();
+    Set<Hecho> resultado = new HashSet<>();
+
+    for (Hecho hecho : hechos) {
+      // Genero una "clave única" combinando los atributos relevantes
+      String clave = hecho.getTitulo() + "|"
+          + hecho.getDescripcion() + "|"
+          + hecho.getCategoria() + "|"
+          + hecho.getFechaAcontecimiento();
+
+      if (!vistos.contains(clave)) {
+        vistos.add(clave);
+        resultado.add(hecho);
+      }
+    }
+    if (!criterios.isEmpty()) {
+      return resultado.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet());
+    } else {
+      return resultado;
+    }
   }
 
   public void refrescarHechosCurados(EntityManager em) {
     if (algoritmoConsenso != null) {
-      algoritmoConsenso.actualizarHechos(this.getHechos(), fuentes, em);
+      algoritmoConsenso.actualizarHechos(this.getHechos(), fuentes);
     }
   }
-
+  public Set<Hecho> getHechosFiltrados() {
+    if (!criterios.isEmpty()){
+      return this.getHechos().stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet());
+    }
+    else return new HashSet<>();
+  }
   public Set<Hecho> getHechosCurados() {
-//    if (algoritmoConsenso !=null && algoritmoConsenso.getHechosCurados().isEmpty()) {
-//      refrescarHechosCurados();
-//      return algoritmoConsenso.getHechosCurados();
-//    } else{
-//      return this.getHechos();
-//    }
     if (algoritmoConsenso != null) {
       return algoritmoConsenso.getHechosCurados();
     } else {
       return new HashSet<>();
     }
+  }
+
+  public void addCriterio(IFiltroStrategy filtro) {
+    this.criterios.add(filtro);
   }
 
   public void addFuente(Fuente fuente) {
@@ -77,12 +109,21 @@ public class Coleccion {
   public void removeFuente(String idFuente) {
     fuentes.removeIf(fuente -> EqualsBuilder.reflectionEquals(fuente.getId(), idFuente));
   }
-
   public void limpiarFuentes() {
     this.fuentes.clear();
   }
-
   public void setearFuentes(Set<Fuente> fuentes) {
     this.fuentes.addAll(fuentes);
+  }
+
+  public void actualizarHechosFiltrados() {
+    this.hechosFiltrados.clear();
+    Set<Hecho> hechosColeccion = this.getHechos();
+    this.hechosFiltrados.addAll(hechosColeccion.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet()));
+  }
+
+  public void setearCriterios(Set<IFiltroStrategy> filtros) {
+    this.criterios.clear();
+    this.criterios.addAll(filtros);
   }
 }

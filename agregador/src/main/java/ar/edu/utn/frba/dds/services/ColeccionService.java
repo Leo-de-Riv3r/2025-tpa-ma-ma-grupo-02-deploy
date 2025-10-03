@@ -1,24 +1,36 @@
 package ar.edu.utn.frba.dds.services;
 
-import ar.edu.utn.frba.dds.externalApi.NormalizadorUbicacionAdapter;
 import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
-import ar.edu.utn.frba.dds.models.dtos.ColeccionDTO;
-import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOEntrada;
+import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
-import ar.edu.utn.frba.dds.models.dtos.FuenteDTOOutput;
+import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDto;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
+import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
+import ar.edu.utn.frba.dds.models.entities.utils.ColeccionConverter;
+import ar.edu.utn.frba.dds.models.entities.utils.FuenteConverter;
+import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
 import ar.edu.utn.frba.dds.models.repositories.IColeccionRepository;
+import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
+import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
+import ar.edu.utn.frba.dds.models.repositories.IOrigenRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,20 +41,29 @@ import org.springframework.stereotype.Service;
 @Service
 public class ColeccionService {
   private final IColeccionRepository coleccionRepository;
-  private final FuenteService fuenteService;
   private final SolicitudService solicitudService;
-  private NormalizadorUbicacionAdapter normalizadorLugar;
+  private final IHechoRepository hechoRepository;
+  private final IOrigenRepository origenRepo;
+  private final FuenteConverter fuenteConverter;
+  private final ColeccionConverter coleccionConverter;
+  private final HechoConverter hechoConverter;
+  private final IFuenteRepository fuenteRepository;
 
   @PersistenceContext
   private EntityManager em;
 
-  public ColeccionService(IColeccionRepository coleccionRepository, FuenteService fuenteService, SolicitudService solicitudService) {
+  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository) {
     this.coleccionRepository = coleccionRepository;
-    this.fuenteService = fuenteService;
     this.solicitudService = solicitudService;
+    this.hechoRepository = hechoRepository;
+    this.origenRepo = origenRepo;
+    this.fuenteConverter = fuenteConverter;
+    this.coleccionConverter = coleccionConverter;
+    this.hechoConverter = hechoConverter;
+    this.fuenteRepository = fuenteRepository;
   }
 
-  public Coleccion createColeccion(ColeccionDTOEntrada dto) {
+  public ColeccionDTOSalida createColeccion(ColeccionDTOEntrada dto) {
     Coleccion coleccion = new Coleccion();
     coleccion.setTitulo(dto.getTitulo());
     coleccion.setDescripcion(dto.getDescripcion());
@@ -59,43 +80,52 @@ public class ColeccionService {
     if (dto.getFuentes() != null) {
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
-        Fuente fuente = fuenteService.getFuente(fuenteDTO.getId());
-        fuentes.add(fuente);
+        Fuente fuenteFinal;
+        Fuente fuente = fuenteConverter.fromDto(fuenteDTO);
+        Optional<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
+        if (fuenteExistente.isPresent()) {
+          fuenteFinal = fuenteExistente.get();
+        } else {
+          //traigo hechos y normalizo
+          this.refrescarYNormalizarHechos(fuente);
+          fuenteFinal = fuenteRepository.save(fuente);
+        }
+        fuentes.add(fuenteFinal);
       });
       coleccion.setFuentes(fuentes);
     }
-    return coleccionRepository.save(coleccion);
+
+    if(dto.getFiltros() != null) {
+      Set<IFiltroStrategy> filtros = dto.getFiltros().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
+      filtros.forEach(f -> coleccion.addCriterio(f));
+      if (!coleccion.getFuentes().isEmpty()) {
+        coleccion.actualizarHechosFiltrados();
+      }
+    }
+    Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+    return coleccionConverter.fromEntity(coleccionGuardada);
   }
 
   public List<ColeccionDTOSalida> getColeccionesDTO() {
     List<Coleccion> colecciones = coleccionRepository.findAll();
-    return colecciones.stream().map(c -> convertirColeccionADTO(c)).toList();
+    return colecciones.stream().map(c -> coleccionConverter.fromEntity(c)).toList();
   }
 
   public List<Coleccion> getColecciones() {
     return coleccionRepository.findAll();
   }
-  public ColeccionDTOSalida getColeccionById(String coleccionId) {
-    Coleccion coleccion = this.getColeccion(coleccionId);
-    return this.convertirColeccionADTO(coleccion);
-  }
 
-  private ColeccionDTOSalida convertirColeccionADTO(Coleccion coleccion) {
-    ColeccionDTOSalida respuesta = new ColeccionDTOSalida();
-    respuesta.setId(coleccion.getId());
-    respuesta.setTitulo(coleccion.getTitulo());
-    respuesta.setDescripcion(coleccion.getDescripcion());
-    Set<Fuente> fuentes = coleccion.getFuentes();
-    respuesta.setFuentes(fuentes.stream().map(f -> new FuenteDTOOutput(f.getId(), f.getTipoFuente(), f.getUrl())).toList());
+  public ColeccionDTOSalida getColeccionDTO(String coleccionId) {
+    Coleccion coleccion = this.getColeccion(coleccionId);
+    ColeccionDTOSalida respuesta = coleccionConverter.fromEntity(coleccion);
     respuesta.setCantSolicitudesSpam(this.obtenerCantSolicitudesSpam(coleccion.getHechos()));
     return respuesta;
   }
+
   private Integer obtenerCantSolicitudesSpam(Set<Hecho> hechos) {
     AtomicReference<Integer> cantidadSolicitudesSpam = new AtomicReference<>(0);
-    Set<String> titulosHechos = hechos.stream().map(h -> h.getTitulo()).collect(Collectors.toSet());
-    titulosHechos.forEach(titulo ->
-    {
-      cantidadSolicitudesSpam.getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(titulo));
+    hechos .forEach(h -> {
+      cantidadSolicitudesSpam.getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(h.getId()));
     });
     return cantidadSolicitudesSpam.get();
   }
@@ -119,7 +149,14 @@ public class ColeccionService {
     if (dto.getFuentes() != null) {
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
-        Fuente fuente = fuenteService.getFuente(fuenteDTO.getId());
+        Fuente fuente = fuenteConverter.fromDto(fuenteDTO);
+        Optional<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
+        if (fuenteExistente.isPresent()) {
+          fuente = fuenteExistente.get();
+        } else {
+          //traigo hechos y normalizo
+          this.refrescarYNormalizarHechos(fuente);
+        }
         fuentes.add(fuente);
       });
       coleccion.limpiarFuentes();
@@ -134,6 +171,17 @@ public class ColeccionService {
         throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmo() + " no aceptado");
       }
     }
+
+    if(dto.getFiltros() != null) {
+      Set<IFiltroStrategy> filtros = dto.getFiltros().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
+
+      coleccion.setearCriterios(filtros);
+
+      if (!coleccion.getFuentes().isEmpty()) {
+        coleccion.actualizarHechosFiltrados();
+      }
+    }
+
     coleccionRepository.save(coleccion);
   }
 
@@ -141,13 +189,46 @@ public class ColeccionService {
     coleccionRepository.deleteById(coleccionId);
   }
 
-//  public void refrescoColecciones() {
-//    List <Coleccion> colecciones = this.getColecciones();
-//    colecciones.forEach(coleccion -> coleccion.getFuentes().forEach(fuente -> refrescoColecciones()));
-//  }
 
-  public Set<Hecho> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros) {
-    Set<Hecho> hechos = Set.of();
+  @Transactional
+  public void refrescoFuentes() {
+    List<Fuente> fuentes = fuenteRepository.findAll();
+    if (!fuentes.isEmpty()){
+      fuentes.forEach(f -> this.refrescarYNormalizarHechos(f));
+    }
+    fuenteRepository.saveAll(fuentes);
+  }
+
+  @Transactional
+  public void refrescarYNormalizarHechos(Fuente fuente) {
+    Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter);
+
+    hechos.forEach(h -> {
+      Optional<Hecho> hechoExistente = hechoRepository
+          .findByTituloAndDescripcionAndFechaAcontecimiento(
+              h.getTitulo(), h.getDescripcion(), h.getFechaAcontecimiento()
+          );
+
+      Hecho hechoFinal;
+      if (hechoExistente.isPresent()) {
+        hechoFinal = hechoExistente.get();
+      } else {
+        origenRepo.findByTipoAndIdAutor(
+            h.getOrigen().getTipo(), h.getOrigen().getIdAutor()
+        ).ifPresent(h::setOrigen);
+
+        hechoRepository.buscarCategoriaNormalizada(h.getCategoria())
+            .ifPresent(h::setCategoria);
+
+        hechoFinal = hechoRepository.save(h);
+      }
+      fuente.addHecho(hechoFinal);
+    });
+  }
+
+
+  public PaginacionDto<HechoDtoSalida> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros) {
+    Set<Hecho> hechos = new LinkedHashSet<>();
     if (coleccionId != null) {
       Optional<Coleccion> coleccion = coleccionRepository.findById(coleccionId);
       if (navegacionCurada) {
@@ -157,38 +238,89 @@ public class ColeccionService {
       }
     }
 
-    if (hechos == null || hechos.isEmpty()) {
-      List<Coleccion> colecciones = this.getColecciones();
-      for (Coleccion coleccion : colecciones) {
-        Set<Hecho> hechosDeColeccion = navegacionCurada
-            ? coleccion.getHechosCurados()
-            : coleccion.getHechos();
-        if (hechosDeColeccion != null && !hechosDeColeccion.isEmpty()) {
-          if (hechos != null) {
-            hechos.addAll(hechosDeColeccion);
-          }
-        }
-      }
-    }
-
-    if (page != null && perPage != null) {
-      return hechos != null ? hechos.stream()
-          .skip((long) (page - 1) * perPage)
-          .limit(perPage)
-          .collect(HashSet::new, HashSet::add, HashSet::addAll) : null;
+    if (coleccionId == null ) {
+      //List<Hecho> hechosBusqeda = hechoRepository.busquedaTexto(textoTitulo);
+      List<Coleccion> colecciones = coleccionRepository.findAll();
+      Set<Hecho> hechosColecciones = new HashSet<>();
+      colecciones.forEach(c -> hechosColecciones.addAll(c.getHechos()));
+      hechos.addAll(hechosColecciones);
     }
 
     if (filtros != null) {
-      return hechos != null ? hechos.stream()
+      hechos = hechos != null ? hechos.stream()
           .filter(h -> h.cumpleFiltros(filtros))
           .collect(Collectors.toSet()) : null;
     }
 
-    return hechos;
+    hechos = hechos.stream().filter(hecho -> !solicitudService.hechoEliminado(hecho)).collect(Collectors.toSet());
+    hechos = filtrarDuplicados(hechos);
+
+    // Excluir hechos eliminados y duplicados
+    hechos = hechos.stream()
+        .filter(h -> !solicitudService.hechoEliminado(h))
+        .collect(Collectors.toSet());
+
+    hechos = filtrarDuplicados(hechos);
+
+    // Convertir a lista para poder paginar
+    List<Hecho> hechosList = new ArrayList<>(hechos);
+    hechosList.sort(Comparator.comparing(Hecho::getId));
+    // Configuración de paginación
+    Integer defaultPerPage = 100;
+    Integer maxPerPage = 100;
+
+    Integer size = (perPage == null || perPage < 1) ? defaultPerPage : Math.min(perPage, maxPerPage);
+    int totalElements = hechosList.size();
+    int totalPages = (int) Math.ceil((double) totalElements / size);
+
+    int currentPage = (page == null || page < 1) ? 1 : page;
+    if (currentPage > totalPages && totalPages > 0) {
+      currentPage = totalPages; // Si la página pedida es mayor que la última, usamos la última
+    }
+    // Calcular índices para sublista
+    int fromIndex = (currentPage - 1) * size;
+    int toIndex = Math.min(fromIndex + size, totalElements);
+
+    List<HechoDtoSalida> hechosPaginados = new ArrayList<>();
+    if (fromIndex < totalElements) {
+      hechosPaginados = hechosList.subList(fromIndex, toIndex)
+          .stream()
+          .map(hecho -> hechoConverter.fromEntity(hecho))
+          .collect(Collectors.toList());
+    }
+
+    return new PaginacionDto<>(
+        hechosPaginados,
+        currentPage,
+        size,
+        totalPages
+    );
+
   }
 
+    public static Set<Hecho> filtrarDuplicados(Set<Hecho> hechos) {
+      Set<String> vistos = new HashSet<>();
+      Set<Hecho> resultado = new HashSet<>();
+
+      for (Hecho hecho : hechos) {
+        // Genero una "clave única" combinando los atributos relevantes
+        String clave = hecho.getTitulo() + "|"
+            + hecho.getDescripcion() + "|"
+            + hecho.getCategoria() + "|"
+            + hecho.getFechaAcontecimiento();
+
+        if (!vistos.contains(clave)) {
+          vistos.add(clave);
+          resultado.add(hecho);
+        }
+      }
+
+      return resultado;
+    }
+
+
   public void addFuente(String coleccionId, FuenteDTO dto) {
-    Fuente fuente = fuenteService.getFuente(dto.getId());
+    Fuente fuente = fuenteConverter.fromDto(dto);
     Coleccion coleccion = this.getColeccion(coleccionId);
     coleccion.addFuente(fuente);
     coleccionRepository.save(coleccion);
@@ -206,18 +338,65 @@ public class ColeccionService {
     updateColeccion(coleccionId, dto);
   }
 
+  //OK
   @Transactional
   public void refrescarHechosCurados() {
-    fuenteService.eliminarHechosObsoletos();
     List <Coleccion> colecciones = coleccionRepository.findAll();
-//    em.createQuery(
-//            "DELETE FROM hecho_consensuado hc WHERE hc.hecho_id IN " +
-//            "(SELECT id from hecho h WHERE h.fuente_id IS NULL)"
-//        )
-//        .executeUpdate();
+
     colecciones.forEach(coleccion ->  coleccion.refrescarHechosCurados(em));
     //elimino los hechos con fuente_id nulo porque ya son obsoletos
-
     coleccionRepository.saveAll(colecciones);
   }
+  @Transactional
+  public void addCriterio(String id, IFiltroStrategy filtro) {
+    Coleccion coleccion = this.getColeccion(id);
+    coleccion.addCriterio(filtro);
+    if (!coleccion.getHechos().isEmpty()) {
+      coleccion.actualizarHechosFiltrados();
+    }
+    coleccionRepository.save(coleccion);
+  }
+
+  public HechoDtoSalida getHechoDto(Long idHecho) {
+    Hecho hecho = this.getHechoById(idHecho);
+    return hechoConverter.fromEntity(hecho);
+  }
+
+  public HechoDetallesDtoSalida getHechoDtoDetalles(Long idHecho) {
+    Hecho hecho = this.getHechoById(idHecho);
+    return hechoConverter.fromEntityDetails(hecho);
+  }
+
+  Hecho getHechoById(Long idHecho) {
+    return hechoRepository.findById(idHecho)
+        .orElseThrow(() -> new EntityNotFoundException("Hecho con id " + idHecho + " no encontrada"));
+  }
+
+  public void refrescarHechosFiltrados() {
+    List <Coleccion> colecciones = coleccionRepository.findAll();
+    colecciones.forEach(Coleccion::actualizarHechosFiltrados);
+    //elimino los hechos con fuente_id nulo porque ya son obsoletos
+    coleccionRepository.saveAll(colecciones);
+  }
+
+//  public void actualizarHecho(Long idHecho, HechoUpdateDto hechoDto) {
+//    Hecho hecho = this.getHechoById(idHecho);
+//    if(hechoDto.getTitulo() != null) {
+//      hecho.setTitulo(hechoDto.getTitulo());
+//    }
+//    if(hechoDto.getDescripcion() != null) {
+//      hecho.setDescripcion(hechoDto.getDescripcion());
+//    }
+//    if(hechoDto.getFechaHecho() != null) {
+//      hecho.setFechaAcontecimiento(hechoDto.getFechaHecho().atStartOfDay());
+//    }
+//    if(hechoDto.getLatitud() != null) {
+//      hecho.setUbicacion();
+//    }
+//    if(hechoDto.getMultimedia() != null) {
+//
+//    }
+//
+//    hechoRepository.save(hecho);
+//  }
 }

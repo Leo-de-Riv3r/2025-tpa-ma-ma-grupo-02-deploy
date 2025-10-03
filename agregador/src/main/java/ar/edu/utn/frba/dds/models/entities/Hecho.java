@@ -15,6 +15,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -32,12 +33,15 @@ import java.util.Set;
 
 import java.util.UUID;
 import lombok.*;
+import org.springframework.stereotype.Indexed;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Getter
 @Setter
 @Entity @Table(name = "hecho")
+
 public class Hecho {
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -47,15 +51,13 @@ public class Hecho {
   private String descripcion;
   @Column
   private String categoria;
-  //@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-  //lo hago asi para lidiar con los hechos de fuente proxy(no se persisten)
   @Embedded
   private Ubicacion ubicacion;
   @Column
   private LocalDateTime fechaAcontecimiento;
   @Column
   private LocalDateTime fechaCarga;
-  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name="origen_id", referencedColumnName = "id")
   private Origen origen;
 
@@ -76,23 +78,6 @@ public class Hecho {
 //  private static EntityManagerFactory emf =
 //      Persistence.createEntityManagerFactory("AMD");
 //  private static EntityManager em = emf.createEntityManager();
-  public static Hecho convertirHechoDTOAHecho(HechoDTOEntrada dto, TipoFuente tipoFuente) {
-    Ubicacion ubicacion = new Ubicacion();
-    ubicacion.setLatitud(dto.getLatitud());
-    ubicacion.setLongitud(dto.getLongitud());
-    Origen origenExistente = new Origen();
-    origenExistente.setTipo(tipoFuente);
-    Hecho hecho = new Hecho();
-    hecho.setTitulo(dto.getTitulo());
-    hecho.setDescripcion(dto.getDescripcion());
-    hecho.setCategoria(dto.getCategoria());
-    hecho.setUbicacion(ubicacion);
-    hecho.setFechaAcontecimiento(dto.getFechaHecho());
-    hecho.setFechaCarga(dto.getCreatedAt());
-    hecho.setOrigen(origenExistente);
-
-    return hecho;
-  }
 
   public boolean cumpleFiltros(Set<IFiltroStrategy> filtros) {
     return filtros == null || filtros.isEmpty() || filtros.stream().allMatch(f -> f.cumpleFiltro(this));

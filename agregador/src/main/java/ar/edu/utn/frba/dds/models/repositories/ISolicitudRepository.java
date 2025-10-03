@@ -5,6 +5,6 @@ import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ISolicitudRepository extends JpaRepository<Solicitud, String> {
+public interface ISolicitudRepository extends JpaRepository<Solicitud, Long> {
 
 }

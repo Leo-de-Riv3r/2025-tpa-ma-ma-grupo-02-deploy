@@ -49,7 +49,7 @@ public abstract class IConsensoStrategy {
     long apariciones = fuentes.stream()
         .map(fuente -> fuente.getHechos())
         .filter(hechos -> hechos.stream()
-            .anyMatch(h -> h.equals(hecho)))
+            .anyMatch(h -> h.getTitulo() == hecho.getTitulo() && h.getCategoria() == hecho.getCategoria() && h.getDescripcion() == hecho.getDescripcion() && h.getFechaAcontecimiento() == hecho.getFechaAcontecimiento()))
         .count();
 
     return apariciones >= cantMin;
@@ -57,26 +57,11 @@ public abstract class IConsensoStrategy {
 
   public abstract Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes);
 
-  public void actualizarHechos(Set<Hecho> hechos, Set<Fuente> fuentes, EntityManager em) {
-
-    //remover hechos antiguos
-//    for (Hecho viejo : this.hechosConsensuados) {
-//      if (viejo.getId() != null) {
-//        em.remove(em.contains(viejo) ? viejo : em.merge(viejo));
-//        em.remove(viejo);
-//      }
-//    }
+  public void actualizarHechos(Set<Hecho> hechos, Set<Fuente> fuentes) {
     this.hechosConsensuados.clear();
     Set<Hecho> hechosC = hechos.stream()
         .filter(h -> cumpleConsensoBase(h, fuentes, cantidadMinimaApariciones))
         .collect(Collectors.toSet());
-    hechosC.forEach(h -> {
-      //si no existe el hecho en la bd (viene de fuente proxy)
-      //entonces persisto el hecho en la bd
-      if (h.getId() == null) {
-        em.persist(h);
-      }
-    });
 
     this.hechosConsensuados.addAll(hechosC);
   }

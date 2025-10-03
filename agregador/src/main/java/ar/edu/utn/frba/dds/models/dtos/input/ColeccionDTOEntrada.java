@@ -1,5 +1,6 @@
-package ar.edu.utn.frba.dds.models.dtos;
+package ar.edu.utn.frba.dds.models.dtos.input;
 
+import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
 import java.util.Set;
 import lombok.Data;
 
@@ -7,7 +8,7 @@ import lombok.Data;
 public class ColeccionDTOEntrada {
   private String titulo;
   private String descripcion;
-  //private Set<FiltroDTO> filtros;
   private Set<FuenteDTO> fuentes;
   private String algoritmo;
+  private Set<FiltroDTOEntrada> filtros;
 }
