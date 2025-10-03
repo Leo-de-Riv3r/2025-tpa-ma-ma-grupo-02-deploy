@@ -2,23 +2,16 @@ package ar.edu.utn.frba.dds.services.impl;
 
 import ar.edu.utn.frba.dds.models.DTO.output.FuenteCsvDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
-import ar.edu.utn.frba.dds.models.HechoCsv;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.utils.ExtractorHechosCSV;
 import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
 import ar.edu.utn.frba.dds.services.IFuenteEstaticaService;
-import com.opencsv.bean.CsvToBean;
-import com.opencsv.bean.CsvToBeanBuilder;
-import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import jakarta.persistence.EntityNotFoundException;
-import java.net.URL;
-import java.io.InputStreamReader;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
-import org.springframework.http.HttpStatus;
+import java.util.Map;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FuenteEstaticaService implements IFuenteEstaticaService {
@@ -58,17 +51,14 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
     return hechosPag;
   }
 
-  @Override
-  public FuenteCsvDTOOutput crearNuevaFuente(String link, String separador) {
-    if ( link == null || separador == null || link.isBlank() || separador.isBlank()) {
-      throw new IllegalArgumentException("link de archivo .csv o separador no pueden ser nulos");
-    }
-    Fuente fuente = new Fuente();
-    fuente.setHechos(extractorHechosCSV.obtenerHechosCsv(link, separador));
-    fuente.setUrl(link);
-    Fuente fuenteCreada = fuenteRepository.save(fuente);
-    return new FuenteCsvDTOOutput(fuenteCreada.getId(), link, fuenteCreada.getHechos().size());
-  }
+//  @Override
+//  public FuenteCsvDTOOutput crearNuevaFuente(MultipartFile link) {
+//    Fuente fuente = new Fuente();
+//    fuente.setHechos(extractorHechosCSV.obtenerHechosCsv(link));
+//    fuente.setUrl(link.getName());
+//    Fuente fuenteCreada = fuenteRepository.save(fuente);
+//    return new FuenteCsvDTOOutput(fuenteCreada.getId(), fuenteCreada.getUrl(), fuenteCreada.getHechos().size());
+//  }
 
   @Override
   public void eliminarFuente(Long id) {
@@ -84,6 +74,21 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
   @Override
   public List<Fuente> getFuentes() {
     return fuenteRepository.findAll();
+  }
+
+  @Override
+  public Map<String, Object> validarCsv(MultipartFile file) {
+    return extractorHechosCSV.obtenerDatosValidacion(file);
+  }
+
+  @Override
+  public FuenteCsvDTOOutput crearNuevaFuente(MultipartFile link) throws IOException {
+    Fuente fuente = new Fuente();
+    List<Hecho> hechosCsv = this.extractorHechosCSV.obtenerHechos(link);
+    fuente.setHechos(hechosCsv);
+    fuente.setUrl(link.getOriginalFilename());
+    Fuente fuenteGuardado = fuenteRepository.save(fuente);
+    return new FuenteCsvDTOOutput(fuente.getId(), link.getOriginalFilename(), fuenteGuardado.getHechos().size());
   }
 }
 
