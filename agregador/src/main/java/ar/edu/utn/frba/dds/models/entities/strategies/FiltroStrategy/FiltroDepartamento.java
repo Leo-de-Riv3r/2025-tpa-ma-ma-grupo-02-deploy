@@ -29,6 +29,6 @@ public class FiltroDepartamento extends IFiltroStrategy{
   }
   @Override
   public Boolean cumpleFiltro(Hecho hecho){
-    return hecho.getUbicacion().getLugar().getDepartamento().equalsIgnoreCase(departamento);
+    return hecho.getUbicacion().getLugar().getDepartamento().toLowerCase().contains(departamento.toLowerCase());
   }
 }

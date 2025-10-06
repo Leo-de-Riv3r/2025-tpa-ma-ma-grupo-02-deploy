@@ -34,8 +34,6 @@ public class FiltroStrategyFactory {
 
   public static Set<IFiltroStrategy> fromParams(
       String categoria,
-      LocalDateTime fechaReporteDesde,
-      LocalDateTime fechaReporteHasta,
       LocalDateTime fechaAcontecimientoDesde,
       LocalDateTime fechaAcontecimientoHasta,
       String provincia,
@@ -49,9 +47,6 @@ public class FiltroStrategyFactory {
 
     if (fechaAcontecimientoDesde != null || fechaAcontecimientoHasta != null)
       filtros.add(new FiltroFechaAcontecimiento(fechaAcontecimientoDesde, fechaAcontecimientoHasta));
-
-    if (fechaReporteDesde != null || fechaReporteHasta != null)
-      filtros.add(new FiltroFechaReporte(fechaReporteDesde, fechaReporteHasta));
 
     if (provincia != null) {
       filtros.add(new FiltroProvincia(provincia));

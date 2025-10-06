@@ -30,6 +30,6 @@ public class FiltroCategoria extends IFiltroStrategy {
   }
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
-    return hecho.getCategoria().equalsIgnoreCase(nombreCategoria);
+    return hecho.getCategoria().toLowerCase().contains(nombreCategoria.toLowerCase());
   }
 }

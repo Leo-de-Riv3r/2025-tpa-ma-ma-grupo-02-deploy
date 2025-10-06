@@ -11,6 +11,5 @@ import lombok.Setter;
 public class PaginacionDto<T> {
   private List<T> data;
   private int currentPage;
-  private int perPage;
   private int totalPages;
 }

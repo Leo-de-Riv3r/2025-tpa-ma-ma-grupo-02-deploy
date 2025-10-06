@@ -28,8 +28,10 @@ public class HechoConverter {
     ubicacion.setLongitud(dto.getLongitud());
     Origen origenExistente = new Origen();
     origenExistente.setTipo(tipoFuente);
-    if (dto.getIdAutor() != null) {
-      origenExistente.setIdAutor(dto.getIdAutor());
+    if (dto.getAutor() != null) {
+      origenExistente.setAutor(dto.getAutor());
+    } else {
+      origenExistente.setAutor(null);
     }
 
     Hecho hecho = new Hecho();
@@ -86,6 +88,7 @@ public class HechoConverter {
     HechoDtoSalida hechoDtoSalida = new HechoDtoSalida();
     hechoDtoSalida.setId(hecho.getId());
     hechoDtoSalida.setTitulo(hecho.getTitulo());
+    hechoDtoSalida.setDescripcion(hecho.getDescripcion());
     if (hecho.getUbicacion().getLugar()!=null) {
       if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
         hechoDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
@@ -100,6 +103,7 @@ public class HechoConverter {
     hechoDtoSalida.setCategoria(hecho.getCategoria());
     hechoDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
     hechoDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
+    hechoDtoSalida.setTipoFuente(hecho.getOrigen().getTipo().toString());
     return hechoDtoSalida;
   }
 
