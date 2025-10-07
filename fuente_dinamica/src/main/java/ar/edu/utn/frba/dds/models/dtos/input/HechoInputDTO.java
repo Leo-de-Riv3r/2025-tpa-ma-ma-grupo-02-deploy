@@ -19,7 +19,7 @@ public class HechoInputDTO {
   private Double longitud;
 
   @JsonSetter(nulls = Nulls.AS_EMPTY)
-  private List<MultimediaInputDTO> multimedia;
+  private List<MultimediaInputDTO> multimedia; /// TODO: Eliminar
 
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private LocalDateTime fechaAcontecimiento;

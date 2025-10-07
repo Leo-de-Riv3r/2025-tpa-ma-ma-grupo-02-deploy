@@ -1,13 +1,10 @@
-package ar.edu.utn.frba.dds.servicies;
+package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
-import ar.edu.utn.frba.dds.models.dtos.input.SolicitudModificacionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
-import ar.edu.utn.frba.dds.models.dtos.output.HechoPagDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoRevisionOutputDTO;
-import ar.edu.utn.frba.dds.models.entities.Hecho;
-import org.springframework.data.history.Revision;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,7 +13,7 @@ public interface IHechosService {
   public List<HechoOutputDTO> getHechos();
   public HechoOutputDTO getHechoById(Long id);
 
-  HechoOutputDTO crearHecho(HechoInputDTO hecho);
+  HechoOutputDTO crearHecho(HechoInputDTO hecho, List<MultipartFile> multimedia);
 
   // ADMINS
   public List<HechoRevisionOutputDTO> getHechosPendientes();
