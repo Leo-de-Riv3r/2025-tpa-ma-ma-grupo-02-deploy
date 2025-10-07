@@ -1,0 +1,52 @@
+<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="contenido">
+    <div class="p-4 container border border-solid bg-light">
+        <h1>Detalles hecho</h1>
+        <form class="d-flex flex-column row-gap-5">
+            <div class="mb-3">
+                <button><a href="@{colecciones/{idColeccion}/hechos (idColeccion=${idColeccion})} ">Volver a mapa de hechos</a></button>
+            </div>
+            <div class="mb-3">
+                <h4>Titulo hecho</h4>
+                <p th:text="${hecho.titulo}">titulo</p>
+            </div>
+            <div class="mb-3">
+                <h4>Categoria</h4>
+                <p th:text="${hecho.categoria}"></p>
+            </div>
+            <div class="mb-2">
+                <h4>Descripcion</h4>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <p th:text="${hecho.descripcion}"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <h4>Ubicacion:</h4>
+                <p>Latitud: <span th:text="${hecho.latitud}">latitud</span></p>
+                <p>Longitud: <span th:text="${hecho.longitud}">longitud</span></p>
+                <p>Provincia: <span th:text="${hecho.provincia}">provincia</span></p>
+                <p>Municipio: <span th:text="${hecho.municipio}">municipio</span></p>
+                <p>Departamento: <span th:text="${hecho.departamento}">departamento</span></p>
+            </div>
+            <div class="mb-3">
+                <h4>Fecha del hecho: <span th:text="${hecho.fechaAcontecimiento}">YYYY/MM/DD</span></h4>
+            </div>
+            <div class="mb-3">
+                <h4>Multimedia:</h4>
+                <div class="d-flex flex-row justify-content-evenly">
+                    <img src="#" class="img-fluid" alt="imagen_multimedia_1.jpg">
+                    <img src="#" class="img-fluid" alt="imagen_multimedia_2.jpg">
+                    <img src="#" class="img-fluid" alt="imagen_multimedia_3.jpg">
+                </div>
+            </div>
+            <div>
+                <a class="btn btn-danger" th:href="@{/colecciones/{idColeccion}/hechos/{idHecho}/solicitudEliminacion ( idColeccion=${idColeccion}, idHecho=${idHecho} )}">Solicitar eliminación</a>
+            </div>
+        </form>
+    </div>
+
+
+</div>
+</html>
