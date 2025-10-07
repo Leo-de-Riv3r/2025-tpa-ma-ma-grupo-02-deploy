@@ -2,7 +2,9 @@ package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -11,56 +13,93 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import jakarta.persistence.*;
 
 @Getter
 @Setter
+@Entity @Table(name = "coleccion")
 public class Coleccion {
+  @Id
   private String id;
+  @Column
   private String titulo;
+  @Column
   private String descripcion;
-  private Set<IFiltroStrategy> criterios;
-  private Set<Fuente> fuentes;
-  private IConsensoStrategy algoritmoConsenso;
-  private Set<Hecho> hechosCurados;
 
-  public Coleccion(String titulo, String descripcion) {
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
+  private Set<IFiltroStrategy> criterios = new HashSet<>();
+
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+  @JoinTable(
+  name="hecho_filtrado",joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
+  inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id"))
+  private Set<Hecho> hechosFiltrados = new HashSet<>();
+
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+  @JoinTable(name = "coleccion_fuente",
+      joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "fuente_id", referencedColumnName = "id")
+  )
+  private Set<Fuente> fuentes;
+
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "algoritmo_id", referencedColumnName = "id")
+  private IConsensoStrategy algoritmoConsenso;
+
+  public Coleccion() {
     this.id = UUID.randomUUID().toString();
-    this.titulo = titulo;
-    this.descripcion = descripcion;
-    this.criterios = Set.of();
-    this.fuentes = Set.of();
-    this.algoritmoConsenso = null;
-    this.hechosCurados = Set.of();
+    this.fuentes = new HashSet<>();
   }
 
   public Set<Hecho> getHechos() {
     Set<Hecho> hechos = new HashSet<>();
-    fuentes.forEach(fuente -> hechos.addAll(fuente.getHechos(criterios)));
-    return hechos;
-  }
+    fuentes.stream()
+        .forEach(fuente -> hechos.addAll(fuente.getHechos()));
+    //filtro duplicados segun titulo categoria descripcion y fecha acontecimiento
+    Set<String> vistos = new HashSet<>();
+    Set<Hecho> resultado = new HashSet<>();
 
-  public void refrescarHechosCurados() {
-    Set<Hecho> hechos = getHechos();
-    if (algoritmoConsenso != null) {
-      hechosCurados = hechos.stream().filter(hecho -> algoritmoConsenso.cumpleConsenso(hecho, fuentes, criterios)).collect(Collectors.toSet());
+    for (Hecho hecho : hechos) {
+      // Genero una "clave única" combinando los atributos relevantes
+      String clave = hecho.getTitulo() + "|"
+          + hecho.getDescripcion() + "|"
+          + hecho.getCategoria() + "|"
+          + hecho.getFechaAcontecimiento();
+
+      if (!vistos.contains(clave)) {
+        vistos.add(clave);
+        resultado.add(hecho);
+      }
+    }
+    if (!criterios.isEmpty()) {
+      return resultado.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet());
     } else {
-      hechosCurados = hechos;
+      return resultado;
     }
   }
 
+  public void refrescarHechosCurados(EntityManager em) {
+    if (algoritmoConsenso != null) {
+      algoritmoConsenso.actualizarHechos(this.getHechos(), fuentes);
+    }
+  }
+  public Set<Hecho> getHechosFiltrados() {
+    if (!criterios.isEmpty()){
+      return this.getHechos().stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet());
+    }
+    else return new HashSet<>();
+  }
   public Set<Hecho> getHechosCurados() {
-    if (hechosCurados.isEmpty()) {
-      refrescarHechosCurados();
+    if (algoritmoConsenso != null) {
+      return algoritmoConsenso.getHechosCurados();
+    } else {
+      return new HashSet<>();
     }
-    return hechosCurados;
   }
 
-  public void addCriterio(IFiltroStrategy criterio) {
-    this.criterios.add(criterio);
-  }
-
-  public void removeCriterio(IFiltroStrategy criterio) {
-    this.criterios.remove(criterio);
+  public void addCriterio(IFiltroStrategy filtro) {
+    this.criterios.add(filtro);
   }
 
   public void addFuente(Fuente fuente) {
@@ -69,5 +108,22 @@ public class Coleccion {
 
   public void removeFuente(String idFuente) {
     fuentes.removeIf(fuente -> EqualsBuilder.reflectionEquals(fuente.getId(), idFuente));
+  }
+  public void limpiarFuentes() {
+    this.fuentes.clear();
+  }
+  public void setearFuentes(Set<Fuente> fuentes) {
+    this.fuentes.addAll(fuentes);
+  }
+
+  public void actualizarHechosFiltrados() {
+    this.hechosFiltrados.clear();
+    Set<Hecho> hechosColeccion = this.getHechos();
+    this.hechosFiltrados.addAll(hechosColeccion.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet()));
+  }
+
+  public void setearCriterios(Set<IFiltroStrategy> filtros) {
+    this.criterios.clear();
+    this.criterios.addAll(filtros);
   }
 }

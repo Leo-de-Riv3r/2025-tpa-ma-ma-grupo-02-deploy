@@ -1,17 +1,28 @@
 package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.enums.Formato;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
+@Entity
+@Table(name = "multimedia")
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Multimedia {
-  private String nombre;
-  private String ruta;
-  private Formato formato;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "nombre")
+    private String nombre;
+
+    @Column(name = "ruta")
+    private String ruta;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "formato")
+    private Formato formato;
 }

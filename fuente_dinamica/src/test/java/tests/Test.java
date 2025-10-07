@@ -2,12 +2,13 @@ package tests;
 import ar.edu.utn.frba.dds.models.entities.Categoria;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
-import ar.edu.utn.frba.dds.models.repositories.impl.HechosRepository;
+
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.*;
 public class Test {
   @BeforeEach
   public void cargarDatos(){
+      /* TODO: Rehacer
     HechosRepository hechosRepo = new HechosRepository();
     Hecho hecho1 = Hecho.builder()
         .titulo("Hecho prueba 1")
@@ -28,6 +29,6 @@ public class Test {
     hechosRepo.save(hecho1);
     hechosRepo.save(hecho2);
     //hechosRepo.save();
-
+    */
   }
 }

@@ -10,7 +10,7 @@ import lombok.Data;
 public class ColeccionDTO {
   private String titulo;
   private String descripcion;
-  private Set<IFiltroStrategy> criterios;
   private Set<Fuente> fuentes;
   private IConsensoStrategy algoritmoConsenso;
+  private Set<IFiltroStrategy> criterios;
 }
