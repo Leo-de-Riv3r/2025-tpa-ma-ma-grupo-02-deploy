@@ -33,7 +33,7 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
     Fuente fuente = fuenteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
     List<Hecho> hechos = fuente.getHechos();
     if (page < 1) page = 1;
-    if (per_page > 100) per_page = 100;
+    if (per_page > 2000) per_page = 2000;
     if (page < 1) page = 1;
     Integer total = hechos.size();
     Integer inicio = (page - 1) * per_page;

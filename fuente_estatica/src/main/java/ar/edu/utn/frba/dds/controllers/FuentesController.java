@@ -31,7 +31,7 @@ public class FuentesController {
   public List<Hecho> getHechos(
       @PathVariable(required = true) Long id
       ,@RequestParam(value = "page", required = false, defaultValue = "1") int page,
-      @RequestParam(value = "per_page", required = false, defaultValue = "100") int perPage) {
+      @RequestParam(value = "per_page", required = false, defaultValue = "2000") int perPage) {
     return fuenteEstaticaService.getHechos(id, page, perPage);
   }
 
