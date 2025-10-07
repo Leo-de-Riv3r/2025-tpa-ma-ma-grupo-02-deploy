@@ -30,6 +30,6 @@ public class FiltroMunicipio extends IFiltroStrategy{
 
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
-    return hecho.getUbicacion().getLugar().getMunicipio().equalsIgnoreCase(municipio);
+    return hecho.getUbicacion().getLugar().getMunicipio().toLowerCase().contains(municipio);
   }
 }

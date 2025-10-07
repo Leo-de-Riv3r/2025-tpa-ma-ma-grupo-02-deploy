@@ -26,22 +26,21 @@ public class FuenteProxyMetamapa extends Fuente {
     try {
       //this.hechos.clear();
       WebClient webClient = WebClient.builder().baseUrl(url).build();
-      List<Hecho> hechos = webClient.get()
+      Set<Hecho> hechos = webClient.get()
           .uri(uriBuilder -> uriBuilder.path("/hechos").build())
           .retrieve()
           .bodyToFlux(HechoDTOEntrada.class)
           .map(hecho -> hechoConverter.fromDTO(hecho, tipoFuente))
-          .collect(Collectors.toList())
+          .collect(Collectors.toSet())
           .block();
-
+      //solo agrego hechos nuevos segun titulo categoria y descripcion
+      hechos =  hechos.stream().filter(h -> !this.existeHecho(h)).collect(Collectors.toSet());
       hechos.forEach((h -> {
         Ubicacion ubicacionNueva = h.getUbicacion();
         ubicacionNueva.setLugar(hechoConverter.obtenerLugar(ubicacionNueva));
         h.setUbicacion(ubicacionNueva);
       }));
-      assert hechos != null;
-      //solo agrego hechos nuevos segun titulo categoria y descripcion
-      return hechos.stream().filter(h -> !this.existeHecho(h)).collect(Collectors.toSet());
+      return hechos;
 
     } catch (Exception e) {
       throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.id);

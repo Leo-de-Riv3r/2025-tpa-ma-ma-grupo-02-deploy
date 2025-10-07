@@ -213,8 +213,8 @@ public class ColeccionService {
       if (hechoExistente.isPresent()) {
         hechoFinal = hechoExistente.get();
       } else {
-        origenRepo.findByTipoAndIdAutor(
-            h.getOrigen().getTipo(), h.getOrigen().getIdAutor()
+        origenRepo.findByTipoAndAutor(
+            h.getOrigen().getTipo(), h.getOrigen().getAutor()
         ).ifPresent(h::setOrigen);
 
         hechoRepository.buscarCategoriaNormalizada(h.getCategoria())
@@ -227,7 +227,7 @@ public class ColeccionService {
   }
 
 
-  public PaginacionDto<HechoDtoSalida> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Integer perPage, Set<IFiltroStrategy> filtros) {
+  public PaginacionDto<HechoDtoSalida> getHechos(String coleccionId, boolean navegacionCurada, Integer page, Set<IFiltroStrategy> filtros) {
     Set<Hecho> hechos = new LinkedHashSet<>();
     if (coleccionId != null) {
       Optional<Coleccion> coleccion = coleccionRepository.findById(coleccionId);
@@ -266,11 +266,8 @@ public class ColeccionService {
     List<Hecho> hechosList = new ArrayList<>(hechos);
     hechosList.sort(Comparator.comparing(Hecho::getId));
     // Configuración de paginación
-    Integer defaultPerPage = 100;
-    Integer maxPerPage = 100;
-
-    Integer size = (perPage == null || perPage < 1) ? defaultPerPage : Math.min(perPage, maxPerPage);
-    int totalElements = hechosList.size();
+    int size = 1000;
+    int totalElements = hechos.size();
     int totalPages = (int) Math.ceil((double) totalElements / size);
 
     int currentPage = (page == null || page < 1) ? 1 : page;
@@ -292,7 +289,6 @@ public class ColeccionService {
     return new PaginacionDto<>(
         hechosPaginados,
         currentPage,
-        size,
         totalPages
     );
 
@@ -357,9 +353,9 @@ public class ColeccionService {
     coleccionRepository.save(coleccion);
   }
 
-  public HechoDtoSalida getHechoDto(Long idHecho) {
+  public HechoDetallesDtoSalida getHechoDto(Long idHecho) {
     Hecho hecho = this.getHechoById(idHecho);
-    return hechoConverter.fromEntity(hecho);
+    return hechoConverter.fromEntityDetails(hecho);
   }
 
   public HechoDetallesDtoSalida getHechoDtoDetalles(Long idHecho) {

@@ -36,7 +36,7 @@ public class Solicitud {
   @Getter
   @Setter
   private String titulo;
-  @Column
+  @Column(length = 2000)
   @Getter
   @Setter
   private String texto;

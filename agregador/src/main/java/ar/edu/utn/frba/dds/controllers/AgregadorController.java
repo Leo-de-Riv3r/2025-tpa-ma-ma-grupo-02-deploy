@@ -74,11 +74,8 @@ public class AgregadorController {
   public PaginacionDto<HechoDtoSalida> getHechos(
       @PathVariable String id,
       @RequestParam(required = false) Integer page,
-      @RequestParam(required = false) Integer per_page,
       @RequestParam(required = false, defaultValue = "false") Boolean curados,
       @RequestParam(required = false) String categoria,
-      @RequestParam(required = false) LocalDateTime fecha_reporte_desde,
-      @RequestParam(required = false) LocalDateTime fecha_reporte_hasta,
       @RequestParam(required = false) LocalDateTime fecha_acontecimiento_desde,
       @RequestParam(required = false) LocalDateTime fecha_acontecimiento_hasta,
       @RequestParam(required = false) String provincia,
@@ -87,8 +84,6 @@ public class AgregadorController {
   ) {
     Set<IFiltroStrategy> filtros = FiltroStrategyFactory.fromParams(
         categoria,
-        fecha_reporte_desde,
-        fecha_reporte_hasta,
         fecha_acontecimiento_desde,
         fecha_acontecimiento_hasta,
         provincia,
@@ -96,7 +91,7 @@ public class AgregadorController {
         departamento
     );
 
-    return coleccionService.getHechos(id, curados, page, per_page, filtros);
+    return coleccionService.getHechos(id, curados, page, filtros);
   }
 
   @PutMapping("/colecciones/{id}/algoritmo")
@@ -134,9 +129,9 @@ public class AgregadorController {
 
   //HECHOS
   @GetMapping("/hechos/{idHecho}")
-  public ResponseEntity<HechoDtoSalida> obtenerHecho(
+  public ResponseEntity<HechoDetallesDtoSalida> obtenerHecho(
       @PathVariable Long idHecho) {
-    HechoDtoSalida respuesta = coleccionService.getHechoDto(idHecho);
+    HechoDetallesDtoSalida respuesta = coleccionService.getHechoDto(idHecho);
     return ResponseEntity.ok(respuesta);
   }
 //  @PutMapping("/hechos/{idHecho}")
@@ -145,13 +140,7 @@ public class AgregadorController {
 //    coleccionService.actualizarHecho(idHecho, hechoDto);
 //    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Hecho actualizado");
 //  }
-  @GetMapping("/hechos/{idHecho}/detalles")
-  public ResponseEntity<HechoDetallesDtoSalida> obtenerDetallesHecho(
-      @PathVariable long idHecho
-  ) {
-    HechoDetallesDtoSalida respuesta = coleccionService.getHechoDtoDetalles(idHecho);
-    return ResponseEntity.ok(respuesta);
-  }
+
   //SOLICITUDES
   @PostMapping("/solicitudes")
   public ResponseEntity<String> agregarSolicitud(@RequestBody SolicitudDTOEntrada dto) {

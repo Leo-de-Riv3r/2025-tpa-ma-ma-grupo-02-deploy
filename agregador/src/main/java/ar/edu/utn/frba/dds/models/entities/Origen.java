@@ -21,9 +21,9 @@ public class Origen {
   @Getter
   @Setter
   @Column
-  private Long idAutor;
+  private String autor;
 
   public Origen() {
-    this.idAutor = 0L;
+    this.autor = null;
   }
 }

@@ -47,7 +47,7 @@ public class Hecho {
   private Long id;
   @Column
   private String titulo;
-  @Column(length = 2000)
+  @Column(length = 3000)
   private String descripcion;
   @Column
   private String categoria;

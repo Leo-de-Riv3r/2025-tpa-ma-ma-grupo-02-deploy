@@ -12,7 +12,7 @@ public class ColeccionScheduler {
   }
 
   //refresco fuentes directamente porque pueden repetirse entre colecciones
-  @Scheduled(fixedRate = 3600000) // 1 hora
+  @Scheduled(fixedDelay = 3600000, initialDelay = 3600000)
   public void refrescarColecciones() {
     coleccionesService.refrescoFuentes();
     coleccionesService.refrescarHechosFiltrados();
