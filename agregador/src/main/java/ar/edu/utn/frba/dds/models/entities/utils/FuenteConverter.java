@@ -35,6 +35,6 @@ public class FuenteConverter {
     }
 
   public FuenteDTOOutput fromEntity(Fuente f) {
-    return new FuenteDTOOutput(f.getId(), f.getTipoFuente(), f.getUrl(), f.getHechos().size());
+    return new FuenteDTOOutput(f.getId(), f.getTipoFuente(), f.getUrl());
   }
 }

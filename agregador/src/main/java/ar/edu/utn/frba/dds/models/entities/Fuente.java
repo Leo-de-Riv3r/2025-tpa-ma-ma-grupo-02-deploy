@@ -48,7 +48,7 @@ public abstract class Fuente {
   @Column
   protected TipoFuente tipoFuente;
 
-  @ManyToMany(fetch = FetchType.EAGER)
+  @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "fuente_hecho",
       joinColumns = @JoinColumn(name = "fuente_id" , referencedColumnName = "id"),
