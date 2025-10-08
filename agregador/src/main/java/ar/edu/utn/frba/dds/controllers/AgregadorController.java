@@ -11,6 +11,7 @@ import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
+import ar.edu.utn.frba.dds.models.dtos.output.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,9 +43,17 @@ public class AgregadorController {
     this.coleccionService = coleccionService;
   }
 
+  //Panel control
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @GetMapping("/resumen")
+  public ResponseEntity<ResumenActividadDto> getResumenActividad() {
+    ResumenActividadDto resumenActividadDto = coleccionService.getResumenActividad();
+    return ResponseEntity.status(HttpStatus.CREATED).body(resumenActividadDto);
+  }
   //COLECCIONES
 
   //CRUD COLECCIONES
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping("/colecciones")
   public ResponseEntity<ColeccionDTOSalida> createColeccion(@RequestBody ColeccionDTOEntrada dto) {
     ColeccionDTOSalida coleccionCreada = coleccionService.createColeccion(dto);
@@ -60,11 +70,13 @@ public class AgregadorController {
     return coleccionService.getColeccionDTO(id);
   }
 
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/colecciones/{id}")
   public void updateColeccion(@PathVariable String id, @RequestBody ColeccionDTOEntrada dto) {
     coleccionService.updateColeccion(id, dto);
   }
 
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @DeleteMapping("/colecciones/{id}")
   public void deleteColeccion(@PathVariable String id) {
     coleccionService.deleteColeccion(id);
@@ -159,6 +171,8 @@ public class AgregadorController {
   ){
     return solicitudService.getSolicitudDto(id);
   }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/solicitudes/{id}/aceptar")
   public void aceptarSolicitud(
       @PathVariable Long id
@@ -166,6 +180,7 @@ public class AgregadorController {
     solicitudService.aceptarSolicitud(id);
   }
 
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/solicitudes/{id}/denegar")
   public void rechazarSolicitud(
       @PathVariable Long id
