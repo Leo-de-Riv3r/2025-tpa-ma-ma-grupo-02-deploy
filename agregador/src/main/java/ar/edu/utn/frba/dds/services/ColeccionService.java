@@ -8,6 +8,7 @@ import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDto;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
+import ar.edu.utn.frba.dds.models.dtos.output.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
@@ -22,6 +23,7 @@ import ar.edu.utn.frba.dds.models.repositories.IColeccionRepository;
 import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
 import ar.edu.utn.frba.dds.models.repositories.IOrigenRepository;
+import ar.edu.utn.frba.dds.models.repositories.ISolicitudRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
@@ -36,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,11 +51,12 @@ public class ColeccionService {
   private final ColeccionConverter coleccionConverter;
   private final HechoConverter hechoConverter;
   private final IFuenteRepository fuenteRepository;
+  private final ISolicitudRepository solicitudRepository;
 
   @PersistenceContext
   private EntityManager em;
 
-  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository) {
+  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository, ISolicitudRepository solicitudRepository) {
     this.coleccionRepository = coleccionRepository;
     this.solicitudService = solicitudService;
     this.hechoRepository = hechoRepository;
@@ -61,6 +65,7 @@ public class ColeccionService {
     this.coleccionConverter = coleccionConverter;
     this.hechoConverter = hechoConverter;
     this.fuenteRepository = fuenteRepository;
+    this.solicitudRepository = solicitudRepository;
   }
 
   public ColeccionDTOSalida createColeccion(ColeccionDTOEntrada dto) {
@@ -161,6 +166,8 @@ public class ColeccionService {
       });
       coleccion.limpiarFuentes();
       coleccion.setearFuentes(fuentes);
+    } else {
+      coleccion.limpiarFuentes();
     }
     if (dto.getAlgoritmo() != null) {
       try {
@@ -373,6 +380,14 @@ public class ColeccionService {
     colecciones.forEach(Coleccion::actualizarHechosFiltrados);
     //elimino los hechos con fuente_id nulo porque ya son obsoletos
     coleccionRepository.saveAll(colecciones);
+  }
+
+  public ResumenActividadDto getResumenActividad() {
+    ResumenActividadDto resumenActividadDto = new ResumenActividadDto();
+    resumenActividadDto.setHechostotales(hechoRepository.count());
+    resumenActividadDto.setFuentesTotales(fuenteRepository.count());
+    resumenActividadDto.setSolicitudesEliminacion(solicitudRepository.count());
+    return resumenActividadDto;
   }
 
 //  public void actualizarHecho(Long idHecho, HechoUpdateDto hechoDto) {
