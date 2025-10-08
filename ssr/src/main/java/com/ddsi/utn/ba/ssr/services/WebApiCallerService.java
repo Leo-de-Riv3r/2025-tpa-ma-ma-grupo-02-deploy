@@ -136,6 +136,8 @@ public class WebApiCallerService {
             .bodyValue(body)
             .retrieve()
             .bodyToMono(responseType)
+            .doOnSuccess(r -> System.out.println("✅ PUT ejecutado correctamente"))
+            .doOnError(e -> System.err.println("❌ Error en PUT: " + e.getMessage()))
             .block()
     );
   }

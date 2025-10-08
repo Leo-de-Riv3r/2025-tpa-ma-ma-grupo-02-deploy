@@ -76,7 +76,6 @@ public String actualizarColecion(@PathVariable String idColeccion,
     System.out.println(idColeccion);
     if(coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
     agregadorService.actualizarColeccion(idColeccion, coleccion);
-    System.out.println("ACTUALIZADO");
     return "redirect:/colecciones";
   } catch(Exception e) {
     return "redirect:/";
@@ -153,5 +152,12 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
     List<Coleccion> colecciones = agregadorService.obtenerColecciones();
     model.addAttribute("colecciones",  colecciones);
     return "coleccion/colecciones";
+  }
+
+  @GetMapping("/panel-control")
+  public String mostrarPanelControl(Model model) {
+    //todo
+
+    return "panelControl";
   }
 }

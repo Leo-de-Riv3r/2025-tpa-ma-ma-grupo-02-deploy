@@ -2,6 +2,7 @@ package com.ddsi.utn.ba.ssr.services;
 
 import com.ddsi.utn.ba.ssr.models.AuthResponseDTO;
 import com.ddsi.utn.ba.ssr.models.Coleccion;
+import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
 import com.ddsi.utn.ba.ssr.models.RolesPermisosDTO;
 import java.util.List;
 import java.util.Map;
@@ -93,5 +94,17 @@ public class MetamapaApiService {
         return false;
       }
       return false;
+  }
+
+  public void eliminarColeccion(String idColeccion) {
+    webApiCallerService.delete(agregadorServiceUrl + "/colecciones/" + idColeccion);
+  }
+
+  public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccionDto) {
+    webApiCallerService.put(agregadorServiceUrl + "/colecciones/" + idColeccion, coleccionDto, Void.class);
+  }
+
+  public void crearColeccion(ColeccionNuevaDto coleccionDto) {
+    webApiCallerService.post(agregadorServiceUrl + "/colecciones", coleccionDto, Void.class);
   }
 }

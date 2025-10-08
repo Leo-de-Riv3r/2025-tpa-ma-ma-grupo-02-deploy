@@ -18,11 +18,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 public class AgregadorService {
+  private final MetamapaApiService metamapaApiService;
   private String urlBase = "http://localhost:5010";
   private final RestTemplate restTemplate;
   private WebClient webClient = WebClient.builder().baseUrl("http://localhost:5010").build();
 
-  public AgregadorService() {
+  public AgregadorService(MetamapaApiService metamapaApiService) {
+    this.metamapaApiService = metamapaApiService;
     this.restTemplate = new RestTemplate();
   }
 
@@ -55,12 +57,13 @@ public class AgregadorService {
 
   public void crearColeccion(ColeccionNuevaDto coleccionNueva) {
     if (coleccionNueva.getAlgoritmo().isBlank()) coleccionNueva.setAlgoritmo(null);
-    ResponseEntity<ColeccionDetallesDto> response = restTemplate.exchange(
-          urlBase + "/colecciones",
-          HttpMethod.POST,
-          new HttpEntity<>(coleccionNueva),
-          ColeccionDetallesDto.class
-    );
+//    ResponseEntity<ColeccionDetallesDto> response = restTemplate.exchange(
+//          urlBase + "/colecciones",
+//          HttpMethod.POST,
+//          new HttpEntity<>(coleccionNueva),
+//          ColeccionDetallesDto.class
+//    );
+    metamapaApiService.crearColeccion(coleccionNueva);
   }
 
   public Coleccion obtenerColeccionPorId(String idColeccion) {
@@ -74,21 +77,23 @@ public class AgregadorService {
   }
 
   public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccion) {
-    ResponseEntity<Void> response = restTemplate.exchange(
-        urlBase + "/colecciones/" + idColeccion,
-        HttpMethod.PUT,
-        new HttpEntity<>(coleccion),
-        Void.class
-    );
+//    ResponseEntity<Void> response = restTemplate.exchange(
+//        urlBase + "/colecciones/" + idColeccion,
+//        HttpMethod.PUT,
+//        new HttpEntity<>(coleccion),
+//        Void.class
+//    );
+    metamapaApiService.actualizarColeccion(idColeccion, coleccion);
   }
 
   public void eliminarColeccion(String idColeccion) {
-    ResponseEntity<Void> response = restTemplate.exchange(
-        urlBase + "/colecciones/" + idColeccion,
-        HttpMethod.DELETE,
-        null,
-        Void.class
-    );
+//    ResponseEntity<Void> response = restTemplate.exchange(
+//        urlBase + "/colecciones/" + idColeccion,
+//        HttpMethod.DELETE,
+//        null,
+//        Void.class
+//    );
+    metamapaApiService.eliminarColeccion(idColeccion);
   }
 
   public HechoDetallesDto getDetallesHecho(Long idHecho) {

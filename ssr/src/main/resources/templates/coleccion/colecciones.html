@@ -2,7 +2,7 @@
 <div th:fragment="contenido">
     <div class="btn d-flex flex-direcion-row" >
     <h1>Colecciones</h1>
-    <button type="button" class="btn btn-primary">
+    <button sec:authorize="hasRole('ADMINISTRADOR')" type="button" class="btn btn-primary">
         <a href="colecciones/nuevaColeccion">Crear coleccion</a></button>
     </div>
     <div th:if="${colecciones.empty}" class="text-center py-5">
@@ -32,8 +32,8 @@
                 <div class="d-flex flex-row justify-content-between p-2">
                     <a  th:href="@{/colecciones/{idColeccion}/hechos (idColeccion=${c.id})}"
                         class="btn btn-light" href="hechosColeccion.html">Ver Hechos</a>
-                    <a class="btn btn-danger" th:href="@{/colecciones/{idColeccion}/eliminar (idColeccion=${c.id})}">Eliminar</a>
-                    <a class="btn btn-warning" th:href="@{/colecciones/{idColeccion}/editar (idColeccion=${c.id})}">Modificar</a>
+                    <a sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-danger" th:href="@{/colecciones/{idColeccion}/eliminar (idColeccion=${c.id})}">Eliminar</a>
+                    <a sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-warning" th:href="@{/colecciones/{idColeccion}/editar (idColeccion=${c.id})}">Modificar</a>
                 </div>
             </div>
     </div>
