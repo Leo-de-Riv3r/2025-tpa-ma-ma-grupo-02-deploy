@@ -26,7 +26,6 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/colecciones/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/colecciones/**").authenticated()
             .requestMatchers(HttpMethod.DELETE, "/colecciones/**").authenticated()
-
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

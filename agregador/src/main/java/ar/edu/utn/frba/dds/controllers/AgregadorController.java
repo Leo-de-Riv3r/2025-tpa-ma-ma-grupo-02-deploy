@@ -13,6 +13,7 @@ import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
 import ar.edu.utn.frba.dds.models.dtos.output.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudResumenDtoOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
@@ -48,7 +49,7 @@ public class AgregadorController {
   @GetMapping("/resumen")
   public ResponseEntity<ResumenActividadDto> getResumenActividad() {
     ResumenActividadDto resumenActividadDto = coleccionService.getResumenActividad();
-    return ResponseEntity.status(HttpStatus.CREATED).body(resumenActividadDto);
+    return ResponseEntity.status(HttpStatus.OK).body(resumenActividadDto);
   }
   //COLECCIONES
 
@@ -159,13 +160,16 @@ public class AgregadorController {
     solicitudService.createSolicitud(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body("Solicitud creada");
   }
-
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
   @GetMapping("/solicitudes")
-  public List<SolicitudDTOOutput> getSolicitudes(){
-    return solicitudService.getSolicitudes();
+  public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(
+      @RequestParam (required = false) Integer page
+  ){
+    return solicitudService.getSolicitudes(page);
   }
 
-  @GetMapping("solicitudes/{id}")
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
+  @GetMapping("/solicitudes/{id}")
   public SolicitudDTOOutput getSolicitud(
       @PathVariable Long id
   ){
@@ -174,17 +178,19 @@ public class AgregadorController {
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/solicitudes/{id}/aceptar")
-  public void aceptarSolicitud(
+  public ResponseEntity<String> aceptarSolicitud(
       @PathVariable Long id
   ) {
     solicitudService.aceptarSolicitud(id);
+    return ResponseEntity.noContent().build();
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/solicitudes/{id}/denegar")
-  public void rechazarSolicitud(
+  public ResponseEntity<String> rechazarSolicitud(
       @PathVariable Long id
   ) {
     solicitudService.rechazarSolicitud(id);
+    return ResponseEntity.noContent().build();
   }
 }
