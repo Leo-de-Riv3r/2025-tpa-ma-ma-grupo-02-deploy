@@ -2,7 +2,7 @@ package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoRevisionOutputDTO;
-import ar.edu.utn.frba.dds.servicies.IHechosService;
+import ar.edu.utn.frba.dds.services.IHechosService;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;

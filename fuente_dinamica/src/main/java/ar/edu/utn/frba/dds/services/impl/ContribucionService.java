@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.servicies.impl;
+package ar.edu.utn.frba.dds.services.impl;
 
 import ar.edu.utn.frba.dds.exceptions.ContrasenaIncorrectaException;
 import ar.edu.utn.frba.dds.mappers.HechoMapper;
@@ -11,7 +11,7 @@ import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.repositories.ICategoriaRepository;
 import ar.edu.utn.frba.dds.models.repositories.IContribuyenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
-import ar.edu.utn.frba.dds.servicies.IContribucionService;
+import ar.edu.utn.frba.dds.services.IContribucionService;
 import ar.edu.utn.frba.dds.utils.ContribucionUtils;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.servicies;
+package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.dtos.input.RespuestaSolicitudInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudEliminacionInputDTO;

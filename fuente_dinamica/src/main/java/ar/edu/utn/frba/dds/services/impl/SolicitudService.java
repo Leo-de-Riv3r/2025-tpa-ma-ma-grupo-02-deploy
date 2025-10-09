@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.servicies.impl;
+package ar.edu.utn.frba.dds.services.impl;
 
 import ar.edu.utn.frba.dds.models.dtos.input.RespuestaSolicitudInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudEliminacionInputDTO;
@@ -8,10 +8,9 @@ import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import ar.edu.utn.frba.dds.models.enums.EstadoSolicitud;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
-import ar.edu.utn.frba.dds.servicies.ISolicitudesService;
+import ar.edu.utn.frba.dds.services.ISolicitudesService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import lombok.Builder;
 
 import java.util.List;
 import java.util.stream.Collectors;

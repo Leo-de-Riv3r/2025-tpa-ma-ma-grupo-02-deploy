@@ -1,14 +1,13 @@
-package ar.edu.utn.frba.dds.servicies.impl;
+package ar.edu.utn.frba.dds.services.impl;
 
 import ar.edu.utn.frba.dds.mappers.HechoMapper;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
-import ar.edu.utn.frba.dds.models.dtos.input.MultimediaInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudModificacionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
-import ar.edu.utn.frba.dds.models.dtos.output.HechoPagDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoRevisionOutputDTO;
+import ar.edu.utn.frba.dds.models.dtos.output.MultimediaOutputDTO;
 import ar.edu.utn.frba.dds.models.entities.Categoria;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Multimedia;
@@ -18,13 +17,15 @@ import ar.edu.utn.frba.dds.models.enums.Formato;
 import ar.edu.utn.frba.dds.models.repositories.IContribuyenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
-import ar.edu.utn.frba.dds.servicies.IHechosService;
-import ar.edu.utn.frba.dds.utils.ContribucionUtils;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import ar.edu.utn.frba.dds.services.IHechosService;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import ar.edu.utn.frba.dds.services.IMultimediaService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Service
@@ -32,14 +33,17 @@ public class HechosService implements IHechosService {
   private final IHechosRepository hechosRepository;
   private final IContribuyenteRepository contribuyenteRepository;
   private final ISolicitudesRepository solicitudesRepository;
+  private final IMultimediaService multimediaService;
 
-  public HechosService(
-          IHechosRepository hechosRepository,
-          IContribuyenteRepository contribuyenteRepository,
-          ISolicitudesRepository solicitudesRepository) {
+    public HechosService(
+            IHechosRepository hechosRepository,
+            IContribuyenteRepository contribuyenteRepository,
+            ISolicitudesRepository solicitudesRepository,
+            IMultimediaService multimediaService) {
     this.hechosRepository = hechosRepository;
     this.contribuyenteRepository = contribuyenteRepository;
     this.solicitudesRepository = solicitudesRepository;
+    this.multimediaService = multimediaService;
   }
 
   /*@Override
@@ -105,39 +109,52 @@ public class HechosService implements IHechosService {
     return HechoMapper.toHechoOutputDTO(hecho);
   }
 
-  @Override
-  public HechoOutputDTO crearHecho(HechoInputDTO hechoDto) {
-    Hecho hecho = Hecho.builder()
-        .titulo(hechoDto.getTitulo())
-        .descripcion(hechoDto.getDescripcion())
-        .categoria(Categoria.builder()
-                .nombre(hechoDto.getCategoria())
-                .build())
-        .ubicacion(new Ubicacion(hechoDto.getLatitud(), hechoDto.getLongitud()))
-        .fechaAcontecimiento(hechoDto.getFechaAcontecimiento())
-        .build();
-        // TODO: Armar repositorio para multimedia y persistirlo
-      hechoDto.getMultimedia().forEach(multimediaInputDTO -> {
-          var multimedia = Multimedia.builder()
-                  .nombre(multimediaInputDTO.getNombre())
-                  .ruta(multimediaInputDTO.getRuta())
-                  .formato(Formato.fromString(multimediaInputDTO.getFormato()))
-                  .build();
-            hecho.addMultimedia(multimedia);
-      }
-      );
-    Hecho hechoGuardado = hechosRepository.save(hecho);
+    @Override
+    public HechoOutputDTO crearHecho(HechoInputDTO hechoDto, List<MultipartFile> multimedia) {
+        Hecho hecho = Hecho.builder()
+                .titulo(hechoDto.getTitulo())
+                .descripcion(hechoDto.getDescripcion())
+                .categoria(Categoria.builder()
+                        .nombre(hechoDto.getCategoria())
+                        .build())
+                .ubicacion(new Ubicacion(hechoDto.getLatitud(), hechoDto.getLongitud()))
+                .fechaAcontecimiento(hechoDto.getFechaAcontecimiento())
+                .build();
 
-    return HechoOutputDTO.builder()
-        .titulo(hechoGuardado.getTitulo())
-        .descripcion(hechoGuardado.getDescripcion())
-        .categoria(hechoGuardado.getCategoria().getNombre())
-        .latitud(hechoGuardado.getUbicacion().getLatitud())
-        .longitud(hechoGuardado.getUbicacion().getLongitud())
-        .fecha_hecho(hechoGuardado.getFechaAcontecimiento())
-        .created_at(hechoGuardado.getFechaCarga())
-        .build();
-  }
+        if (multimedia != null && !multimedia.isEmpty()) {
+            multimedia.forEach(file -> {
+                System.out.println("Nombre del archivo recibido: " + file.getOriginalFilename());
+                System.out.println("Tamaño del archivo recibido: " + file.getSize() + " bytes");
+                System.out.println("¿Está vacío?: " + file.isEmpty());
+
+                try {
+                    Multimedia multimediaEntity = multimediaService.guardarArchivo(file);
+                    hecho.addMultimedia(multimediaEntity);
+                } catch (IOException | IllegalArgumentException e) {
+                    throw new RuntimeException("Error al procesar archivo multimedia: " + e.getMessage(), e);
+                }
+            });
+        }
+        Hecho hechoGuardado = hechosRepository.save(hecho);
+
+        List<MultimediaOutputDTO> multimediaDto = hechoGuardado.getMultimedia().stream().map(m -> MultimediaOutputDTO.builder()
+                        .nombre(m.getNombre())
+                        .ruta(m.getRuta())
+                        .formato(m.getFormato().name().toLowerCase())
+                        .build()).toList();
+
+        return HechoOutputDTO.builder()
+                .titulo(hechoGuardado.getTitulo())
+                .descripcion(hechoGuardado.getDescripcion())
+                .categoria(hechoGuardado.getCategoria().getNombre())
+                .latitud(hechoGuardado.getUbicacion().getLatitud())
+                .longitud(hechoGuardado.getUbicacion().getLongitud())
+                .fecha_hecho(hechoGuardado.getFechaAcontecimiento())
+                .created_at(hechoGuardado.getFechaCarga())
+                .updated_at(hechoGuardado.getFechaUltimaModificacion())
+                .multimedia(multimediaDto)
+                .build();
+    }
 
   // Métodos para revisión de admins
 
@@ -146,7 +163,7 @@ public class HechosService implements IHechosService {
     List<Hecho> hechosPendientes = hechosRepository.findHechosPendientes();
 
     return hechosPendientes.stream()
-        .map((this::toHechoRevisionOutputDTO))
+        .map(this::toHechoRevisionOutputDTO)
         .collect(Collectors.toList());
   }
 
