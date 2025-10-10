@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.services.impl;
+/*package ar.edu.utn.frba.dds.servicies.impl;
 
 import ar.edu.utn.frba.dds.models.dtos.input.RespuestaSolicitudInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudEliminacionInputDTO;
@@ -8,9 +8,10 @@ import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import ar.edu.utn.frba.dds.models.enums.EstadoSolicitud;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
-import ar.edu.utn.frba.dds.services.ISolicitudesService;
+import ar.edu.utn.frba.dds.servicies.ISolicitudesService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import lombok.Builder;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,10 +43,6 @@ public class SolicitudService implements ISolicitudesService {
 
         if (solicitudDto.getTexto() == null || solicitudDto.getTexto().length() < 500) {
             throw new RuntimeException("La solicitud debe estar fundada con al menos 500 caracteres");
-        }
-
-        if (hecho.getEliminado()) {
-            throw new RuntimeException("Este hecho ya ha sido eliminado");
         }
 
         Solicitud solicitud = Solicitud.builder()
@@ -118,3 +115,4 @@ public class SolicitudService implements ISolicitudesService {
 
 
 }
+*/

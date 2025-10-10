@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "ubicacion")
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Ubicacion {
@@ -30,12 +32,6 @@ public class Ubicacion {
 
     @Column(name = "longitud")
     private Double longitud;
-
-    @Column(name = "direccion")
-    private String direccion;
-
-    @Embedded
-    private Lugar referenciaLugar;
 
     public Ubicacion(Double latitud, Double longitud) {
       this.latitud = latitud;

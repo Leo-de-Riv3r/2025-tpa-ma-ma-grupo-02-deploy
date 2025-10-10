@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.controllers;
+/*package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.input.RespuestaSolicitudInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudEliminacionOutputDTO;
@@ -42,3 +42,4 @@ public class AdminSolicitudesController {
         }
     }
 }
+*/

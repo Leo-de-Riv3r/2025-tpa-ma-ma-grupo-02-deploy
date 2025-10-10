@@ -3,20 +3,18 @@ package ar.edu.utn.frba.dds.services.impl;
 import ar.edu.utn.frba.dds.mappers.HechoMapper;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.MultimediaInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
-import ar.edu.utn.frba.dds.models.dtos.input.SolicitudModificacionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoRevisionOutputDTO;
-import ar.edu.utn.frba.dds.models.dtos.output.MultimediaOutputDTO;
-import ar.edu.utn.frba.dds.models.entities.Categoria;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Multimedia;
-import ar.edu.utn.frba.dds.models.entities.Solicitud;
-import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.enums.Formato;
-import ar.edu.utn.frba.dds.models.repositories.IContribuyenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
+import ar.edu.utn.frba.dds.servicies.IHechosService;
+
+import java.time.LocalDateTime;
 import ar.edu.utn.frba.dds.services.IHechosService;
 
 import java.io.IOException;
@@ -31,58 +29,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class HechosService implements IHechosService {
   private final IHechosRepository hechosRepository;
-  private final IContribuyenteRepository contribuyenteRepository;
   private final ISolicitudesRepository solicitudesRepository;
   private final IMultimediaService multimediaService;
 
     public HechosService(
             IHechosRepository hechosRepository,
-            IContribuyenteRepository contribuyenteRepository,
-            ISolicitudesRepository solicitudesRepository,
             IMultimediaService multimediaService) {
     this.hechosRepository = hechosRepository;
-    this.contribuyenteRepository = contribuyenteRepository;
-    this.solicitudesRepository = solicitudesRepository;
     this.multimediaService = multimediaService;
-  }
-
-  /*@Override
-  public void modificarHecho(SolicitudModificacionInputDTO solicitudModificacion) {
-    var hecho = hechosRepository
-            .findById(solicitudModificacion.getHecho().getId())
-            .orElseThrow(() -> new RuntimeException("Hecho no encontrado con id: " + solicitudModificacion.getHecho().getId()));
-
-    var contribuyenteDto = solicitudModificacion.getContribuyente();
-
-    if (!ContribucionUtils.tieneCredenciales(contribuyenteDto)) {
-      hecho.actualizarDesde(solicitudModificacion.getHecho());
-      agregarNuevaSolicitud(solicitudModificacion, hecho);
-      return;
-    }
-
-    var contribuyente = contribuyenteRepository.findByEmail(contribuyenteDto.getEmail());
-
-    if (sePuedeEditarHecho(hecho) && contribuyente.getPassword().equals(contribuyenteDto.getPassword())) {
-      hecho.actualizarDesde(solicitudModificacion.getHecho());
-      hechosRepository.save(hecho);
-      return;
-    }
-
-    hecho.actualizarDesde(solicitudModificacion.getHecho());
-    agregarNuevaSolicitud(solicitudModificacion, hecho);
-  }
-
-   */
-
-  private void agregarNuevaSolicitud(SolicitudModificacionInputDTO solicitudDTO, Hecho hecho) {
-      var solicitud = Solicitud.builder()
-              .titulo(solicitudDTO.getTitulo())
-              .texto(solicitudDTO.getTexto())
-              .hecho(hecho)
-              .responsable(solicitudDTO.getContribuyente().getNombre())
-              .build();
-
-      solicitudesRepository.save(solicitud);
   }
 
   private boolean sePuedeEditarHecho(Hecho hecho) {
@@ -95,7 +49,6 @@ public class HechosService implements IHechosService {
     List<Hecho> hechos = hechosRepository.findHechosAceptados();
 
     return hechos.stream()
-            .filter(hecho -> !hecho.getEliminado())
             .map(HechoMapper::toHechoOutputDTO)
             .collect(Collectors.toList());
   }
@@ -190,11 +143,6 @@ public class HechosService implements IHechosService {
     if (!hecho.estaPendiente()) {
       throw new RuntimeException("El hecho ya fue revisado anteriormente");
     }
-
-    if (hecho.getEliminado()) {
-      throw new RuntimeException("No se puede aceptar un hecho eliminado");
-    }
-
     hecho.aceptarConSugerencias(revisionDto.getSupervisor(), revisionDto.getComentario());
     Hecho hechoActualizado = hechosRepository.save(hecho);
 
@@ -221,7 +169,7 @@ public class HechosService implements IHechosService {
             .id(hecho.getId())
             .titulo(hecho.getTitulo())
             .descripcion(hecho.getDescripcion())
-            .categoria(hecho.getCategoria().getNombre())
+            .categoria(hecho.getCategoria())
             .latitud(hecho.getUbicacion().getLatitud())
             .longitud((hecho.getUbicacion().getLongitud()))
             .fecha_acontecimiento(hecho.getFechaAcontecimiento())
@@ -229,7 +177,7 @@ public class HechosService implements IHechosService {
             .estado_hecho(hecho.getEstadoHecho())
             .motivo_rechazo(hecho.getMotivoRechazo())
             .sugerencias(hecho.getSugerencias())
-            .fecha_revision(null) //debería agregarlo a hecho?
+            .fecha_revision(LocalDateTime.now()) //debería agregarlo a hecho?
             .revisado_por(hecho.getRevisadoPor())
             .build();
   }

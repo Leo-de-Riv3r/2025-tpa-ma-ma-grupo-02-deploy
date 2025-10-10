@@ -5,21 +5,29 @@ import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.MultimediaOutputDTO;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Multimedia;
+import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.enums.Formato;
+import java.time.LocalDateTime;
 
 public class HechoMapper {
 
     public static Hecho toEntity(HechoInputDTO hechoInputDTO) { // TODO: Revisar
         return Hecho.builder()
-                .id(hechoInputDTO.getId())
-                .titulo(hechoInputDTO.getTitulo())
-                .descripcion(hechoInputDTO.getDescripcion())
-                .multimedia(hechoInputDTO.getMultimedia().stream().map(m -> Multimedia.builder()
-                                .nombre(m.getNombre())
-                                .ruta(m.getRuta())
-                                .formato(Formato.fromString(m.getFormato()))
-                        .build()).toList())
-                .build();
+            .titulo(hechoInputDTO.getTitulo())
+            .descripcion(hechoInputDTO.getDescripcion())
+            .categoria(hechoInputDTO.getCategoria())
+            .ubicacion(Ubicacion.builder()
+                .latitud(hechoInputDTO.getLatitud())
+                .longitud(hechoInputDTO.getLongitud())
+                .build())
+            .fechaAcontecimiento(hechoInputDTO.getFechaAcontecimiento())
+            .multimedia(hechoInputDTO.getMultimedia().stream().map(m -> Multimedia.builder()
+                .nombre(m.getNombre())
+                .ruta(m.getRuta())
+                .formato(Formato.fromString(m.getFormato()))
+                .build()).toList())
+            .nombreAutor(hechoInputDTO.getAutor())
+            .build();
     }
 
     public static HechoOutputDTO toHechoOutputDTO(Hecho hecho) {
@@ -27,13 +35,13 @@ public class HechoMapper {
             // .id(hecho.getId())
             .titulo(hecho.getTitulo())
             .descripcion(hecho.getDescripcion())
-            .categoria(hecho.getCategoria().getNombre())
+            .categoria(hecho.getCategoria())
             .latitud(hecho.getUbicacion().getLatitud())
             .longitud(hecho.getUbicacion().getLongitud())
-            .fecha_hecho(hecho.getFechaAcontecimiento())
-            .created_at(hecho.getFechaCarga())
-            //.updated_at(hecho.getFechaCarga())
-            /*.multimedia(
+            .fechaHecho(hecho.getFechaAcontecimiento())
+            .createdAt(hecho.getFechaCarga())
+            .updatedAt(hecho.getFechaCarga())
+            .multimedia(
                 hecho.getMultimedia().stream()
                     .map(m -> MultimediaOutputDTO.builder()
                         .nombre(m.getNombre())
@@ -42,7 +50,8 @@ public class HechoMapper {
                         .build()
                     )
                     .toList()
-            ) */
+            )
+            .autor(hecho.getNombreAutor())
             .build();
     }
 }

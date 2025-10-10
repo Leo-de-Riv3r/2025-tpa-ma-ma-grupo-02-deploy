@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.services;
+/*package ar.edu.utn.frba.dds.servicies;
 
 import ar.edu.utn.frba.dds.models.dtos.input.RespuestaSolicitudInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudEliminacionInputDTO;
@@ -11,3 +11,4 @@ public interface ISolicitudesService {
   public SolicitudEliminacionOutputDTO aceptarSolicitud(Long solicitudId, RespuestaSolicitudInputDTO respuestaDto);
   public SolicitudEliminacionOutputDTO rechazarSolicitud(Long solicitudId, RespuestaSolicitudInputDTO respuestaDto);
 }
+*/
