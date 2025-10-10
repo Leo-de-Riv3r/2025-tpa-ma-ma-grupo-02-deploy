@@ -6,7 +6,10 @@ import com.ddsi.utn.ba.ssr.models.FiltrosDto;
 import com.ddsi.utn.ba.ssr.models.FuenteNuevaDto;
 import com.ddsi.utn.ba.ssr.models.HechoDetallesDto;
 import com.ddsi.utn.ba.ssr.models.HechoDto;
+import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
 import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
 import com.ddsi.utn.ba.ssr.services.AgregadorService;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -154,10 +158,45 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
     return "coleccion/colecciones";
   }
 
+  @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/hecho")
+  public String detallesHechoSolicitudEliminacion (@RequestParam Long idSolicitud, Model model) {
+    SolicitudEliminacionDetallesDto solicitudEliminacionDetallesDto = agregadorService.obtenerSolicitud(idSolicitud);
+    HechoDetallesDto hecho = agregadorService.getDetallesHecho(solicitudEliminacionDetallesDto.getIdHecho());
+    model.addAttribute("idSolicitud", solicitudEliminacionDetallesDto.getId());
+    model.addAttribute("hecho", hecho);
+    return "solicitudes/detallesHechoSolicitudEliminacion";
+  }
+  @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/aceptar")
+  public String procesarAceptacionSolicitud(@RequestParam Long idSolicitud) {
+    agregadorService.aceptarSolicitud(idSolicitud);
+    return "redirect:/panel-control/solicitudesEliminacion";
+  }
+  @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/rechazar")
+  public String procesarRechazoSolicitud(@RequestParam Long idSolicitud) {
+    agregadorService.rechazarSolicitud(idSolicitud);
+    return "redirect:/panel-control/solicitudesEliminacion";
+  }
+  @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}")
+  public String verDetallesSolicitud(Model model, @RequestParam Long idSolicitud) {
+    SolicitudEliminacionDetallesDto solicitudEliminacionDetallesDto = agregadorService.obtenerSolicitud(idSolicitud);
+    model.addAttribute("solicitud", solicitudEliminacionDetallesDto);
+    return "solicitudes/solicitudEliminacionDetalles";
+  }
+  @GetMapping("/panel-control/solicitudesEliminacion")
+  public String mostrarSolicitudesEliminacion(Model model, @RequestParam(defaultValue = "1") int page) {
+    SolicitudesPaginasDto solicitudesPaginadoDto = agregadorService.obtenerSolicitudes(page);
+    model.addAttribute("page", solicitudesPaginadoDto.getCurrentPage());
+    model.addAttribute("totalPages", solicitudesPaginadoDto.getTotalPages());
+    model.addAttribute("solicitudes", solicitudesPaginadoDto.getData());
+    return "solicitudes/solicitudesEliminacion";
+  }
   @GetMapping("/panel-control")
   public String mostrarPanelControl(Model model) {
-    //todo
-
+    ResumenActividadDto resumenActividadDto = agregadorService.obtenerResumenActividad();
+    //aca irian las estadisticas
+    model.addAttribute("hechosTotales", resumenActividadDto.getHechostotales());
+    model.addAttribute("fuentesTotales", resumenActividadDto.getFuentesTotales());
+    model.addAttribute("solicitudesEliminacion", resumenActividadDto.getSolicitudesEliminacion());
     return "panelControl";
   }
 }

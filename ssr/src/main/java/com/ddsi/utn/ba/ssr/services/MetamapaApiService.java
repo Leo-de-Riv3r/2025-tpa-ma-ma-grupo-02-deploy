@@ -3,7 +3,10 @@ package com.ddsi.utn.ba.ssr.services;
 import com.ddsi.utn.ba.ssr.models.AuthResponseDTO;
 import com.ddsi.utn.ba.ssr.models.Coleccion;
 import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
+import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
 import com.ddsi.utn.ba.ssr.models.RolesPermisosDTO;
+import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,5 +109,25 @@ public class MetamapaApiService {
 
   public void crearColeccion(ColeccionNuevaDto coleccionDto) {
     webApiCallerService.post(agregadorServiceUrl + "/colecciones", coleccionDto, Void.class);
+  }
+
+  public ResumenActividadDto obtenerResumenActividad() {
+    return webApiCallerService.get(agregadorServiceUrl + "/resumen", ResumenActividadDto.class);
+  }
+
+  public SolicitudesPaginasDto obtenerSolicitudes(int page) {
+    return webApiCallerService.get(agregadorServiceUrl + "/solicitudes?page=" + page, SolicitudesPaginasDto.class);
+  }
+
+  public SolicitudEliminacionDetallesDto obtenerSolicitud(Long idSolicitud) {
+    return webApiCallerService.get(agregadorServiceUrl + "/solicitudes/" + idSolicitud, SolicitudEliminacionDetallesDto.class);
+  }
+
+  public void aceptarSolicitud(Long idSolicitud) {
+    webApiCallerService.post(agregadorServiceUrl + "/solicitudes/" + idSolicitud + "/aceptar", null, Void.class);
+  }
+
+  public void rechazarSolicitud(Long idSolicitud) {
+    webApiCallerService.post(agregadorServiceUrl + "/solicitudes/" + idSolicitud + "/denegar", null, Void.class);
   }
 }

@@ -5,7 +5,10 @@ import com.ddsi.utn.ba.ssr.models.ColeccionDetallesDto;
 import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
 
 import com.ddsi.utn.ba.ssr.models.HechoDetallesDto;
+import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
 import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
 import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -113,5 +116,25 @@ public class AgregadorService {
         new HttpEntity<>(solicitud),
         Void.class
     );
+  }
+
+  public ResumenActividadDto obtenerResumenActividad() {
+    return metamapaApiService.obtenerResumenActividad();
+  }
+
+  public SolicitudesPaginasDto obtenerSolicitudes(int page) {
+    return metamapaApiService.obtenerSolicitudes(page);
+  }
+
+  public SolicitudEliminacionDetallesDto obtenerSolicitud(Long idSolicitud) {
+    return metamapaApiService.obtenerSolicitud(idSolicitud);
+  }
+
+  public void aceptarSolicitud(Long idSolicitud) {
+    metamapaApiService.aceptarSolicitud(idSolicitud);
+  }
+
+  public void rechazarSolicitud(Long idSolicitud) {
+    metamapaApiService.rechazarSolicitud(idSolicitud);
   }
 }

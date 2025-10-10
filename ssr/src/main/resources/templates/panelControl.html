@@ -5,9 +5,9 @@
             <h1>Panel de control</h1>
             <div>
                 <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Hechos subidos manualmente: X</h4><button class="btn btn-secondary">Ver pendientes de revision</button></div>
-                <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Solicutudes de eliminacion: X</h4><button class="btn btn-secondary">Ver pendientes de revision</button></div>
-                <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Hechos totales: X</h4></div>
-                <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Fuentes totales: X</h4></div>
+                <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Solicutudes de eliminacion: <span th:text="${solicitudesEliminacion}">X</span></h4><a class="btn btn-secondary" th:thref="@{/panel-control/solicitudesEliminacion}">Ver pendientes de revision</a></div>
+                <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Hechos totales: <span th:text="${hechosTotales}">X</span></h4></div>
+                <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Fuentes totales: <span th:text="${fuentesTotales}">X</span></h4></div>
             </div>
 
             <div>

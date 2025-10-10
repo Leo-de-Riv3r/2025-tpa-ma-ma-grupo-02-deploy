@@ -1,0 +1,34 @@
+<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="contenido">
+    <main class="p-4">
+        <div class="p-4 container border border-solid bg-light">
+            <a class="btn btn-secondary" th:href="@{/panel-control/solicitudesEliminacion}">Volver a lista solicitudes</a>
+            <h1>Detalles solicitud</h1>
+            <div class="d-flex flex-column row-gap-5">
+                <div class="mb-3">
+                    <h4 th:text="${solicitud.titulo}">Titulo</h4>
+                </div>
+                <div class="mb-2">
+                    <h4>Descripcion</h4>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <p th:text="${solicitud.motivo}">Motivo de eliminacion</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h4>Fecha de creacion: <span th:text="${solicitud.estadoActual}"></span></h4>
+                </div>
+                <div class="mb-3">
+                    <h4>Es spam: <span th:text="${solicitud.esSpam == 1 ? 'Si' : 'No'}"></span></h4>
+                </div>
+                <a class=" mb-3 btn btn-primary" th:href="@{/panel-control/solicitudesEliminacion/{idSolicitud}/hecho}">Ver detalles hecho</a>
+                <div class="d-flex flex-direction-row">
+                    <a class="btn btn-success" th:href="@{/panel-control/solicitudesEliminacion/{idSolicitud}/aceptar (idSolicitud=${solicitud.id})}">Aceptar</a>
+                    <a class="btn btn-danger" th:href="@{/panel-control/solicitudesEliminacion/{idSolicitud}/rechazar (idSolicitud=${solicitud.id})}">Rechazar</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</html>
