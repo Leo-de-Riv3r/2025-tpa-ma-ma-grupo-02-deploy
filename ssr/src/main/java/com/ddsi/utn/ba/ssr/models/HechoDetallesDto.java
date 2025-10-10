@@ -9,12 +9,15 @@ public class HechoDetallesDto {
   private Long id;
   private String titulo;
   private String descripcion;
-  private LocalDateTime fechaAcontecimiento;
-  private String categoria;
-  private String provincia="";
-  private String municipio="";
-  private String departamento="";
   private Double latitud;
   private Double longitud;
+  private String categoria;
+  private String provincia;
+  private String municipio;
+  private String departamento;
+  private String tipoOrigen;
+  private LocalDateTime fechaAcontecimiento;
+  private LocalDateTime fechaCarga;
   private List<MultimediaDto> multimedia;
+  private String nombreAutor;
 }

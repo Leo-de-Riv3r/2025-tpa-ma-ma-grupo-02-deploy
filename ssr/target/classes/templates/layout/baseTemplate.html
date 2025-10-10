@@ -28,8 +28,8 @@
     <h1 class="logo"><a href="../landingPage.html">Metamapa</a></h1>
     <ul class="nav-links">
       <li><i class="uil uil-times navCloseBtn"></i></li>
-      <li><a th:href="colecciones">Colecciones</a></li>
-      <li><a href="panelControl.html">Panel control</a></li>
+      <li><a th:href="@{/colecciones}">Colecciones</a></li>
+      <li sec:authorize="hasRole('ADMINISTRADOR')"><a th:href="@{/panel-control}">Panel control</a></li>
       <li><a href="subirHechoManual.html">Subir hecho manual</a></li>
       <div sec:authorize="isAuthenticated()">
         <li><p>Hi, <span th:text="${#authentication.name}">Usuario</span> 👋</p></li>

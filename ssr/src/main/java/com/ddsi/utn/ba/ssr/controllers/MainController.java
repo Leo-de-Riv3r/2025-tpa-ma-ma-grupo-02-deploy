@@ -159,7 +159,7 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
   }
 
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/hecho")
-  public String detallesHechoSolicitudEliminacion (@RequestParam Long idSolicitud, Model model) {
+  public String detallesHechoSolicitudEliminacion (@PathVariable Long idSolicitud, Model model) {
     SolicitudEliminacionDetallesDto solicitudEliminacionDetallesDto = agregadorService.obtenerSolicitud(idSolicitud);
     HechoDetallesDto hecho = agregadorService.getDetallesHecho(solicitudEliminacionDetallesDto.getIdHecho());
     model.addAttribute("idSolicitud", solicitudEliminacionDetallesDto.getId());
@@ -167,27 +167,31 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
     return "solicitudes/detallesHechoSolicitudEliminacion";
   }
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/aceptar")
-  public String procesarAceptacionSolicitud(@RequestParam Long idSolicitud) {
+  public String procesarAceptacionSolicitud(@PathVariable Long idSolicitud) {
     agregadorService.aceptarSolicitud(idSolicitud);
     return "redirect:/panel-control/solicitudesEliminacion";
   }
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/rechazar")
-  public String procesarRechazoSolicitud(@RequestParam Long idSolicitud) {
+  public String procesarRechazoSolicitud(@PathVariable Long idSolicitud) {
     agregadorService.rechazarSolicitud(idSolicitud);
     return "redirect:/panel-control/solicitudesEliminacion";
   }
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}")
-  public String verDetallesSolicitud(Model model, @RequestParam Long idSolicitud) {
+  public String verDetallesSolicitud(Model model, @PathVariable Long idSolicitud) {
     SolicitudEliminacionDetallesDto solicitudEliminacionDetallesDto = agregadorService.obtenerSolicitud(idSolicitud);
     model.addAttribute("solicitud", solicitudEliminacionDetallesDto);
+    model.addAttribute("pendiente", solicitudEliminacionDetallesDto.getEstadoActual() == "PENDIENTE");
     return "solicitudes/solicitudEliminacionDetalles";
   }
   @GetMapping("/panel-control/solicitudesEliminacion")
-  public String mostrarSolicitudesEliminacion(Model model, @RequestParam(defaultValue = "1") int page) {
-    SolicitudesPaginasDto solicitudesPaginadoDto = agregadorService.obtenerSolicitudes(page);
+  public String mostrarSolicitudesEliminacion(Model model, @RequestParam(defaultValue = "1") int page,  @RequestParam(required = false, defaultValue = "true") Boolean pendientes) {
+    SolicitudesPaginasDto solicitudesPaginadoDto = agregadorService.obtenerSolicitudes(page, pendientes);
+    System.out.println(solicitudesPaginadoDto.getCurrentPage());
+    System.out.println(solicitudesPaginadoDto.getTotalPages());
     model.addAttribute("page", solicitudesPaginadoDto.getCurrentPage());
     model.addAttribute("totalPages", solicitudesPaginadoDto.getTotalPages());
     model.addAttribute("solicitudes", solicitudesPaginadoDto.getData());
+    model.addAttribute("pendientes", pendientes);
     return "solicitudes/solicitudesEliminacion";
   }
   @GetMapping("/panel-control")

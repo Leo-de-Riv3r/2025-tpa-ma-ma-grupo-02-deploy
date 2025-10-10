@@ -73,7 +73,7 @@
     /*<![CDATA[*/
         var hechos = /*[[${hechos}]]*/ []; // Thymeleaf convierte la lista en JSON
         var coleccionId = /*[[${idColeccion}]]*/;
-        console.log(coleccionId)
+
         var map = L.map('map');
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -84,7 +84,7 @@
 
         hechos.forEach(function(hecho) {
             var marker = L.marker([hecho.latitud, hecho.longitud]).addTo(map);
-
+            console.log(hecho)
             marker.bindPopup(
                 "<h4>Titulo: " + hecho.titulo + "</h4>" +
                 "<h4>Categoria: " + hecho.categoria + "</h4>" +

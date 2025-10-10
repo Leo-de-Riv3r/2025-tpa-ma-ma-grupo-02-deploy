@@ -10,7 +10,7 @@ async function obtenerLinksFuentesCsv(event) {
     const input = fuente.querySelector('.fuente-input');
     contenedorFuentes = input.parentElement
 
-    if (tipo === "ESTATICA" && input.files.length > 0) {
+    if (tipo === "ESTATICA" && input.files !== null && input.files.length > 0) {
             console.log("ESTO")
       const formData = new FormData();
       formData.append("file", input.files[0]);

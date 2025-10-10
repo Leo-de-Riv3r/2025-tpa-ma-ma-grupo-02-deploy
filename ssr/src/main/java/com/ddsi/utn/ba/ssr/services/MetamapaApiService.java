@@ -115,8 +115,8 @@ public class MetamapaApiService {
     return webApiCallerService.get(agregadorServiceUrl + "/resumen", ResumenActividadDto.class);
   }
 
-  public SolicitudesPaginasDto obtenerSolicitudes(int page) {
-    return webApiCallerService.get(agregadorServiceUrl + "/solicitudes?page=" + page, SolicitudesPaginasDto.class);
+  public SolicitudesPaginasDto obtenerSolicitudes(int page, Boolean pendientes) {
+    return webApiCallerService.get(agregadorServiceUrl + "/solicitudes?page=" + page + "&pendientes=" + pendientes, SolicitudesPaginasDto.class);
   }
 
   public SolicitudEliminacionDetallesDto obtenerSolicitud(Long idSolicitud) {
@@ -124,10 +124,10 @@ public class MetamapaApiService {
   }
 
   public void aceptarSolicitud(Long idSolicitud) {
-    webApiCallerService.post(agregadorServiceUrl + "/solicitudes/" + idSolicitud + "/aceptar", null, Void.class);
+    webApiCallerService.put(agregadorServiceUrl + "/solicitudes/" + idSolicitud + "/aceptar", Void.class, Void.class);
   }
 
   public void rechazarSolicitud(Long idSolicitud) {
-    webApiCallerService.post(agregadorServiceUrl + "/solicitudes/" + idSolicitud + "/denegar", null, Void.class);
+    webApiCallerService.put(agregadorServiceUrl + "/solicitudes/" + idSolicitud + "/denegar", Void.class, Void.class);
   }
 }

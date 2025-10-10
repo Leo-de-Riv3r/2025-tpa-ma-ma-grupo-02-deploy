@@ -122,8 +122,8 @@ public class AgregadorService {
     return metamapaApiService.obtenerResumenActividad();
   }
 
-  public SolicitudesPaginasDto obtenerSolicitudes(int page) {
-    return metamapaApiService.obtenerSolicitudes(page);
+  public SolicitudesPaginasDto obtenerSolicitudes(int page, Boolean pendientes) {
+    return metamapaApiService.obtenerSolicitudes(page, pendientes);
   }
 
   public SolicitudEliminacionDetallesDto obtenerSolicitud(Long idSolicitud) {
