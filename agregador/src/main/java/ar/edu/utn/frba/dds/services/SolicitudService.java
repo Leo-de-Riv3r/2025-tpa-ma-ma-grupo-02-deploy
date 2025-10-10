@@ -72,24 +72,27 @@ public class SolicitudService {
     return solicitudes.stream().anyMatch(solicitud -> solicitud.getHecho().getId() == hecho.getId());
   }
 
-  public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(Integer page) {
+  public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(Integer page, Boolean pendientes) {
     //get solicitudes pendientes mas recientes
     int pageNumber = (page == null || page < 1) ? 0 : page - 1;
     int pageSize = 20;
-
+    Page<Solicitud> pageResult;
     Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("fecha").descending());
 
-    Page<Solicitud> pageResult = solicitudesEliminacionRepo.findAll(pageable);
+    if(pendientes) {
+      pageResult = solicitudesEliminacionRepo.findByEstadoActual(TipoEstado.PENDIENTE, pageable);
+    } else {
+      pageResult = solicitudesEliminacionRepo.findAll(pageable);
+    }
 
     List<SolicitudResumenDtoOutput> solicitudesDto = pageResult.getContent()
         .stream()
-        .filter(solicitud -> solicitud.getEstadoActual().getEstado() == TipoEstado.PENDIENTE)
         .map(solicitudConverter::fromEntity)
         .toList();
 
     return new PaginacionDto<>(
         solicitudesDto,
-        pageNumber+1,
+        pageable.getPageNumber()+1,
         pageResult.getTotalPages()+1
     );
   }

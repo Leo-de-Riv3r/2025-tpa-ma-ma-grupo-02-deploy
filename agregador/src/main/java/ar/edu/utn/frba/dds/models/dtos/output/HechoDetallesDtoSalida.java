@@ -22,4 +22,5 @@ public class HechoDetallesDtoSalida {
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
   private List<MultimediaDtoOutput> multimedia;
+  private String nombreAutor;
 }

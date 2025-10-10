@@ -88,7 +88,6 @@ public class HechoConverter {
     HechoDtoSalida hechoDtoSalida = new HechoDtoSalida();
     hechoDtoSalida.setId(hecho.getId());
     hechoDtoSalida.setTitulo(hecho.getTitulo());
-    hechoDtoSalida.setDescripcion(hecho.getDescripcion());
     if (hecho.getUbicacion().getLugar()!=null) {
       if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
         hechoDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
@@ -104,6 +103,7 @@ public class HechoConverter {
     hechoDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
     hechoDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
     hechoDtoSalida.setTipoFuente(hecho.getOrigen().getTipo().toString());
+    hechoDtoSalida.setNombreAutor(hecho.getOrigen().getAutor());
     return hechoDtoSalida;
   }
 
@@ -129,7 +129,7 @@ public class HechoConverter {
     hechoDetallesDtoSalida.setDescripcion(hecho.getDescripcion());
     hechoDetallesDtoSalida.setTitulo(hecho.getTitulo());
     hechoDetallesDtoSalida.setTipoOrigen(hecho.getOrigen().getTipo());
-
+    hechoDetallesDtoSalida.setNombreAutor(hecho.getOrigen().getAutor());
     if (hecho.getMultimedia() != null) {
       List<MultimediaDtoOutput> listaMultimedia = new ArrayList<>();
       hecho.getMultimedia().forEach(multimedia -> {

@@ -9,12 +9,12 @@ import lombok.Setter;
 public class HechoDtoSalida {
   private Long id;
   private String titulo;
-  private String descripcion;
   private String categoria;
+  private Double latitud;
+  private Double longitud;
   private String provincia="";
   private String municipio="";
   private String departamento="";
-  private Double latitud;
-  private Double longitud;
   private String tipoFuente;
+  private String nombreAutor;
 }

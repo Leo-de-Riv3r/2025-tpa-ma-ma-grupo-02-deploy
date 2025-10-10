@@ -163,9 +163,10 @@ public class AgregadorController {
   @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
   @GetMapping("/solicitudes")
   public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(
-      @RequestParam (required = false) Integer page
+      @RequestParam (required = false, defaultValue = "1") Integer page,
+      @RequestParam (required = false, defaultValue = "true") Boolean pendientes
   ){
-    return solicitudService.getSolicitudes(page);
+    return solicitudService.getSolicitudes(page, pendientes);
   }
 
   @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
