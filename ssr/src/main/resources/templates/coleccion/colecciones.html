@@ -12,7 +12,7 @@
             <div th:each="c : ${colecciones}" class="card custom-card bg-dark-subtle">
                 <div class="card-header">
                     <h4>Titulo: <span th:text="${c.titulo}">titulo</span></h4>
-                    <a sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-secondary"th:href="@{/colecciones/{idColecion}/crearEstadistica (idColeccion=${c.id})}">Crear estadistica</a>
+                    <a sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-secondary" th:href="@{/colecciones/{idColeccion}/nuevaEstadistica (idColeccion=${c.id})}">Crear estadistica</a>
                 </div>
                 <div class="card-body bg-light">
                     <h4 class="card-text">
@@ -32,7 +32,7 @@
                 </div>
                 <div class="d-flex flex-row justify-content-between p-2">
                     <a  th:href="@{/colecciones/{idColeccion}/hechos (idColeccion=${c.id})}"
-                        class="btn btn-light" href="hechosColeccion.html">Ver Hechos</a>
+                        class="btn btn-light">Ver Hechos</a>
                     <a sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-danger" th:href="@{/colecciones/{idColeccion}/eliminar (idColeccion=${c.id})}">Eliminar</a>
                     <a sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-warning" th:href="@{/colecciones/{idColeccion}/editar (idColeccion=${c.id})}">Modificar</a>
                 </div>

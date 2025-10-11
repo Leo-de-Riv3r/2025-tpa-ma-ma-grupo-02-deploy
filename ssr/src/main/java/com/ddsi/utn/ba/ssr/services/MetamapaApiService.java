@@ -1,8 +1,14 @@
 package com.ddsi.utn.ba.ssr.services;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 import com.ddsi.utn.ba.ssr.models.AuthResponseDTO;
 import com.ddsi.utn.ba.ssr.models.Coleccion;
 import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
+import com.ddsi.utn.ba.ssr.models.EstadisticaDto;
+import com.ddsi.utn.ba.ssr.models.NuevaEstadisticaDto;
 import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
 import com.ddsi.utn.ba.ssr.models.RolesPermisosDTO;
 import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
@@ -23,20 +29,25 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 @Service
 public class MetamapaApiService {
-  private final WebClient webClient = WebClient.builder().build();;
+  private final WebClient webClient = WebClient.builder().build();
+  ;
   private final WebApiCallerService webApiCallerService;
   private final String authServiceUrl;
   private final String agregadorServiceUrl;
-
+  private final String estadisticasServiceUrl;
   public MetamapaApiService(
       WebApiCallerService webApiCallerService,
       @Value("${auth.service.url}")
       String authServiceUrl,
       @Value("${agregador.service.url}")
-      String agregadorServiceUrl) {
+      String agregadorServiceUrl,
+      @Value("${estadisticas.service.url}")
+      String estadisticasServiceUrl
+      ) {
     this.webApiCallerService = webApiCallerService;
     this.authServiceUrl = authServiceUrl;
     this.agregadorServiceUrl = agregadorServiceUrl;
+    this.estadisticasServiceUrl = estadisticasServiceUrl;
   }
 
   public RolesPermisosDTO getRolesPermisos(String accessToken) {
@@ -81,22 +92,22 @@ public class MetamapaApiService {
 
   public Boolean register(String username, String password) {
     RestTemplate restTemplate = new RestTemplate();
-      ResponseEntity<Void> response = restTemplate.exchange(
-          authServiceUrl + "/register",
-          HttpMethod.POST,
-          new HttpEntity<>(Map.of(
-              "username", username,
-              "password", password
-          )),
-          Void.class
-      );
-      System.out.println(response.getStatusCode());
-      if (response.getStatusCode() == HttpStatus.OK) {
-        return true;
-      } else if (response.getStatusCode() == HttpStatus.CONFLICT) {
-        return false;
-      }
+    ResponseEntity<Void> response = restTemplate.exchange(
+        authServiceUrl + "/register",
+        HttpMethod.POST,
+        new HttpEntity<>(Map.of(
+            "username", username,
+            "password", password
+        )),
+        Void.class
+    );
+    System.out.println(response.getStatusCode());
+    if (response.getStatusCode() == HttpStatus.OK) {
+      return true;
+    } else if (response.getStatusCode() == CONFLICT) {
       return false;
+    }
+    return false;
   }
 
   public void eliminarColeccion(String idColeccion) {
@@ -129,5 +140,32 @@ public class MetamapaApiService {
 
   public void rechazarSolicitud(Long idSolicitud) {
     webApiCallerService.put(agregadorServiceUrl + "/solicitudes/" + idSolicitud + "/denegar", Void.class, Void.class);
+  }
+
+  public void crearEstadistica(NuevaEstadisticaDto request) {
+    try {
+      webApiCallerService.post(estadisticasServiceUrl, request, Void.class);
+    } catch (RuntimeException e) {
+      if (e.getMessage().contains("Error de conexión")) {
+        throw new RuntimeException("No se pudo conectar con el servicio externo. Por favor, intentá más tarde.");
+      }
+
+      // Caso: respuesta HTTP conocida (por ejemplo, 400 o 409)
+      if (e.getCause() instanceof WebClientResponseException wcre) {
+        if (wcre.getStatusCode().equals(CONFLICT)) {
+          throw new RuntimeException("Ya existe una estadística sobre la coleccion con la categoria ingresada.");
+        } else if (wcre.getStatusCode().equals(BAD_REQUEST)) {
+          throw new RuntimeException("Los datos enviados son inválidos.");
+        }
+        throw new RuntimeException("Error del servicio externo: " + wcre.getStatusCode());
+      }
+
+      // Caso genérico
+      throw new RuntimeException("Error al crear estadística: " + e.getMessage());
+    }
+  }
+
+  public List<EstadisticaDto> obtenerEstadisticas() {
+    return this.webApiCallerService.getList(estadisticasServiceUrl, EstadisticaDto.class);
   }
 }

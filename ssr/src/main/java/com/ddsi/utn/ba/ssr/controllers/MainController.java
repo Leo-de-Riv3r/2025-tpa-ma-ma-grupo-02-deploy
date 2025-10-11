@@ -2,17 +2,21 @@ package com.ddsi.utn.ba.ssr.controllers;
 import com.ddsi.utn.ba.ssr.models.Coleccion;
 import com.ddsi.utn.ba.ssr.models.ColeccionDetallesDto;
 import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
+import com.ddsi.utn.ba.ssr.models.EstadisticaDto;
 import com.ddsi.utn.ba.ssr.models.FiltrosDto;
 import com.ddsi.utn.ba.ssr.models.FuenteNuevaDto;
 import com.ddsi.utn.ba.ssr.models.HechoDetallesDto;
 import com.ddsi.utn.ba.ssr.models.HechoDto;
+import com.ddsi.utn.ba.ssr.models.NuevaEstadisticaDto;
 import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
 import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
 import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDto;
 import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
 import com.ddsi.utn.ba.ssr.services.AgregadorService;
+import com.ddsi.utn.ba.ssr.services.EstadisticaService;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,9 +30,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class MainController {
   private final AgregadorService agregadorService;
+  private final EstadisticaService estadisticaService;
+  @Value("${agregador.service.url}")
+  private String agregadorUrl;
 
-  public MainController(AgregadorService agregadorService) {
+  public MainController(AgregadorService agregadorService, EstadisticaService estadisticaService) {
     this.agregadorService = agregadorService;
+    this.estadisticaService = estadisticaService;
   }
 
   @GetMapping("/")
@@ -151,9 +159,31 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
     return "coleccion/hechosColeccion";
   }
 
-  @GetMapping("/colecciones/{idColecion}/nuevaEstadistica")
-  public String mostrarFormulario(@PathVariable String idColeccion, Model model){
+  @PostMapping("/colecciones/{idColeccion}/crearEstadistica")
+  public String crearEstadisticaColeccion(@PathVariable String idColeccion,
+                                          @ModelAttribute("nuevaEstadistica")NuevaEstadisticaDto nuevaEstadisticaDto,
+                                          BindingResult bindingResult,
+                                          Model model,
+                                          RedirectAttributes redirectAttributes) {
 
+    try {
+      estadisticaService.crearEstadistica(nuevaEstadisticaDto);
+      return "redirect:/colecciones";
+    } catch (Exception e) {
+      // Captura mensaje de error y redirige de nuevo al formulario
+      redirectAttributes.addFlashAttribute("error", e.getMessage());
+      return "redirect:/colecciones/{idColeccion}/nuevaEstadistica";
+    }
+  }
+
+  @GetMapping("/colecciones/{idColeccion}/nuevaEstadistica")
+  public String mostrarFormulario(@PathVariable String idColeccion, Model model){
+    NuevaEstadisticaDto nuevaEstadisticaDto = new NuevaEstadisticaDto();
+    nuevaEstadisticaDto.setUrlColeccion(agregadorUrl + "/colecciones/" + idColeccion);
+    model.addAttribute("nuevaEstadistica", nuevaEstadisticaDto);
+    if (!model.containsAttribute("error")) {
+      model.addAttribute("error", null);
+    }
     return "coleccion/nuevaEstadistica";
   }
   @GetMapping("/colecciones")
@@ -202,10 +232,14 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
   @GetMapping("/panel-control")
   public String mostrarPanelControl(Model model) {
     ResumenActividadDto resumenActividadDto = agregadorService.obtenerResumenActividad();
+    List<EstadisticaDto> estadisticas = estadisticaService.obtenerEstadisticas();
+    System.out.println(estadisticas.get(0).getDetalle());
+    System.out.println("SIN ERROR AUN");
     //aca irian las estadisticas
     model.addAttribute("hechosTotales", resumenActividadDto.getHechostotales());
     model.addAttribute("fuentesTotales", resumenActividadDto.getFuentesTotales());
     model.addAttribute("solicitudesEliminacion", resumenActividadDto.getSolicitudesEliminacion());
+    model.addAttribute("estadisticas", estadisticas);
     return "panelControl";
   }
 }
