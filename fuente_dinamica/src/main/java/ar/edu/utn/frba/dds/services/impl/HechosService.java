@@ -7,12 +7,14 @@ import ar.edu.utn.frba.dds.models.dtos.input.MultimediaInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoRevisionOutputDTO;
+import ar.edu.utn.frba.dds.models.dtos.output.MultimediaOutputDTO;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Multimedia;
+import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.enums.Formato;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
-import ar.edu.utn.frba.dds.servicies.IHechosService;
+import ar.edu.utn.frba.dds.services.IHechosService;
 
 import java.time.LocalDateTime;
 import ar.edu.utn.frba.dds.services.IHechosService;
@@ -29,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class HechosService implements IHechosService {
   private final IHechosRepository hechosRepository;
-  private final ISolicitudesRepository solicitudesRepository;
   private final IMultimediaService multimediaService;
 
     public HechosService(
@@ -67,9 +68,7 @@ public class HechosService implements IHechosService {
         Hecho hecho = Hecho.builder()
                 .titulo(hechoDto.getTitulo())
                 .descripcion(hechoDto.getDescripcion())
-                .categoria(Categoria.builder()
-                        .nombre(hechoDto.getCategoria())
-                        .build())
+                .categoria(hechoDto.getCategoria())
                 .ubicacion(new Ubicacion(hechoDto.getLatitud(), hechoDto.getLongitud()))
                 .fechaAcontecimiento(hechoDto.getFechaAcontecimiento())
                 .build();
@@ -99,12 +98,12 @@ public class HechosService implements IHechosService {
         return HechoOutputDTO.builder()
                 .titulo(hechoGuardado.getTitulo())
                 .descripcion(hechoGuardado.getDescripcion())
-                .categoria(hechoGuardado.getCategoria().getNombre())
+                .categoria(hechoGuardado.getCategoria())
                 .latitud(hechoGuardado.getUbicacion().getLatitud())
                 .longitud(hechoGuardado.getUbicacion().getLongitud())
-                .fecha_hecho(hechoGuardado.getFechaAcontecimiento())
-                .created_at(hechoGuardado.getFechaCarga())
-                .updated_at(hechoGuardado.getFechaUltimaModificacion())
+                .fechaHecho(hechoGuardado.getFechaAcontecimiento())
+                .createdAt(hechoGuardado.getFechaCarga())
+                .updatedAt(hechoGuardado.getFechaUltimaModificacion())
                 .multimedia(multimediaDto)
                 .build();
     }
