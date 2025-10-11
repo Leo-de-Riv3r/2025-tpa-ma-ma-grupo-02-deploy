@@ -12,7 +12,7 @@
             <div th:each="c : ${colecciones}" class="card custom-card bg-dark-subtle">
                 <div class="card-header">
                     <h4>Titulo: <span th:text="${c.titulo}">titulo</span></h4>
-                    <a sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-secondary" href="#">Crear estadistica</a>
+                    <a sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-secondary"th:href="@{/colecciones/{idColecion}/crearEstadistica (idColeccion=${c.id})}">Crear estadistica</a>
                 </div>
                 <div class="card-body bg-light">
                     <h4 class="card-text">

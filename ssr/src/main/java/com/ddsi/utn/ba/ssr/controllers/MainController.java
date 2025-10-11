@@ -151,6 +151,11 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
     return "coleccion/hechosColeccion";
   }
 
+  @GetMapping("/colecciones/{idColecion}/nuevaEstadistica")
+  public String mostrarFormulario(@PathVariable String idColeccion, Model model){
+
+    return "coleccion/nuevaEstadistica";
+  }
   @GetMapping("/colecciones")
   public String getColecciones(Model model) {
     List<Coleccion> colecciones = agregadorService.obtenerColecciones();

@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.estadisticas.exceptions;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,4 +19,14 @@ public class ExceptionController {
   public ResponseEntity<String> handlerNotFoundColeccion(RuntimeException ex) {
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ex.getMessage());
   }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+  }
+  @ExceptionHandler(EntityExistsException.class)
+  public ResponseEntity<String> handlerNotFoundColeccion(EntityExistsException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+  }
+
 }

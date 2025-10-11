@@ -1,0 +1,16 @@
+<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="contenido">
+    <div class="p-4 container border border-solid bg-light">
+        <form class="d-flex flex-column row-gap-5" th:action="@{/colecciones/{idColecion}/crearEstadistica}" th:object="${nuevaEstadistica}" method="post">
+            <input type="hidden" th:field="*{urlColeccion}">
+            <div class="mb-3">
+                <label class="form-label">Escriba categoria especifica para analizar estadisticas</label>
+                <input type="text" th:field="*{categoriaEspecifica}" class="form-control" placeholder="Ingrese categoria" required>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-dark">Aceptar</button>
+            </div>
+        </form>
+    </div>
+</div>
+</html>

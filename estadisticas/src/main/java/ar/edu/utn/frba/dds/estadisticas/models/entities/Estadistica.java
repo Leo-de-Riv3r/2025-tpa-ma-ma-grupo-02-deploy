@@ -29,4 +29,6 @@ public class Estadistica {
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "estadistica_id", referencedColumnName = "id")
   private DetalleEstadistica detalle;
+  @Column
+  private int vigente = 1;
 }

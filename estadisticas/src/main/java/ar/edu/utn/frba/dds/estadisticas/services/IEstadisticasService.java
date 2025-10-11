@@ -16,4 +16,6 @@ public interface IEstadisticasService {
   Estadistica getEstadisticaById(Long estadisticaId);
 
   String exportarEstadisticasCSV(String rutaArchivo);
+
+  void eliminarEstadisticasNoVigentes();
 }

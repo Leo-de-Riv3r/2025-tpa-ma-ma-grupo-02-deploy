@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.estadisticas.schedulers;
 
 import ar.edu.utn.frba.dds.estadisticas.services.IEstadisticasService;
+import com.zaxxer.hikari.util.ClockSource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -14,5 +15,10 @@ public class EstadisticasScheduler {
   @Scheduled(fixedRate = 7200000) // 2 horas
   public void actualizarEstadisticas() {
     estadisticasService.actualizarEstadisticas();
+  }
+
+  @Scheduled(fixedRate = 14400000)
+  public void eliminarEstadisticasNoVigentes() {
+    estadisticasService.eliminarEstadisticasNoVigentes();
   }
 }
