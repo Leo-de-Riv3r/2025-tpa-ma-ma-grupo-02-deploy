@@ -17,4 +17,5 @@ public class HechoDtoSalida {
   private String departamento="";
   private String tipoFuente;
   private String nombreAutor;
+  private LocalDateTime fechaAcontecimiento;
 }
