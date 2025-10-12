@@ -104,6 +104,7 @@ public class HechoConverter {
     hechoDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
     hechoDtoSalida.setTipoFuente(hecho.getOrigen().getTipo().toString());
     hechoDtoSalida.setNombreAutor(hecho.getOrigen().getAutor());
+    hechoDtoSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
     return hechoDtoSalida;
   }
 
