@@ -273,7 +273,7 @@ public class ColeccionService {
     List<Hecho> hechosList = new ArrayList<>(hechos);
     hechosList.sort(Comparator.comparing(Hecho::getId));
     // Configuración de paginación
-    int size = 1000;
+    int size = 500;
     int totalElements = hechos.size();
     int totalPages = (int) Math.ceil((double) totalElements / size);
 

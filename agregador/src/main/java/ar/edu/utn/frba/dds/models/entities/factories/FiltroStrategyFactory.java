@@ -9,6 +9,7 @@ import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFuent
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroMunicipio;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroProvincia;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,8 +35,8 @@ public class FiltroStrategyFactory {
 
   public static Set<IFiltroStrategy> fromParams(
       String categoria,
-      LocalDateTime fechaAcontecimientoDesde,
-      LocalDateTime fechaAcontecimientoHasta,
+      LocalDate fechaAcontecimientoDesde,
+      LocalDate fechaAcontecimientoHasta,
       String provincia,
       String municipio,
       String departamento
@@ -45,9 +46,16 @@ public class FiltroStrategyFactory {
     if (categoria != null)
       filtros.add(new FiltroCategoria(categoria));
 
-    if (fechaAcontecimientoDesde != null || fechaAcontecimientoHasta != null)
-      filtros.add(new FiltroFechaAcontecimiento(fechaAcontecimientoDesde, fechaAcontecimientoHasta));
+    if (fechaAcontecimientoDesde != null || fechaAcontecimientoHasta != null)  {
 
+      if(fechaAcontecimientoHasta == null) {
+        filtros.add(new FiltroFechaAcontecimiento(fechaAcontecimientoDesde.atStartOfDay(), LocalDateTime.now()));
+      } else if(fechaAcontecimientoDesde == null) {
+        filtros.add(new FiltroFechaAcontecimiento( LocalDateTime.MIN, fechaAcontecimientoHasta.atStartOfDay()));
+      } else {
+        filtros.add(new FiltroFechaAcontecimiento(fechaAcontecimientoDesde.atStartOfDay(), fechaAcontecimientoHasta.atStartOfDay()));
+      }
+    }
     if (provincia != null) {
       filtros.add(new FiltroProvincia(provincia));
     }
