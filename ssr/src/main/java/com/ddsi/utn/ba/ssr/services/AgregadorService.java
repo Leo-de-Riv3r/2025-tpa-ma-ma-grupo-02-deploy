@@ -1,9 +1,12 @@
 package com.ddsi.utn.ba.ssr.services;
 
+import static org.springframework.web.reactive.function.server.RequestPredicates.queryParam;
+
 import com.ddsi.utn.ba.ssr.models.Coleccion;
 import com.ddsi.utn.ba.ssr.models.ColeccionDetallesDto;
 import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
 
+import com.ddsi.utn.ba.ssr.models.FiltrosDto;
 import com.ddsi.utn.ba.ssr.models.HechoDetallesDto;
 import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
 import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
@@ -17,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 
 @Service
@@ -48,13 +52,49 @@ public class AgregadorService {
     return response.getBody();
   }
 
-  public ColeccionDetallesDto getHechosColeccion(String idColeccion) {
+  public ColeccionDetallesDto getHechosColeccion(String idColeccion, FiltrosDto filtros, int page) {
+    UriComponentsBuilder builder = UriComponentsBuilder
+        .fromHttpUrl(urlBase + "/colecciones/" + idColeccion + "/hechos")
+        .queryParam("page", page);
+
+    // Agregar los parámetros solo si no son nulos o vacíos
+    if (filtros.getCategoria() != null && !filtros.getCategoria().isEmpty()) {
+      builder.queryParam("categoria", filtros.getCategoria());
+    }
+    if (filtros.getProvincia() != null && !filtros.getProvincia().isEmpty()) {
+      builder.queryParam("provincia", filtros.getProvincia());
+    }
+    if (filtros.getMunicipio() != null && !filtros.getMunicipio().isEmpty()) {
+      builder.queryParam("municipio", filtros.getMunicipio());
+    }
+    if (filtros.getDepartamento() != null && !filtros.getDepartamento().isEmpty()) {
+      builder.queryParam("departamento", filtros.getDepartamento());
+    }
+    if (filtros.getCurados() != null && !filtros.getCurados().isEmpty()) {
+      builder.queryParam("curados", filtros.getCurados().equalsIgnoreCase("Si"));
+    }
+    if (filtros.getFecha_acontecimiento_desde() != null) {
+      builder.queryParam("fecha_acontecimiento_desde", filtros.getFecha_acontecimiento_desde());
+    }
+    if (filtros.getFecha_acontecimiento_hasta() != null) {
+      builder.queryParam("fecha_acontecimiento_hasta", filtros.getFecha_acontecimiento_hasta());
+    }
+
+    // Si tu paginación también viene en el filtro:
+//    if (filtros.getPage() != null) {
+//      builder.queryParam("page", filtros.getPage());
+//    }
+
+    // Construir la URL final
+    String url = builder.toUriString();
+
     ResponseEntity<ColeccionDetallesDto> response = restTemplate.exchange(
-        urlBase + "/colecciones/" + idColeccion + "/hechos" ,
+        url,
         HttpMethod.GET,
         null,
         ColeccionDetallesDto.class
     );
+
     return response.getBody();
   }
 

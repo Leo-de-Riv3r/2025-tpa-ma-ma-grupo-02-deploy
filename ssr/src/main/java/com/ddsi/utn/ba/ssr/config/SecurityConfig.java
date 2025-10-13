@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,6 +13,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
+  private final OAuth2LoginSuccessHandler successHandler;
+
+  public SecurityConfig(OAuth2LoginSuccessHandler successHandler) {
+    this.successHandler = successHandler;
+  }
+
   @Bean
   public AuthenticationManager authManager(HttpSecurity http, AuthProvider provider) throws Exception {
     return http.getSharedObject(AuthenticationManagerBuilder.class)
@@ -24,7 +31,7 @@ public class SecurityConfig {
     http.authorizeHttpRequests(
             auth -> auth
                 // Recursos estáticos y login público
-                .requestMatchers("/","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**").permitAll()
+                .requestMatchers("/","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/colecciones/**").permitAll()
                 //new config
                 .requestMatchers(HttpMethod.GET, "/colecciones/*/hechos/*").permitAll()
@@ -34,6 +41,10 @@ public class SecurityConfig {
                 // Lo demás requiere autenticación
                 .anyRequest().authenticated()
         )
+        .oauth2Login(oauth -> oauth
+            .loginPage("/login")
+            .successHandler(successHandler))
+        .exceptionHandling(Customizer.withDefaults())
         .formLogin(
             form -> form
                 .loginPage("/login")    // tu template de login

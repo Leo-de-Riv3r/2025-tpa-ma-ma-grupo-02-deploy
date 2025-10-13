@@ -146,16 +146,20 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
 
 
   @GetMapping("/colecciones/{idColeccion}/hechos")
-  public String getHechosDeColeccion(@PathVariable String idColeccion, Model model) {
+  public String getHechosDeColeccion(
+      @PathVariable String idColeccion,
+      Model model,
+      @ModelAttribute("filtros") FiltrosDto filtros,
+      @RequestParam(name="page", required=false, defaultValue="1") int page) {
     //necesito recibir los hechos por parametro
-    ColeccionDetallesDto coleccionDetalles = agregadorService.getHechosColeccion(idColeccion);
+    ColeccionDetallesDto coleccionDetalles = agregadorService.getHechosColeccion(idColeccion, filtros, page);
     List<HechoDto> hechos = coleccionDetalles.getData();
     model.addAttribute("paginaActual", coleccionDetalles.getCurrentPage());
     model.addAttribute("paginasTotales", coleccionDetalles.getTotalPages());
     model.addAttribute("hechos", hechos);
     model.addAttribute("idColeccion", idColeccion);
     model.addAttribute("titulo", "hechos de coleccion " + idColeccion);
-    model.addAttribute("filtros", new FiltrosDto());
+    model.addAttribute("filtros", filtros);
     return "coleccion/hechosColeccion";
   }
 
