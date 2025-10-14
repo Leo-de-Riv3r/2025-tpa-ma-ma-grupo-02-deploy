@@ -143,8 +143,24 @@ public class HechosService implements IHechosService {
       hecho.getUbicacion().setLongitud(hechoDto.getLongitud());
     }
 
+    hecho.getMultimedia().forEach(multimediaEntity -> {
+        try {
+            multimediaService.eliminarArchivo(multimediaEntity.getId());
+        } catch (IOException e) {
+            throw new RuntimeException("Error al eliminar archivo multimedia: " + e.getMessage(), e);
+        }
+    });
+    hecho.getMultimedia().clear();
+
     if (multimedia != null && !multimedia.isEmpty()) {
-      // TODO: Implementar cambio de multimdedia
+        multimedia.forEach(m -> {
+            try {
+                Multimedia multimediaEntity = multimediaService.guardarArchivo(m);
+                hecho.addMultimedia(multimediaEntity);
+            } catch (IOException | IllegalArgumentException e) {
+                throw new RuntimeException("Error al procesar archivo multimedia: " + e.getMessage(), e);
+            }
+        });
     }
 
     Hecho hechoActualizado = hechosRepository.save(hecho);
