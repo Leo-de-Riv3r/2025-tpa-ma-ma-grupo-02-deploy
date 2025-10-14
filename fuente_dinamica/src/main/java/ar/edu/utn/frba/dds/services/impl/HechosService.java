@@ -176,7 +176,7 @@ public class HechosService implements IHechosService {
             .estado_hecho(hecho.getEstadoHecho())
             .motivo_rechazo(hecho.getMotivoRechazo())
             .sugerencias(hecho.getSugerencias())
-            .fecha_revision(LocalDateTime.now()) //debería agregarlo a hecho?
+            .fecha_revision(LocalDateTime.now())
             .revisado_por(hecho.getRevisadoPor())
             .build();
   }
