@@ -3,6 +3,7 @@ package ar.edu.utn.frba.dds.services.impl;
 import ar.edu.utn.frba.dds.mappers.HechoMapper;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.MultimediaInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import ar.edu.utn.frba.dds.services.IMultimediaService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,15 +35,18 @@ public class HechosService implements IHechosService {
   private final IHechosRepository hechosRepository;
   private final IMultimediaService multimediaService;
 
-    public HechosService(
-            IHechosRepository hechosRepository,
-            IMultimediaService multimediaService) {
+  @Value("${modification.allowance-days}")
+  private long DIAS_EDICION_PERMITIDOS;
+
+  public HechosService(
+      IHechosRepository hechosRepository,
+      IMultimediaService multimediaService) {
     this.hechosRepository = hechosRepository;
     this.multimediaService = multimediaService;
   }
 
   private boolean sePuedeEditarHecho(Hecho hecho) {
-    var fechaLimite = hecho.getFechaCarga().plusWeeks(1);
+    var fechaLimite = hecho.getFechaCarga().plusDays(DIAS_EDICION_PERMITIDOS);
     return hecho.getFechaCarga().isBefore(fechaLimite);
   }
 
@@ -107,6 +112,45 @@ public class HechosService implements IHechosService {
                 .multimedia(multimediaDto)
                 .build();
     }
+
+  @Override
+  public HechoOutputDTO actualizarHecho(Long id, HechoUpdateDTO hechoDto, List<MultipartFile> multimedia, String username) {
+
+    Hecho hecho = hechosRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Hecho no encontrado"));
+
+    if (!username.equals(hecho.getNombreAutor())) {
+      throw new IllegalStateException("No tienes permiso para editar este hecho");
+    }
+
+    if (!sePuedeEditarHecho(hecho)) {
+      throw new IllegalStateException(String.format("El período de edición ha expirado. Solo puedes editar los hechos dentro de los %d dias posteriores a su edición", DIAS_EDICION_PERMITIDOS));
+    }
+
+    if (hechoDto.getTitulo() != null) {
+      hecho.setTitulo(hechoDto.getTitulo());
+    }
+    if (hechoDto.getDescripcion() != null) {
+      hecho.setDescripcion(hechoDto.getDescripcion());
+    }
+    if (hechoDto.getCategoria() != null) {
+      hecho.setCategoria(hechoDto.getCategoria());
+    }
+    if (hechoDto.getLatitud() != null) {
+      hecho.getUbicacion().setLatitud(hechoDto.getLatitud());
+    }
+    if (hechoDto.getLongitud() != null) {
+      hecho.getUbicacion().setLongitud(hechoDto.getLongitud());
+    }
+
+    if (multimedia != null && !multimedia.isEmpty()) {
+      // TODO: Implementar cambio de multimdedia
+    }
+
+    Hecho hechoActualizado = hechosRepository.save(hecho);
+
+    return HechoMapper.toHechoOutputDTO(hechoActualizado);
+  }
 
   // Métodos para revisión de admins
 

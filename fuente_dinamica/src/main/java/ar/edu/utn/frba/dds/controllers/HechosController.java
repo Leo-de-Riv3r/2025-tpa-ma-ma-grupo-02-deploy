@@ -1,16 +1,24 @@
 package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoRevisionOutputDTO;
 import ar.edu.utn.frba.dds.services.IHechosService;
 
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -41,5 +49,66 @@ public class HechosController {
           @RequestPart("hecho") HechoInputDTO hechoDto,
           @RequestPart(value = "multimedia", required = false) List<MultipartFile> multimedia) {
       return hechosService.crearHecho(hechoDto, multimedia);
+  }
+
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR','CONTRIBUYENTE'")
+  @PutMapping("/{id}")
+  public ResponseEntity<?> modificarHecho(@PathVariable Long id, @RequestBody HechoUpdateDTO hechoDto) {
+    try {
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      String username = authentication.getName();
+
+      HechoOutputDTO hechoActualizado = hechosService.actualizarHecho(id, hechoDto, null, username);
+
+      return ResponseEntity.ok(hechoActualizado);
+    } catch (IllegalStateException e) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    } catch (RuntimeException ex) {
+      return ResponseEntity.badRequest().build();
+    }
+  }
+
+
+  // ADMINISTRADOR
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @GetMapping("/pendientes")
+  public List<HechoRevisionOutputDTO> getHechosPendientes() {
+    return hechosService.getHechosPendientes();
+  }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PutMapping("/{id}/aceptar")
+  public ResponseEntity<HechoRevisionOutputDTO> aceptarHecho(@PathVariable Long id, @RequestBody RevisionInputDTO revisionDto) {
+    try {
+      HechoRevisionOutputDTO hechoAceptado = hechosService.aceptarHecho(id, revisionDto);
+      return ResponseEntity.ok(hechoAceptado);
+    } catch (RuntimeException e) {
+      return ResponseEntity.badRequest().build();
+    }
+  }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PutMapping("/{id}/aceptar-con-sugerencias")
+  public ResponseEntity<HechoRevisionOutputDTO> aceptarHechoConSugerencias(@PathVariable Long id, @RequestBody RevisionInputDTO revisionDto) {
+    try {
+      HechoRevisionOutputDTO hechoAceptado = hechosService.aceptarHechoConSugerencias(id, revisionDto);
+      return ResponseEntity.ok(hechoAceptado);
+    } catch (RuntimeException e) {
+      return ResponseEntity.badRequest().build();
+    }
+  }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PutMapping("/{id}/rechazar")
+  public ResponseEntity<HechoRevisionOutputDTO> rechazarHecho(
+      @PathVariable Long id,
+      @RequestBody RevisionInputDTO revisionDto) {
+    try {
+      HechoRevisionOutputDTO hechoRechazado = hechosService.rechazarHecho(id, revisionDto);
+      return ResponseEntity.ok(hechoRechazado);
+    } catch (RuntimeException e) {
+      return ResponseEntity.badRequest().build();
+    }
   }
 }
