@@ -36,12 +36,12 @@ main {
 .main-title {
   text-align: center;
   background-image: url("../media/metamapa.png");
-  padding: 10%;
+
   background-size: cover;
   background-position: center;
   color: #3c413e;
   font-size: larger;
-  height: 100vh;
+  height: 50vh;
   /* ocupa toda la altura de la ventana */
   width: 100%;
 }

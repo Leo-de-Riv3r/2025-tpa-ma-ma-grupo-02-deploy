@@ -44,7 +44,7 @@ a {
     padding: 15px 50px;
   }
 }
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 880px) {
   .nav .navOpenBtn,
   .nav .navCloseBtn {
     display: block;

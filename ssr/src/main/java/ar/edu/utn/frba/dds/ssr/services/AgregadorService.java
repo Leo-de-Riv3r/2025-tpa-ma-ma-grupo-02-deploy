@@ -1,17 +1,17 @@
-package com.ddsi.utn.ba.ssr.services;
+package ar.edu.utn.frba.dds.ssr.services;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.queryParam;
 
-import com.ddsi.utn.ba.ssr.models.Coleccion;
-import com.ddsi.utn.ba.ssr.models.ColeccionDetallesDto;
-import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
+import ar.edu.utn.frba.dds.ssr.models.Coleccion;
+import ar.edu.utn.frba.dds.ssr.models.ColeccionDetallesDto;
+import ar.edu.utn.frba.dds.ssr.models.ColeccionNuevaDto;
 
-import com.ddsi.utn.ba.ssr.models.FiltrosDto;
-import com.ddsi.utn.ba.ssr.models.HechoDetallesDto;
-import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
-import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
-import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDto;
-import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
+import ar.edu.utn.frba.dds.ssr.models.FiltrosDto;
+import ar.edu.utn.frba.dds.ssr.models.HechoDetallesDto;
+import ar.edu.utn.frba.dds.ssr.models.ResumenActividadDto;
+import ar.edu.utn.frba.dds.ssr.models.SolicitudEliminacionDetallesDto;
+import ar.edu.utn.frba.dds.ssr.models.SolicitudEliminacionDto;
+import ar.edu.utn.frba.dds.ssr.models.SolicitudesPaginasDto;
 import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;

@@ -1,10 +1,10 @@
-package com.ddsi.utn.ba.ssr.config;
+package ar.edu.utn.frba.dds.ssr.config;
 
-import com.ddsi.utn.ba.ssr.exceptions.ExternalApiException;
-import com.ddsi.utn.ba.ssr.models.AuthResponseDTO;
-import com.ddsi.utn.ba.ssr.models.utils.ExternalUser;
-import com.ddsi.utn.ba.ssr.models.utils.UserConverter;
-import com.ddsi.utn.ba.ssr.services.MetamapaApiService;
+import ar.edu.utn.frba.dds.ssr.ExternalApiException;
+import ar.edu.utn.frba.dds.ssr.models.AuthResponseDTO;
+import ar.edu.utn.frba.dds.ssr.models.utils.ExternalUser;
+import ar.edu.utn.frba.dds.ssr.models.utils.UserConverter;
+import ar.edu.utn.frba.dds.ssr.services.MetamapaApiService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

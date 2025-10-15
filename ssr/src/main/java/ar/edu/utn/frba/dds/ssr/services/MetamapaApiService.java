@@ -1,18 +1,18 @@
-package com.ddsi.utn.ba.ssr.services;
+package ar.edu.utn.frba.dds.ssr.services;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import com.ddsi.utn.ba.ssr.models.AuthResponseDTO;
-import com.ddsi.utn.ba.ssr.models.Coleccion;
-import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
-import com.ddsi.utn.ba.ssr.models.EstadisticaDto;
-import com.ddsi.utn.ba.ssr.models.NuevaEstadisticaDto;
-import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
-import com.ddsi.utn.ba.ssr.models.RolesPermisosDTO;
-import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
-import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
+import ar.edu.utn.frba.dds.ssr.models.AuthResponseDTO;
+import ar.edu.utn.frba.dds.ssr.models.Coleccion;
+import ar.edu.utn.frba.dds.ssr.models.ColeccionNuevaDto;
+import ar.edu.utn.frba.dds.ssr.models.EstadisticaDto;
+import ar.edu.utn.frba.dds.ssr.models.NuevaEstadisticaDto;
+import ar.edu.utn.frba.dds.ssr.models.ResumenActividadDto;
+import ar.edu.utn.frba.dds.ssr.models.RolesPermisosDTO;
+import ar.edu.utn.frba.dds.ssr.models.SolicitudEliminacionDetallesDto;
+import ar.edu.utn.frba.dds.ssr.models.SolicitudesPaginasDto;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;

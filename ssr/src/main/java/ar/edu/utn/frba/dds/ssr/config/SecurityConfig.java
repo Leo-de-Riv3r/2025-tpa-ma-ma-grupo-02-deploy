@@ -1,4 +1,4 @@
-package com.ddsi.utn.ba.ssr.config;
+package ar.edu.utn.frba.dds.ssr.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
