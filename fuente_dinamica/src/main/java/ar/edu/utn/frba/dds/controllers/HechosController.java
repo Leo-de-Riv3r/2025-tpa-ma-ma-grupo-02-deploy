@@ -43,15 +43,17 @@ public class HechosController {
     return hechosService.getHechoById(id); // TODO: try cath
   }
 
-  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public HechoOutputDTO crearHecho(
           @RequestPart("hecho") HechoInputDTO hechoDto,
           @RequestPart(value = "multimedia", required = false) List<MultipartFile> multimedia) {
       return hechosService.crearHecho(hechoDto, multimedia);
   }
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CONTRIBUYENTE')")
-    @PutMapping("/{id}")
+
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR','CONTRIBUYENTE')")
+  @PutMapping("/{id}")
   public ResponseEntity<?> modificarHecho(@PathVariable Long id, @RequestBody HechoUpdateDTO hechoDto) {
     try {
       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

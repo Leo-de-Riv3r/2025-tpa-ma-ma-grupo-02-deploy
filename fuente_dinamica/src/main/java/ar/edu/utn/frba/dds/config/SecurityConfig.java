@@ -13,7 +13,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-
 public class SecurityConfig {
 
   @Bean
@@ -22,6 +21,8 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/error", "/error/**").permitAll()
+
             .requestMatchers(HttpMethod.GET, "/hechos").permitAll()
             .requestMatchers(HttpMethod.GET, "/hechos/{id}").permitAll()
 
