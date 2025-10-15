@@ -21,11 +21,6 @@ public class HechoMapper {
                 .longitud(hechoInputDTO.getLongitud())
                 .build())
             .fechaAcontecimiento(hechoInputDTO.getFechaAcontecimiento())
-            .multimedia(hechoInputDTO.getMultimedia().stream().map(m -> Multimedia.builder()
-                .nombre(m.getNombre())
-                .ruta(m.getRuta())
-                .formato(Formato.fromString(m.getFormato()))
-                .build()).toList())
             .nombreAutor(hechoInputDTO.getAutor())
             .build();
     }

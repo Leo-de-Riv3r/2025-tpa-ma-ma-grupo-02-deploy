@@ -16,8 +16,6 @@ public class HechoInputDTO {
   private String categoria;
   private Double latitud;
   private Double longitud;
-  @JsonSetter(nulls = Nulls.AS_EMPTY)
-  private List<MultimediaInputDTO> multimedia; //TODO: Eliminar
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private LocalDateTime fechaAcontecimiento;
   private String autor;
