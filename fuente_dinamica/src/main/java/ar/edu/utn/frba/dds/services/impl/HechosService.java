@@ -79,18 +79,24 @@ public class HechosService implements IHechosService {
                 .build();
 
         if (multimedia != null && !multimedia.isEmpty()) {
-            multimedia.forEach(file -> {
-                System.out.println("Nombre del archivo recibido: " + file.getOriginalFilename());
-                System.out.println("Tamaño del archivo recibido: " + file.getSize() + " bytes");
-                System.out.println("¿Está vacío?: " + file.isEmpty());
+            List<MultipartFile> validFiles = multimedia.stream()
+                    .filter(f -> f != null && !f.isEmpty())
+                    .toList();
 
-                try {
-                    Multimedia multimediaEntity = multimediaService.guardarArchivo(file);
-                    hecho.addMultimedia(multimediaEntity);
-                } catch (IOException | IllegalArgumentException e) {
-                    throw new RuntimeException("Error al procesar archivo multimedia: " + e.getMessage(), e);
-                }
-            });
+            if (!validFiles.isEmpty()) {
+                validFiles.forEach(file -> {
+                    System.out.println("Nombre del archivo recibido: " + file.getOriginalFilename());
+                    System.out.println("Tamaño del archivo recibido: " + file.getSize() + " bytes");
+                    System.out.println("¿Está vacío?: " + file.isEmpty());
+
+                    try {
+                        Multimedia multimediaEntity = multimediaService.guardarArchivo(file);
+                        hecho.addMultimedia(multimediaEntity);
+                    } catch (IOException | IllegalArgumentException e) {
+                        throw new RuntimeException("Error al procesar archivo multimedia: " + e.getMessage(), e);
+                    }
+                });
+            }
         }
         Hecho hechoGuardado = hechosRepository.save(hecho);
 

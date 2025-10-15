@@ -19,6 +19,7 @@ import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import ar.edu.utn.frba.dds.services.ColeccionService;
 import ar.edu.utn.frba.dds.services.SolicitudService;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -89,8 +90,8 @@ public class AgregadorController {
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false, defaultValue = "false") Boolean curados,
       @RequestParam(required = false) String categoria,
-      @RequestParam(required = false) LocalDateTime fecha_acontecimiento_desde,
-      @RequestParam(required = false) LocalDateTime fecha_acontecimiento_hasta,
+      @RequestParam(required = false) LocalDate fecha_acontecimiento_desde,
+      @RequestParam(required = false) LocalDate fecha_acontecimiento_hasta,
       @RequestParam(required = false) String provincia,
       @RequestParam(required = false) String municipio,
       @RequestParam(required = false) String departamento
@@ -164,10 +165,12 @@ public class AgregadorController {
   @GetMapping("/solicitudes")
   public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(
       @RequestParam (required = false, defaultValue = "1") Integer page,
-      @RequestParam (required = false, defaultValue = "true") Boolean pendientes
+      @RequestParam (required = false, defaultValue = "true") Boolean pendientes,
+      @RequestParam (required = false, defaultValue = "false") Boolean filterByCreator
   ){
-    return solicitudService.getSolicitudes(page, pendientes);
+    return solicitudService.getSolicitudes(page, pendientes, filterByCreator);
   }
+
 
   @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
   @GetMapping("/solicitudes/{id}")
