@@ -32,6 +32,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.PUT, "/hechos/*/aceptar").authenticated()
             .requestMatchers(HttpMethod.PUT, "/hechos/*/aceptar-con-sugerencias").authenticated()
             .requestMatchers(HttpMethod.PUT, "/hechos/*/rechazar").authenticated()
+            .requestMatchers(HttpMethod.PUT, "/hechos/{id}").authenticated()
 
             .anyRequest().authenticated()
         )
