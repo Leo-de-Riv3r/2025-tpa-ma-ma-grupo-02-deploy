@@ -44,6 +44,9 @@ public class Solicitud {
   @Setter
   @Getter
   private LocalDateTime fecha;
+  @Getter @Setter
+  @Column
+  private String creador = " ";
   //one to many
   @Getter
   @Setter

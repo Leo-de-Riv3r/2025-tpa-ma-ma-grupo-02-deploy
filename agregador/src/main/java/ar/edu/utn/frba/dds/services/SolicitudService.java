@@ -24,6 +24,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -72,29 +75,51 @@ public class SolicitudService {
     return solicitudes.stream().anyMatch(solicitud -> solicitud.getHecho().getId() == hecho.getId());
   }
 
-  public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(Integer page, Boolean pendientes) {
-    //get solicitudes pendientes mas recientes
-    int pageNumber = (page == null || page < 1) ? 0 : page - 1;
-    int pageSize = 20;
-    Page<Solicitud> pageResult;
-    Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("fecha").descending());
+    public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(Integer page, Boolean pendientes, Boolean filterByCreator) {
+      int pageNumber = (page == null || page < 1) ? 0 : page - 1;
+      int pageSize = 20;
+      Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("fecha").descending());
 
-    if(pendientes) {
-      pageResult = solicitudesEliminacionRepo.findByEstadoActual(TipoEstado.PENDIENTE, pageable);
-    } else {
-      pageResult = solicitudesEliminacionRepo.findAll(pageable);
-    }
+      Page<Solicitud> pageResult;
 
-    List<SolicitudResumenDtoOutput> solicitudesDto = pageResult.getContent()
-        .stream()
-        .map(solicitudConverter::fromEntity)
-        .toList();
+      // Si se debe filtrar por creador
+      if (filterByCreator) {
+        // Obtener usuario autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username;
 
-    return new PaginacionDto<>(
-        solicitudesDto,
-        pageable.getPageNumber()+1,
-        pageResult.getTotalPages()+1
-    );
+        if (authentication.getPrincipal() instanceof UserDetails userDetails) {
+          username = userDetails.getUsername();
+        } else {
+          username = authentication.getPrincipal().toString();
+        }
+
+        // Filtrado según creador y estado
+        if (pendientes) {
+          pageResult = solicitudesEliminacionRepo.findByCreadorAndEstadoActual(username, TipoEstado.PENDIENTE, pageable);
+        } else {
+          pageResult = solicitudesEliminacionRepo.findByCreador(username, pageable);
+        }
+
+      } else {
+        // Sin filtro por creador
+        if (pendientes) {
+          pageResult = solicitudesEliminacionRepo.findByEstadoActual(TipoEstado.PENDIENTE, pageable);
+        } else {
+          pageResult = solicitudesEliminacionRepo.findAll(pageable);
+        }
+      }
+
+      List<SolicitudResumenDtoOutput> solicitudesDto = pageResult.getContent()
+          .stream()
+          .map(solicitudConverter::fromEntity)
+          .toList();
+
+      return new PaginacionDto<>(
+          solicitudesDto,
+          pageable.getPageNumber() + 1,
+          pageResult.getTotalPages()
+      );
   }
 
   public Integer cantidadSolicitudesSpam(Long idHecho) {

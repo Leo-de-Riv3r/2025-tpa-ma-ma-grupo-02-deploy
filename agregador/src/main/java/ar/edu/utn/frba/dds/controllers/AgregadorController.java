@@ -165,10 +165,12 @@ public class AgregadorController {
   @GetMapping("/solicitudes")
   public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(
       @RequestParam (required = false, defaultValue = "1") Integer page,
-      @RequestParam (required = false, defaultValue = "true") Boolean pendientes
+      @RequestParam (required = false, defaultValue = "true") Boolean pendientes,
+      @RequestParam (required = false, defaultValue = "false") Boolean filterByCreator
   ){
-    return solicitudService.getSolicitudes(page, pendientes);
+    return solicitudService.getSolicitudes(page, pendientes, filterByCreator);
   }
+
 
   @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
   @GetMapping("/solicitudes/{id}")

@@ -12,6 +12,7 @@ public class SolicitudDTOOutput {
     private String motivo;
     private LocalDateTime fecha;
     private String estadoActual;
+    private String creador;
     private Integer esSpam;
     private Long idHecho;
 }
