@@ -32,6 +32,7 @@
         <module>fuente_proxy</module>
         <module>agregador</module>
         <module>estadisticas</module>
+        <module>ssr</module>
     </modules>
 
     <dependencies>

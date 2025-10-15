@@ -17,6 +17,13 @@
                     <div class="mt-5 d-flex justify-content-end">
                         <button type="submit" class="btn btn-dark">Ingresar</button>
                     </div>
+                    <a href="/oauth2/authorization/google" class="btn btn-outline-danger w-100 mt-3">
+                        <i class="fa-brands fa-google"></i>Continuar con Google
+                    </a>
+
+                    <a href="/oauth2/authorization/github" class="btn btn-outline-danger w-100 mt-3">
+                        <i class="fa-brands fa-github"></i>Continuar con Github
+                    </a>
                 </div>
             </form>
 
@@ -28,6 +35,9 @@
             </div>
             <div th:if="${param.registrado}" class="alert alert-success mt-3">
                 Usuario registrado exitosamente
+            </div>
+            <div th:if="${param.auth0err}" class="alert alert-danger mt-3">
+                Error al loguear con servicio externo
             </div>
         </div>
     </div>

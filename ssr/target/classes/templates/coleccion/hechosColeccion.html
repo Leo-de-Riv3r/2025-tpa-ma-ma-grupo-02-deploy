@@ -8,7 +8,17 @@
             <h4>Navegacion filtrada</h4>
           </div>
           <div class="card-body bg-success mb-3" style="--bs-bg-opacity: .5">
-            <form th:action="@{/colecciones/{idColeccion}/hechos (idColeccion=${idColeccion}) }" th:object="${filtros}">
+            <form th:action="@{/colecciones/{idColeccion}/hechos (idColeccion=${idColeccion}) }"
+                  th:object="${filtros}"  method="get" onSubmit="validarInputs(event)">
+              <div class="mb-3">
+                <label class="form-label">Navegacion curada</label>
+                <select th:field="*{curados}" class="form-select">
+                  <option selected value="No">Seleccione una opcion</option>
+                  <option value="Si">Si</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
               <div class="mb-3">
                 <label for="categoria">Categoria</label>
                 <input th:field="*{categoria}" id="categoria" type="text" class="form-control" placeholder="Filtrar por Categoria">
@@ -25,21 +35,17 @@
                 <label for="departamento" class="form-label">Departamento</label>
                 <input th:field="*{departamento}" id="departamento" type="text" class="form-control" placeholder="Filtrar por Departamento">
               </div>
-              <div class="mb-3">
-                <label class="form-label">Navegacion curada</label>
-                <select th:field="*{curados}" class="form-select">
-                  <option selected value="No">Seleccione una opcion</option>
-                  <option value="Si">Si</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
+
               <div class="mb-3">
                 <p>Inicio fecha de acontecimiento</p>
-                <input th:field="*{fecha_acontecimiento_desde}" type="date" class="form-control" name="fecha_hecho_inicio">
+                <input id="fecha_inicio" th:field="*{fecha_acontecimiento_desde}" type="date" class="form-control" name="fecha_hecho_inicio">
               </div>
               <div class="mb-3">
                 <p>Fin fecha acontecimiento</p>
-                <input th:field="*{fecha_acontecimiento_hasta}" type="date" class="form-control" name="fecha_hecho_fin">
+                <input id="fecha_fin" th:field="*{fecha_acontecimiento_hasta}" type="date" class="form-control" name="fecha_hecho_fin">
+              </div>
+              <div class="errorMsg" hidden="true">
+
               </div>
               <button type="submit" class="btn btn-dark">Filtrar hechos</button>
             </form>
@@ -51,11 +57,38 @@
         <h1 th:text="${titulo}">Mapa de hechos</h1>
         <div>
           <div th:unless="${paginaActual==1}">
-            <button>pagina anterior pagina</button>
+            <a th:href="@{/colecciones/{idColeccion}/hechos(idColeccion=${idColeccion}, page=${paginaActual-1},
+             categoria=${filtros.categoria}, provincia=${filtros.provincia}, municipio=${filtros.municipio},
+             departamento=${filtros.departamento}, curados=${filtros.curados},
+             fecha_acontecimiento_desde=${filtros.fecha_acontecimiento_desde},
+             fecha_acontecimiento_hasta=${filtros.fecha_acontecimiento_hasta})}"
+               class="btn btn-outline-dark">Página anterior</a>
           </div>
-          <h4>Pagina actual: <span th:text="${paginaActual}">num pagina</span></h4>
+
+          <span th:each="i : ${#numbers.sequence(1, paginasTotales)}">
+        <a th:if="${i != paginaActual}"
+           th:href="@{/colecciones/{idColeccion}/hechos(
+                        idColeccion=${idColeccion},
+                        page=${i},
+                        categoria=${filtros.categoria},
+                        provincia=${filtros.provincia},
+                        municipio=${filtros.municipio},
+                        departamento=${filtros.departamento},
+                        curados=${filtros.curados},
+                        fecha_acontecimiento_desde=${filtros.fecha_acontecimiento_desde},
+                        fecha_acontecimiento_hasta=${filtros.fecha_acontecimiento_hasta})}"
+           class="btn btn-outline-secondary" th:text="${i}">1</a>
+
+        <span th:if="${i == paginaActual}" class="btn btn-dark" th:text="${i}">1</span>
+    </span>
+
           <div th:unless="${paginaActual==paginasTotales}">
-            <button>Siguiente pagina</button>
+            <a th:href="@{/colecciones/{idColeccion}/hechos(idColeccion=${idColeccion}, page=${paginaActual+1},
+             categoria=${filtros.categoria}, provincia=${filtros.provincia}, municipio=${filtros.municipio},
+             departamento=${filtros.departamento}, curados=${filtros.curados},
+             fecha_acontecimiento_desde=${filtros.fecha_acontecimiento_desde},
+             fecha_acontecimiento_hasta=${filtros.fecha_acontecimiento_hasta})}"
+               class="btn btn-outline-dark">Siguiente pagina</a>
           </div>
         </div>
         <div th:if="${hechos.empty}">
@@ -108,6 +141,6 @@
         }
     /*]]>*/
   </script>
-
+  <script src="/js/obtener-hechos.js"></script>
 </div>
 </html>
