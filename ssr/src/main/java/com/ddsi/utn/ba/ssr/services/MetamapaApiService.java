@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
 @Service
 public class MetamapaApiService {
   private final WebClient webClient = WebClient.builder().build();
@@ -43,7 +44,7 @@ public class MetamapaApiService {
       String agregadorServiceUrl,
       @Value("${estadisticas.service.url}")
       String estadisticasServiceUrl
-      ) {
+  ) {
     this.webApiCallerService = webApiCallerService;
     this.authServiceUrl = authServiceUrl;
     this.agregadorServiceUrl = agregadorServiceUrl;
@@ -167,5 +168,9 @@ public class MetamapaApiService {
 
   public List<EstadisticaDto> obtenerEstadisticas() {
     return this.webApiCallerService.getList(estadisticasServiceUrl, EstadisticaDto.class);
+  }
+
+  public SolicitudesPaginasDto obtenerSolicitudesCreadasPor(int page, Boolean pendientes) {
+    return webApiCallerService.get(agregadorServiceUrl + "/solicitudes?filterByCreator=true&page=" + page + "&pendientes=" + pendientes, SolicitudesPaginasDto.class);
   }
 }

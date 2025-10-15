@@ -1,5 +1,6 @@
 package com.ddsi.utn.ba.ssr.config;
 
+import com.ddsi.utn.ba.ssr.exceptions.ExternalApiException;
 import com.ddsi.utn.ba.ssr.models.AuthResponseDTO;
 import com.ddsi.utn.ba.ssr.models.utils.ExternalUser;
 import com.ddsi.utn.ba.ssr.models.utils.UserConverter;
@@ -79,7 +80,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         response.sendRedirect("/registro?userExists");
       }
     }
+    catch (ExternalApiException e) {
+      response.sendRedirect("/login?authErr");
+      SecurityContextHolder.clearContext();
+      request.getSession().invalidate();
+    }
+
     catch (Exception e) {
+      System.out.println(e.getClass());
       response.sendRedirect("/login?auth0err");
       SecurityContextHolder.clearContext();
       request.getSession().invalidate();

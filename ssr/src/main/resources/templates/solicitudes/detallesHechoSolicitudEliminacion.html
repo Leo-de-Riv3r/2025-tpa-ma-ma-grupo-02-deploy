@@ -4,7 +4,7 @@
     <h1>Detalles hecho</h1>
     <form class="d-flex flex-column row-gap-5">
       <div class="mb-3">
-        <button><a class="btn btn-secondary" th:href="@{/panel-control/solicitudesEliminacion/{idSolicitud} (idSolicitud=${idSolicitud})} ">Volver a solicitud</a></button>
+        <button><a sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-secondary" th:href="@{/panel-control/solicitudesEliminacion/{idSolicitud} (idSolicitud=${idSolicitud})} ">Volver a solicitud</a></button>
       </div>
       <div class="mb-3">
         <h4>Titulo hecho</h4>

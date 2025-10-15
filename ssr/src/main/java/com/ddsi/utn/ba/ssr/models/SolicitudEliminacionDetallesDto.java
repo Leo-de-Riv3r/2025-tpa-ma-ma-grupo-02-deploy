@@ -12,4 +12,5 @@ public class SolicitudEliminacionDetallesDto {
   private String estadoActual;
   private Integer esSpam;
   private Long idHecho;
+  private String creador;
 }

@@ -35,7 +35,7 @@ public class AgregadorService {
     this.restTemplate = new RestTemplate();
   }
 
-//  public ColeccionesDto obtenerColecciones() {
+  //  public ColeccionesDto obtenerColecciones() {
 //    return this.webClient.get()
 //        .uri("/colecciones")
 //        .retrieve()
@@ -43,13 +43,18 @@ public class AgregadorService {
 //        .block();
 //  }
   public List<Coleccion> obtenerColecciones() {
-    ResponseEntity<List<Coleccion>> response = restTemplate.exchange(
-        urlBase + "/colecciones",
-        HttpMethod.GET,
-        null,
-        new ParameterizedTypeReference<List<Coleccion>>() {}
-    );
-    return response.getBody();
+    try {
+      ResponseEntity<List<Coleccion>> response = restTemplate.exchange(
+          urlBase + "/colecciones",
+          HttpMethod.GET,
+          null,
+          new ParameterizedTypeReference<List<Coleccion>>() {
+          }
+      );
+      return response.getBody();
+    } catch (Exception e) {
+      throw new RuntimeException("Error al obtener colecciones");
+    }
   }
 
   public ColeccionDetallesDto getHechosColeccion(String idColeccion, FiltrosDto filtros, int page) {
@@ -176,5 +181,9 @@ public class AgregadorService {
 
   public void rechazarSolicitud(Long idSolicitud) {
     metamapaApiService.rechazarSolicitud(idSolicitud);
+  }
+
+  public SolicitudesPaginasDto obtenerSolicitudesCreadasPor(int page, Boolean pendientes) {
+    return metamapaApiService.obtenerSolicitudesCreadasPor(page, pendientes);
   }
 }

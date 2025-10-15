@@ -31,7 +31,7 @@ public class SecurityConfig {
     http.authorizeHttpRequests(
             auth -> auth
                 // Recursos estáticos y login público
-                .requestMatchers("/","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**").permitAll()
+                .requestMatchers("/", "/home/**","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/colecciones/**").permitAll()
                 //new config
                 .requestMatchers(HttpMethod.GET, "/colecciones/*/hechos/*").permitAll()

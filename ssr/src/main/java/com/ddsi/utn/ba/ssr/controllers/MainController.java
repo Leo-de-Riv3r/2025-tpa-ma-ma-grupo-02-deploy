@@ -14,9 +14,12 @@ import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDto;
 import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
 import com.ddsi.utn.ba.ssr.services.AgregadorService;
 import com.ddsi.utn.ba.ssr.services.EstadisticaService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -44,8 +47,12 @@ public class MainController {
     return "home";  }
 
   @PostMapping("/solicitarEliminacion")
-  public String procesarSolicitudEliminacion(@ModelAttribute("solicitudEliminacion") SolicitudEliminacionDto solicitud) {
+  public String procesarSolicitudEliminacion(@ModelAttribute("solicitudEliminacion") SolicitudEliminacionDto solicitud, HttpServletRequest request) {
     //envio solicitud
+    Object username = request.getSession().getAttribute("username");
+
+    if(username !=null) solicitud.setCreador(username.toString());
+    else solicitud.setCreador(" ");
     agregadorService.enviarSolicitud(solicitud);
     return "redirect:/colecciones";
   }
@@ -69,74 +76,74 @@ public class MainController {
     return "coleccion/detallesHecho";
   }
 
-@GetMapping("/colecciones/{idColeccion}/eliminar")
-public String eliminarColeccion(@PathVariable String idColeccion) {
-  try {
-    agregadorService.eliminarColeccion(idColeccion);
-    return "redirect:/colecciones";
-  } catch (Exception e) {
-    return "redirect:/";
-  }
-}
-
-@PostMapping("/colecciones/{idColeccion}/actualizar")
-public String actualizarColecion(@PathVariable String idColeccion,
-                                 @ModelAttribute("coleccion") ColeccionNuevaDto coleccion,
-                                 BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-  try {
-    System.out.println(coleccion);
-    System.out.println(idColeccion);
-    if(coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
-    agregadorService.actualizarColeccion(idColeccion, coleccion);
-    return "redirect:/colecciones";
-  } catch(Exception e) {
-    return "redirect:/";
-  }
-}
-
-@GetMapping("/colecciones/{idColeccion}/editar")
-public String mostrarEdicionColeccion(@PathVariable String idColeccion, Model model) {
-  try {
-    Coleccion coleccion = agregadorService.obtenerColeccionPorId(idColeccion);
-    ColeccionNuevaDto coleccionNueva = new ColeccionNuevaDto();
-    coleccionNueva.setTitulo(coleccion.getTitulo());
-    coleccionNueva.setAlgoritmo(coleccion.getAlgoritmoConsenso());
-    coleccionNueva.setDescripcion(coleccion.getDescripcion());
-    if(coleccion.getFuentes() != null) {
-      List<FuenteNuevaDto> fuentesColeccion = new ArrayList<>();
-      coleccion.getFuentes().forEach(f -> {
-        FuenteNuevaDto fuenteNuevaDto = new FuenteNuevaDto();
-        fuenteNuevaDto.setTipoFuente(f.getTipoFuente());
-        fuenteNuevaDto.setUrl(f.getUrl());
-        fuentesColeccion.add(fuenteNuevaDto);
-      });
-      coleccionNueva.setFuentes(fuentesColeccion);
+  @GetMapping("/colecciones/{idColeccion}/eliminar")
+  public String eliminarColeccion(@PathVariable String idColeccion) {
+    try {
+      agregadorService.eliminarColeccion(idColeccion);
+      return "redirect:/colecciones";
+    } catch (Exception e) {
+      return "redirect:/";
     }
-    model.addAttribute("coleccionId", coleccion.getId());
-    model.addAttribute("coleccion", coleccionNueva);
-    return "/coleccion/editar";
   }
-  catch (Exception ex) {
-    //redirectAttributes.addFlashAttribute("mensaje", ex.getMessage());
-    return "redirect:/colecciones";
+
+  @PostMapping("/colecciones/{idColeccion}/actualizar")
+  public String actualizarColecion(@PathVariable String idColeccion,
+                                   @ModelAttribute("coleccion") ColeccionNuevaDto coleccion,
+                                   BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+    try {
+      System.out.println(coleccion);
+      System.out.println(idColeccion);
+      if(coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
+      agregadorService.actualizarColeccion(idColeccion, coleccion);
+      return "redirect:/colecciones";
+    } catch(Exception e) {
+      return "redirect:/";
+    }
   }
-}
+
+  @GetMapping("/colecciones/{idColeccion}/editar")
+  public String mostrarEdicionColeccion(@PathVariable String idColeccion, Model model) {
+    try {
+      Coleccion coleccion = agregadorService.obtenerColeccionPorId(idColeccion);
+      ColeccionNuevaDto coleccionNueva = new ColeccionNuevaDto();
+      coleccionNueva.setTitulo(coleccion.getTitulo());
+      coleccionNueva.setAlgoritmo(coleccion.getAlgoritmoConsenso());
+      coleccionNueva.setDescripcion(coleccion.getDescripcion());
+      if(coleccion.getFuentes() != null) {
+        List<FuenteNuevaDto> fuentesColeccion = new ArrayList<>();
+        coleccion.getFuentes().forEach(f -> {
+          FuenteNuevaDto fuenteNuevaDto = new FuenteNuevaDto();
+          fuenteNuevaDto.setTipoFuente(f.getTipoFuente());
+          fuenteNuevaDto.setUrl(f.getUrl());
+          fuentesColeccion.add(fuenteNuevaDto);
+        });
+        coleccionNueva.setFuentes(fuentesColeccion);
+      }
+      model.addAttribute("coleccionId", coleccion.getId());
+      model.addAttribute("coleccion", coleccionNueva);
+      return "/coleccion/editar";
+    }
+    catch (Exception ex) {
+      //redirectAttributes.addFlashAttribute("mensaje", ex.getMessage());
+      return "redirect:/colecciones";
+    }
+  }
   @PostMapping("/colecciones/crear")
-public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto coleccionNueva,
-                          BindingResult bindingResult,
-                          Model model,
-                          RedirectAttributes redirectAttributes) {
-  try {
-    agregadorService.crearColeccion(coleccionNueva);
+  public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto coleccionNueva,
+                               BindingResult bindingResult,
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
+    try {
+      agregadorService.crearColeccion(coleccionNueva);
 
 //    redirectAttributes.addFlashAttribute("mensaje", "Alumno creado exitosamente");
 //    redirectAttributes.addFlashAttribute("tipoMensaje", "success");
-    return "redirect:/colecciones";
+      return "redirect:/colecciones";
+    }
+    catch (Exception e) {
+      return "redirect:/colecciones";
+    }
   }
-  catch (Exception e) {
-    return "redirect:/colecciones";
-  }
-}
 
   @GetMapping("/colecciones/nuevaColeccion")
   public String mostrarFormularioColeccion(Model model) {
@@ -191,9 +198,14 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
     return "coleccion/nuevaEstadistica";
   }
   @GetMapping("/colecciones")
-  public String getColecciones(Model model) {
-    List<Coleccion> colecciones = agregadorService.obtenerColecciones();
-    model.addAttribute("colecciones",  colecciones);
+  public String getColecciones(Model model, RedirectAttributes redirectAttributes) {
+    try {
+      List<Coleccion> colecciones = agregadorService.obtenerColecciones();
+      model.addAttribute("colecciones", colecciones);
+    } catch(Exception e) {
+      System.out.println(e.getMessage());
+      model.addAttribute("errorMessage", e.getMessage());
+    }
     return "coleccion/colecciones";
   }
 
@@ -235,15 +247,45 @@ public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto colec
   }
   @GetMapping("/panel-control")
   public String mostrarPanelControl(Model model) {
-    ResumenActividadDto resumenActividadDto = agregadorService.obtenerResumenActividad();
-    List<EstadisticaDto> estadisticas = estadisticaService.obtenerEstadisticas();
-    System.out.println(estadisticas.get(0).getDetalle());
-    System.out.println("SIN ERROR AUN");
-    //aca irian las estadisticas
-    model.addAttribute("hechosTotales", resumenActividadDto.getHechostotales());
-    model.addAttribute("fuentesTotales", resumenActividadDto.getFuentesTotales());
-    model.addAttribute("solicitudesEliminacion", resumenActividadDto.getSolicitudesEliminacion());
-    model.addAttribute("estadisticas", estadisticas);
+    try {
+      ResumenActividadDto resumenActividadDto = agregadorService.obtenerResumenActividad();
+      System.out.println("SIN ERROR AUN");
+      //aca irian las estadisticas
+      model.addAttribute("hechosTotales", resumenActividadDto.getHechostotales());
+      model.addAttribute("fuentesTotales", resumenActividadDto.getFuentesTotales());
+      model.addAttribute("solicitudesEliminacion", resumenActividadDto.getSolicitudesEliminacion());
+
+      List<EstadisticaDto> estadisticas = estadisticaService.obtenerEstadisticas();
+      model.addAttribute("estadisticas", estadisticas);
+
+    } catch (Exception e) {
+      model.addAttribute("errorMessage", "Error al obtener datos");
+    }
     return "panelControl";
+  }
+
+  @GetMapping("/solicitudes-usuario")
+  public String mostrarSolicitudesEliminacionCreadasPor(Model model, @RequestParam(defaultValue = "1") int page, @RequestParam(required = false, defaultValue = "true") Boolean pendientes, HttpServletRequest request) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Object username = request.getSession().getAttribute("username");
+    if (username != null) {
+      try {
+        SolicitudesPaginasDto solicitudesPaginadoDto = agregadorService.obtenerSolicitudesCreadasPor(page, pendientes);
+        model.addAttribute("page", solicitudesPaginadoDto.getCurrentPage());
+        model.addAttribute("totalPages", solicitudesPaginadoDto.getTotalPages());
+        model.addAttribute("solicitudes", solicitudesPaginadoDto.getData());
+        model.addAttribute("pendientes", pendientes);
+      } catch(Exception e) {
+        model.addAttribute("erroMessage", "Error obteniendo solicitudes");
+      }
+    } else {
+      return "login";
+    }
+    return "solicitudes/solicitudesEliminacion";
+  }
+
+  @GetMapping("/home")
+  public String getLandingPage() {
+    return "home";
   }
 }
