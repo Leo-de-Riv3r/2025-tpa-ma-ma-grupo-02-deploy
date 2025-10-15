@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtService {
 
-  @Value("${authentication.jwt.secret")
+  @Value("${authentication.jwt.secret}")
   private String secret;
 
   public String extractUsername(String token) {
@@ -41,11 +41,18 @@ public class JwtService {
   }
 
   public Claims extractAllClaims(String token) {
-    return Jwts.parser()
-        .verifyWith(getKey())
-        .build()
-        .parseSignedClaims(token)
-        .getPayload();
+    try {
+      Claims claims = Jwts.parser()
+          .verifyWith(getKey())
+          .build()
+          .parseSignedClaims(token)
+          .getPayload();
+
+      return claims;
+    } catch (Exception e) {
+      System.out.println("Error in extractAllClaims: " + e.getMessage());
+      throw e;
+    }
   }
 
   private SecretKey getKey() {
