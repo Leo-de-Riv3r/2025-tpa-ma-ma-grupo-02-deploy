@@ -32,6 +32,8 @@ public class SolicitudConverter {
     } else {
       throw new EntityNotFoundException("Hecho con id " + dtoSolicitud.getIdHecho());
     }
+    if(dtoSolicitud.getCreador() != null) solicitud.setCreador(dtoSolicitud.getCreador());
+
     return solicitud;
   }
 
@@ -55,6 +57,7 @@ public class SolicitudConverter {
     dto.setFecha(solicitud.getFecha());
     dto.setEstadoActual(solicitud.getEstadoActual().getEstado().toString());
     dto.setEsSpam(solicitud.getSpam());
+    dto.setCreador(solicitud.getCreador());
 
     return dto;
   }

@@ -17,6 +17,7 @@ import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
 import ar.edu.utn.frba.dds.services.IHechosService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import ar.edu.utn.frba.dds.services.IHechosService;
 
@@ -26,6 +27,9 @@ import java.util.stream.Collectors;
 
 import ar.edu.utn.frba.dds.services.IMultimediaService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -125,7 +129,11 @@ public class HechosService implements IHechosService {
     Hecho hecho = hechosRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Hecho no encontrado"));
 
-    if (!username.equals(hecho.getNombreAutor())) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    boolean isAdmin = authentication.getAuthorities().stream()
+        .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMINISTRADOR"));
+
+    if (!isAdmin && !username.equals(hecho.getNombreAutor())) {
       throw new IllegalStateException("No tienes permiso para editar este hecho");
     }
 
@@ -148,6 +156,7 @@ public class HechosService implements IHechosService {
     if (hechoDto.getLongitud() != null) {
       hecho.getUbicacion().setLongitud(hechoDto.getLongitud());
     }
+    hecho.setFechaUltimaModificacion(LocalDateTime.now());
 
     hecho.getMultimedia().forEach(multimediaEntity -> {
         try {

@@ -32,12 +32,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
+        // DEBUG
+        System.out.println("=== JWT FILTER DEBUG ===");
+        System.out.println("URL: " + request.getRequestURL());
+        System.out.println("Auth Header: " + authHeader);
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("No Bearer token found");
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = authHeader.substring(7);
+        System.out.println("Token: " + token.substring(0, Math.min(20, token.length())) + "...");
 
         try {
             if (!jwtService.isTokenValid(token)) {
