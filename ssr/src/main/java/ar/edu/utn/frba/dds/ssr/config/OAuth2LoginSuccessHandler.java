@@ -1,9 +1,10 @@
-package ar.edu.utn.frba.dds.ssr.config;
+package com.ddsi.utn.ba.ssr.config;
 
-import ar.edu.utn.frba.dds.ssr.models.AuthResponseDTO;
-import ar.edu.utn.frba.dds.ssr.models.utils.ExternalUser;
-import ar.edu.utn.frba.dds.ssr.models.utils.UserConverter;
-import ar.edu.utn.frba.dds.ssr.services.MetamapaApiService;
+import com.ddsi.utn.ba.ssr.exceptions.ExternalApiException;
+import com.ddsi.utn.ba.ssr.models.AuthResponseDTO;
+import com.ddsi.utn.ba.ssr.models.utils.ExternalUser;
+import com.ddsi.utn.ba.ssr.models.utils.UserConverter;
+import com.ddsi.utn.ba.ssr.services.MetamapaApiService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,7 +27,6 @@ import org.springframework.web.client.HttpClientErrorException;
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
   private final MetamapaApiService metamapaApiService;
   private final UserConverter userConverter;
-
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
                                       HttpServletResponse response,
@@ -71,13 +72,22 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
       authorities.add(new SimpleGrantedAuthority("ROLE_" + rolesPermisos.getRol().name()));
       // Redirigir al home
       response.sendRedirect("/colecciones");
-    } catch (HttpClientErrorException e) {
+    }
+    catch( HttpClientErrorException e) {
       if (e.getStatusCode().value() == 409) {
         SecurityContextHolder.clearContext();
         request.getSession().invalidate();
         response.sendRedirect("/registro?userExists");
       }
-    } catch (Exception e) {
+    }
+    catch (ExternalApiException e) {
+      response.sendRedirect("/login?authErr");
+      SecurityContextHolder.clearContext();
+      request.getSession().invalidate();
+    }
+
+    catch (Exception e) {
+      System.out.println(e.getClass());
       response.sendRedirect("/login?auth0err");
       SecurityContextHolder.clearContext();
       request.getSession().invalidate();

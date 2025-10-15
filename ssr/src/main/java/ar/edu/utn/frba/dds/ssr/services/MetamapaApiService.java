@@ -1,19 +1,24 @@
-package ar.edu.utn.frba.dds.ssr.services;
+package com.ddsi.utn.ba.ssr.services;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import ar.edu.utn.frba.dds.ssr.models.AuthResponseDTO;
-import ar.edu.utn.frba.dds.ssr.models.ColeccionNuevaDto;
-import ar.edu.utn.frba.dds.ssr.models.EstadisticaDto;
-import ar.edu.utn.frba.dds.ssr.models.NuevaEstadisticaDto;
-import ar.edu.utn.frba.dds.ssr.models.ResumenActividadDto;
-import ar.edu.utn.frba.dds.ssr.models.RolesPermisosDTO;
-import ar.edu.utn.frba.dds.ssr.models.SolicitudEliminacionDetallesDto;
-import ar.edu.utn.frba.dds.ssr.models.SolicitudesPaginasDto;
+import com.ddsi.utn.ba.ssr.models.AuthResponseDTO;
+import com.ddsi.utn.ba.ssr.models.Coleccion;
+import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
+import com.ddsi.utn.ba.ssr.models.EstadisticaDto;
+import com.ddsi.utn.ba.ssr.models.NuevaEstadisticaDto;
+import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
+import com.ddsi.utn.ba.ssr.models.RolesPermisosDTO;
+import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -26,12 +31,20 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @Service
 public class MetamapaApiService {
   private final WebClient webClient = WebClient.builder().build();
+  ;
   private final WebApiCallerService webApiCallerService;
   private final String authServiceUrl;
   private final String agregadorServiceUrl;
   private final String estadisticasServiceUrl;
-
-  public MetamapaApiService(WebApiCallerService webApiCallerService, @Value("${auth.service.url}") String authServiceUrl, @Value("${agregador.service.url}") String agregadorServiceUrl, @Value("${estadisticas.service.url}") String estadisticasServiceUrl) {
+  public MetamapaApiService(
+      WebApiCallerService webApiCallerService,
+      @Value("${auth.service.url}")
+      String authServiceUrl,
+      @Value("${agregador.service.url}")
+      String agregadorServiceUrl,
+      @Value("${estadisticas.service.url}")
+      String estadisticasServiceUrl
+  ) {
     this.webApiCallerService = webApiCallerService;
     this.authServiceUrl = authServiceUrl;
     this.agregadorServiceUrl = agregadorServiceUrl;
@@ -40,7 +53,11 @@ public class MetamapaApiService {
 
   public RolesPermisosDTO getRolesPermisos(String accessToken) {
     try {
-      RolesPermisosDTO response = webApiCallerService.getWithAuth(authServiceUrl + "/user/roles-permisos", accessToken, RolesPermisosDTO.class);
+      RolesPermisosDTO response = webApiCallerService.getWithAuth(
+          authServiceUrl + "/user/roles-permisos",
+          accessToken,
+          RolesPermisosDTO.class
+      );
       return response;
     } catch (Exception e) {
       throw new RuntimeException("Error al obtener roles y permisos: " + e.getMessage(), e);
@@ -49,7 +66,16 @@ public class MetamapaApiService {
 
   public AuthResponseDTO login(String username, String password) {
     try {
-      AuthResponseDTO response = webClient.post().uri(authServiceUrl + "/login").bodyValue(Map.of("username", username, "password", password)).retrieve().bodyToMono(AuthResponseDTO.class).block();
+      AuthResponseDTO response = webClient
+          .post()
+          .uri(authServiceUrl + "/login")
+          .bodyValue(Map.of(
+              "username", username,
+              "password", password
+          ))
+          .retrieve()
+          .bodyToMono(AuthResponseDTO.class)
+          .block();
       return response;
     } catch (WebClientResponseException e) {
       if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
@@ -67,7 +93,15 @@ public class MetamapaApiService {
 
   public Boolean register(String username, String password) {
     RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<Void> response = restTemplate.exchange(authServiceUrl + "/register", HttpMethod.POST, new HttpEntity<>(Map.of("username", username, "password", password)), Void.class);
+    ResponseEntity<Void> response = restTemplate.exchange(
+        authServiceUrl + "/register",
+        HttpMethod.POST,
+        new HttpEntity<>(Map.of(
+            "username", username,
+            "password", password
+        )),
+        Void.class
+    );
     System.out.println(response.getStatusCode());
     if (response.getStatusCode() == HttpStatus.OK) {
       return true;
@@ -134,5 +168,9 @@ public class MetamapaApiService {
 
   public List<EstadisticaDto> obtenerEstadisticas() {
     return this.webApiCallerService.getList(estadisticasServiceUrl, EstadisticaDto.class);
+  }
+
+  public SolicitudesPaginasDto obtenerSolicitudesCreadasPor(int page, Boolean pendientes) {
+    return webApiCallerService.get(agregadorServiceUrl + "/solicitudes?filterByCreator=true&page=" + page + "&pendientes=" + pendientes, SolicitudesPaginasDto.class);
   }
 }

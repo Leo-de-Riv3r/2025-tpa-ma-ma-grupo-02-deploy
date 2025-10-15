@@ -1,17 +1,17 @@
-package ar.edu.utn.frba.dds.ssr.services;
+package com.ddsi.utn.ba.ssr.services;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.queryParam;
 
-import ar.edu.utn.frba.dds.ssr.models.Coleccion;
-import ar.edu.utn.frba.dds.ssr.models.ColeccionDetallesDto;
-import ar.edu.utn.frba.dds.ssr.models.ColeccionNuevaDto;
+import com.ddsi.utn.ba.ssr.models.Coleccion;
+import com.ddsi.utn.ba.ssr.models.ColeccionDetallesDto;
+import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
 
-import ar.edu.utn.frba.dds.ssr.models.FiltrosDto;
-import ar.edu.utn.frba.dds.ssr.models.HechoDetallesDto;
-import ar.edu.utn.frba.dds.ssr.models.ResumenActividadDto;
-import ar.edu.utn.frba.dds.ssr.models.SolicitudEliminacionDetallesDto;
-import ar.edu.utn.frba.dds.ssr.models.SolicitudEliminacionDto;
-import ar.edu.utn.frba.dds.ssr.models.SolicitudesPaginasDto;
+import com.ddsi.utn.ba.ssr.models.FiltrosDto;
+import com.ddsi.utn.ba.ssr.models.HechoDetallesDto;
+import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
 import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -43,13 +43,24 @@ public class AgregadorService {
 //        .block();
 //  }
   public List<Coleccion> obtenerColecciones() {
-    ResponseEntity<List<Coleccion>> response = restTemplate.exchange(urlBase + "/colecciones", HttpMethod.GET, null, new ParameterizedTypeReference<List<Coleccion>>() {
-    });
-    return response.getBody();
+    try {
+      ResponseEntity<List<Coleccion>> response = restTemplate.exchange(
+          urlBase + "/colecciones",
+          HttpMethod.GET,
+          null,
+          new ParameterizedTypeReference<List<Coleccion>>() {
+          }
+      );
+      return response.getBody();
+    } catch (Exception e) {
+      throw new RuntimeException("Error al obtener colecciones");
+    }
   }
 
   public ColeccionDetallesDto getHechosColeccion(String idColeccion, FiltrosDto filtros, int page) {
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlBase + "/colecciones/" + idColeccion + "/hechos").queryParam("page", page);
+    UriComponentsBuilder builder = UriComponentsBuilder
+        .fromHttpUrl(urlBase + "/colecciones/" + idColeccion + "/hechos")
+        .queryParam("page", page);
 
     // Agregar los parámetros solo si no son nulos o vacíos
     if (filtros.getCategoria() != null && !filtros.getCategoria().isEmpty()) {
@@ -82,7 +93,12 @@ public class AgregadorService {
     // Construir la URL final
     String url = builder.toUriString();
 
-    ResponseEntity<ColeccionDetallesDto> response = restTemplate.exchange(url, HttpMethod.GET, null, ColeccionDetallesDto.class);
+    ResponseEntity<ColeccionDetallesDto> response = restTemplate.exchange(
+        url,
+        HttpMethod.GET,
+        null,
+        ColeccionDetallesDto.class
+    );
 
     return response.getBody();
   }
@@ -99,7 +115,12 @@ public class AgregadorService {
   }
 
   public Coleccion obtenerColeccionPorId(String idColeccion) {
-    ResponseEntity<Coleccion> response = restTemplate.exchange(urlBase + "/colecciones/" + idColeccion, HttpMethod.GET, null, Coleccion.class);
+    ResponseEntity<Coleccion> response = restTemplate.exchange(
+        urlBase + "/colecciones/" + idColeccion,
+        HttpMethod.GET,
+        null,
+        Coleccion.class
+    );
     return response.getBody();
   }
 
@@ -124,12 +145,22 @@ public class AgregadorService {
   }
 
   public HechoDetallesDto getDetallesHecho(Long idHecho) {
-    ResponseEntity<HechoDetallesDto> response = restTemplate.exchange(urlBase + "/hechos/" + idHecho, HttpMethod.GET, null, HechoDetallesDto.class);
+    ResponseEntity<HechoDetallesDto> response = restTemplate.exchange(
+        urlBase + "/hechos/" + idHecho,
+        HttpMethod.GET,
+        null,
+        HechoDetallesDto.class
+    );
     return response.getBody();
   }
 
   public void enviarSolicitud(SolicitudEliminacionDto solicitud) {
-    ResponseEntity<Void> response = restTemplate.exchange(urlBase + "/solicitudes", HttpMethod.POST, new HttpEntity<>(solicitud), Void.class);
+    ResponseEntity<Void> response = restTemplate.exchange(
+        urlBase + "/solicitudes",
+        HttpMethod.POST,
+        new HttpEntity<>(solicitud),
+        Void.class
+    );
   }
 
   public ResumenActividadDto obtenerResumenActividad() {
@@ -150,5 +181,9 @@ public class AgregadorService {
 
   public void rechazarSolicitud(Long idSolicitud) {
     metamapaApiService.rechazarSolicitud(idSolicitud);
+  }
+
+  public SolicitudesPaginasDto obtenerSolicitudesCreadasPor(int page, Boolean pendientes) {
+    return metamapaApiService.obtenerSolicitudesCreadasPor(page, pendientes);
   }
 }

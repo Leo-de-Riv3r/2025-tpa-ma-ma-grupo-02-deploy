@@ -1,23 +1,25 @@
-package ar.edu.utn.frba.dds.ssr.controllers;
-
-import ar.edu.utn.frba.dds.ssr.models.Coleccion;
-import ar.edu.utn.frba.dds.ssr.models.ColeccionDetallesDto;
-import ar.edu.utn.frba.dds.ssr.models.ColeccionNuevaDto;
-import ar.edu.utn.frba.dds.ssr.models.EstadisticaDto;
-import ar.edu.utn.frba.dds.ssr.models.FiltrosDto;
-import ar.edu.utn.frba.dds.ssr.models.FuenteNuevaDto;
-import ar.edu.utn.frba.dds.ssr.models.HechoDetallesDto;
-import ar.edu.utn.frba.dds.ssr.models.HechoDto;
-import ar.edu.utn.frba.dds.ssr.models.NuevaEstadisticaDto;
-import ar.edu.utn.frba.dds.ssr.models.ResumenActividadDto;
-import ar.edu.utn.frba.dds.ssr.models.SolicitudEliminacionDetallesDto;
-import ar.edu.utn.frba.dds.ssr.models.SolicitudEliminacionDto;
-import ar.edu.utn.frba.dds.ssr.models.SolicitudesPaginasDto;
-import ar.edu.utn.frba.dds.ssr.services.AgregadorService;
-import ar.edu.utn.frba.dds.ssr.services.EstadisticaService;
+package com.ddsi.utn.ba.ssr.controllers;
+import com.ddsi.utn.ba.ssr.models.Coleccion;
+import com.ddsi.utn.ba.ssr.models.ColeccionDetallesDto;
+import com.ddsi.utn.ba.ssr.models.ColeccionNuevaDto;
+import com.ddsi.utn.ba.ssr.models.EstadisticaDto;
+import com.ddsi.utn.ba.ssr.models.FiltrosDto;
+import com.ddsi.utn.ba.ssr.models.FuenteNuevaDto;
+import com.ddsi.utn.ba.ssr.models.HechoDetallesDto;
+import com.ddsi.utn.ba.ssr.models.HechoDto;
+import com.ddsi.utn.ba.ssr.models.NuevaEstadisticaDto;
+import com.ddsi.utn.ba.ssr.models.ResumenActividadDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDetallesDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudEliminacionDto;
+import com.ddsi.utn.ba.ssr.models.SolicitudesPaginasDto;
+import com.ddsi.utn.ba.ssr.services.AgregadorService;
+import com.ddsi.utn.ba.ssr.services.EstadisticaService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -42,12 +44,15 @@ public class MainController {
 
   @GetMapping("/")
   public String home() {
-    return "home";
-  }
+    return "home";  }
 
   @PostMapping("/solicitarEliminacion")
-  public String procesarSolicitudEliminacion(@ModelAttribute("solicitudEliminacion") SolicitudEliminacionDto solicitud) {
+  public String procesarSolicitudEliminacion(@ModelAttribute("solicitudEliminacion") SolicitudEliminacionDto solicitud, HttpServletRequest request) {
     //envio solicitud
+    Object username = request.getSession().getAttribute("username");
+
+    if(username !=null) solicitud.setCreador(username.toString());
+    else solicitud.setCreador(" ");
     agregadorService.enviarSolicitud(solicitud);
     return "redirect:/colecciones";
   }
@@ -55,7 +60,7 @@ public class MainController {
   @GetMapping("/colecciones/{idColeccion}/hechos/{idHecho}/solicitudEliminacion")
   public String mostrarFormularioSolicitud(
       @PathVariable String idColeccion, @PathVariable Long idHecho, Model model
-  ) {
+  ){
     SolicitudEliminacionDto solicitud = new SolicitudEliminacionDto();
     solicitud.setIdHecho(idHecho);
     model.addAttribute("solicitudEliminacion", solicitud);
@@ -88,10 +93,10 @@ public class MainController {
     try {
       System.out.println(coleccion);
       System.out.println(idColeccion);
-      if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
+      if(coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
       agregadorService.actualizarColeccion(idColeccion, coleccion);
       return "redirect:/colecciones";
-    } catch (Exception e) {
+    } catch(Exception e) {
       return "redirect:/";
     }
   }
@@ -104,7 +109,7 @@ public class MainController {
       coleccionNueva.setTitulo(coleccion.getTitulo());
       coleccionNueva.setAlgoritmo(coleccion.getAlgoritmoConsenso());
       coleccionNueva.setDescripcion(coleccion.getDescripcion());
-      if (coleccion.getFuentes() != null) {
+      if(coleccion.getFuentes() != null) {
         List<FuenteNuevaDto> fuentesColeccion = new ArrayList<>();
         coleccion.getFuentes().forEach(f -> {
           FuenteNuevaDto fuenteNuevaDto = new FuenteNuevaDto();
@@ -117,14 +122,14 @@ public class MainController {
       model.addAttribute("coleccionId", coleccion.getId());
       model.addAttribute("coleccion", coleccionNueva);
       return "/coleccion/editar";
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       //redirectAttributes.addFlashAttribute("mensaje", ex.getMessage());
       return "redirect:/colecciones";
     }
   }
-
   @PostMapping("/colecciones/crear")
-  public String crearColeccion(@ModelAttribute("coleccion") ColeccionNuevaDto coleccionNueva,
+  public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto coleccionNueva,
                                BindingResult bindingResult,
                                Model model,
                                RedirectAttributes redirectAttributes) {
@@ -134,7 +139,8 @@ public class MainController {
 //    redirectAttributes.addFlashAttribute("mensaje", "Alumno creado exitosamente");
 //    redirectAttributes.addFlashAttribute("tipoMensaje", "success");
       return "redirect:/colecciones";
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       return "redirect:/colecciones";
     }
   }
@@ -151,7 +157,7 @@ public class MainController {
       @PathVariable String idColeccion,
       Model model,
       @ModelAttribute("filtros") FiltrosDto filtros,
-      @RequestParam(name = "page", required = false, defaultValue = "1") int page) {
+      @RequestParam(name="page", required=false, defaultValue="1") int page) {
     //necesito recibir los hechos por parametro
     ColeccionDetallesDto coleccionDetalles = agregadorService.getHechosColeccion(idColeccion, filtros, page);
     List<HechoDto> hechos = coleccionDetalles.getData();
@@ -166,7 +172,7 @@ public class MainController {
 
   @PostMapping("/colecciones/{idColeccion}/crearEstadistica")
   public String crearEstadisticaColeccion(@PathVariable String idColeccion,
-                                          @ModelAttribute("nuevaEstadistica") NuevaEstadisticaDto nuevaEstadisticaDto,
+                                          @ModelAttribute("nuevaEstadistica")NuevaEstadisticaDto nuevaEstadisticaDto,
                                           BindingResult bindingResult,
                                           Model model,
                                           RedirectAttributes redirectAttributes) {
@@ -182,7 +188,7 @@ public class MainController {
   }
 
   @GetMapping("/colecciones/{idColeccion}/nuevaEstadistica")
-  public String mostrarFormulario(@PathVariable String idColeccion, Model model) {
+  public String mostrarFormulario(@PathVariable String idColeccion, Model model){
     NuevaEstadisticaDto nuevaEstadisticaDto = new NuevaEstadisticaDto();
     nuevaEstadisticaDto.setUrlColeccion(agregadorUrl + "/colecciones/" + idColeccion);
     model.addAttribute("nuevaEstadistica", nuevaEstadisticaDto);
@@ -191,35 +197,36 @@ public class MainController {
     }
     return "coleccion/nuevaEstadistica";
   }
-
   @GetMapping("/colecciones")
-  public String getColecciones(Model model) {
-    List<Coleccion> colecciones = agregadorService.obtenerColecciones();
-    model.addAttribute("colecciones", colecciones);
+  public String getColecciones(Model model, RedirectAttributes redirectAttributes) {
+    try {
+      List<Coleccion> colecciones = agregadorService.obtenerColecciones();
+      model.addAttribute("colecciones", colecciones);
+    } catch(Exception e) {
+      System.out.println(e.getMessage());
+      model.addAttribute("errorMessage", e.getMessage());
+    }
     return "coleccion/colecciones";
   }
 
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/hecho")
-  public String detallesHechoSolicitudEliminacion(@PathVariable Long idSolicitud, Model model) {
+  public String detallesHechoSolicitudEliminacion (@PathVariable Long idSolicitud, Model model) {
     SolicitudEliminacionDetallesDto solicitudEliminacionDetallesDto = agregadorService.obtenerSolicitud(idSolicitud);
     HechoDetallesDto hecho = agregadorService.getDetallesHecho(solicitudEliminacionDetallesDto.getIdHecho());
     model.addAttribute("idSolicitud", solicitudEliminacionDetallesDto.getId());
     model.addAttribute("hecho", hecho);
     return "solicitudes/detallesHechoSolicitudEliminacion";
   }
-
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/aceptar")
   public String procesarAceptacionSolicitud(@PathVariable Long idSolicitud) {
     agregadorService.aceptarSolicitud(idSolicitud);
     return "redirect:/panel-control/solicitudesEliminacion";
   }
-
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/rechazar")
   public String procesarRechazoSolicitud(@PathVariable Long idSolicitud) {
     agregadorService.rechazarSolicitud(idSolicitud);
     return "redirect:/panel-control/solicitudesEliminacion";
   }
-
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}")
   public String verDetallesSolicitud(Model model, @PathVariable Long idSolicitud) {
     SolicitudEliminacionDetallesDto solicitudEliminacionDetallesDto = agregadorService.obtenerSolicitud(idSolicitud);
@@ -227,9 +234,8 @@ public class MainController {
     model.addAttribute("pendiente", solicitudEliminacionDetallesDto.getEstadoActual() == "PENDIENTE");
     return "solicitudes/solicitudEliminacionDetalles";
   }
-
   @GetMapping("/panel-control/solicitudesEliminacion")
-  public String mostrarSolicitudesEliminacion(Model model, @RequestParam(defaultValue = "1") int page, @RequestParam(required = false, defaultValue = "true") Boolean pendientes) {
+  public String mostrarSolicitudesEliminacion(Model model, @RequestParam(defaultValue = "1") int page,  @RequestParam(required = false, defaultValue = "true") Boolean pendientes) {
     SolicitudesPaginasDto solicitudesPaginadoDto = agregadorService.obtenerSolicitudes(page, pendientes);
     System.out.println(solicitudesPaginadoDto.getCurrentPage());
     System.out.println(solicitudesPaginadoDto.getTotalPages());
@@ -239,18 +245,47 @@ public class MainController {
     model.addAttribute("pendientes", pendientes);
     return "solicitudes/solicitudesEliminacion";
   }
-
   @GetMapping("/panel-control")
   public String mostrarPanelControl(Model model) {
-    ResumenActividadDto resumenActividadDto = agregadorService.obtenerResumenActividad();
-    List<EstadisticaDto> estadisticas = estadisticaService.obtenerEstadisticas();
-    System.out.println(estadisticas.get(0).getDetalle());
-    System.out.println("SIN ERROR AUN");
-    //aca irian las estadisticas
-    model.addAttribute("hechosTotales", resumenActividadDto.getHechostotales());
-    model.addAttribute("fuentesTotales", resumenActividadDto.getFuentesTotales());
-    model.addAttribute("solicitudesEliminacion", resumenActividadDto.getSolicitudesEliminacion());
-    model.addAttribute("estadisticas", estadisticas);
+    try {
+      ResumenActividadDto resumenActividadDto = agregadorService.obtenerResumenActividad();
+      System.out.println("SIN ERROR AUN");
+      //aca irian las estadisticas
+      model.addAttribute("hechosTotales", resumenActividadDto.getHechostotales());
+      model.addAttribute("fuentesTotales", resumenActividadDto.getFuentesTotales());
+      model.addAttribute("solicitudesEliminacion", resumenActividadDto.getSolicitudesEliminacion());
+
+      List<EstadisticaDto> estadisticas = estadisticaService.obtenerEstadisticas();
+      model.addAttribute("estadisticas", estadisticas);
+
+    } catch (Exception e) {
+      model.addAttribute("errorMessage", "Error al obtener datos");
+    }
     return "panelControl";
+  }
+
+  @GetMapping("/solicitudes-usuario")
+  public String mostrarSolicitudesEliminacionCreadasPor(Model model, @RequestParam(defaultValue = "1") int page, @RequestParam(required = false, defaultValue = "true") Boolean pendientes, HttpServletRequest request) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Object username = request.getSession().getAttribute("username");
+    if (username != null) {
+      try {
+        SolicitudesPaginasDto solicitudesPaginadoDto = agregadorService.obtenerSolicitudesCreadasPor(page, pendientes);
+        model.addAttribute("page", solicitudesPaginadoDto.getCurrentPage());
+        model.addAttribute("totalPages", solicitudesPaginadoDto.getTotalPages());
+        model.addAttribute("solicitudes", solicitudesPaginadoDto.getData());
+        model.addAttribute("pendientes", pendientes);
+      } catch(Exception e) {
+        model.addAttribute("erroMessage", "Error obteniendo solicitudes");
+      }
+    } else {
+      return "login";
+    }
+    return "solicitudes/solicitudesEliminacion";
+  }
+
+  @GetMapping("/home")
+  public String getLandingPage() {
+    return "home";
   }
 }

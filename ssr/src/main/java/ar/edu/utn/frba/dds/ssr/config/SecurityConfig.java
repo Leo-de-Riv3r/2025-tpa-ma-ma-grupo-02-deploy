@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.ssr.config;
+package com.ddsi.utn.ba.ssr.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +31,7 @@ public class SecurityConfig {
     http.authorizeHttpRequests(
             auth -> auth
                 // Recursos estáticos y login público
-                .requestMatchers("/", "/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**").permitAll()
+                .requestMatchers("/", "/home/**","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/colecciones/**").permitAll()
                 //new config
                 .requestMatchers(HttpMethod.GET, "/colecciones/*/hechos/*").permitAll()
@@ -59,13 +59,13 @@ public class SecurityConfig {
         )
         .exceptionHandling(ex -> ex
             // Usuario no autenticado → redirigir a login
-            .authenticationEntryPoint((request, response, authException) ->
-                response.sendRedirect("/login?unauthorized")
-            )
-            // Usuario autenticado pero sin permisos → redirigir a página de error
-            .accessDeniedHandler((request, response, accessDeniedException) ->
-                response.sendRedirect("/403")
-            )
+        .authenticationEntryPoint((request, response, authException) ->
+            response.sendRedirect("/login?unauthorized")
+        )
+        // Usuario autenticado pero sin permisos → redirigir a página de error
+        .accessDeniedHandler((request, response, accessDeniedException) ->
+            response.sendRedirect("/403")
+        )
         );
     return http.build();
   }
