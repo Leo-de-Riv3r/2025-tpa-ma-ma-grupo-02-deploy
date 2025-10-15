@@ -112,15 +112,16 @@ public class HechoConverter {
     //
     HechoDetallesDtoSalida hechoDetallesDtoSalida = new HechoDetallesDtoSalida();
     hechoDetallesDtoSalida.setId(hecho.getId());
-
-    if(hecho.getUbicacion().getLugar().getDepartamento() != null) {
-      hechoDetallesDtoSalida.setDescripcion(hecho.getUbicacion().getLugar().getDepartamento());
-    }
-    if(hecho.getUbicacion().getLugar().getMunicipio() != null) {
-      hechoDetallesDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
-    }
-    if (hecho.getUbicacion().getLugar().getProvincia() != null) {
-      hechoDetallesDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+    if(hecho.getUbicacion().getLugar() != null) {
+      if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
+        hechoDetallesDtoSalida.setDescripcion(hecho.getUbicacion().getLugar().getDepartamento());
+      }
+      if (hecho.getUbicacion().getLugar().getMunicipio() != null) {
+        hechoDetallesDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
+      }
+      if (hecho.getUbicacion().getLugar().getProvincia() != null) {
+        hechoDetallesDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+      }
     }
     hechoDetallesDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
     hechoDetallesDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
