@@ -90,10 +90,6 @@ public class HechosService implements IHechosService {
 
             if (!validFiles.isEmpty()) {
                 validFiles.forEach(file -> {
-                    System.out.println("Nombre del archivo recibido: " + file.getOriginalFilename());
-                    System.out.println("Tamaño del archivo recibido: " + file.getSize() + " bytes");
-                    System.out.println("¿Está vacío?: " + file.isEmpty());
-
                     try {
                         Multimedia multimediaEntity = multimediaService.guardarArchivo(file);
                         hecho.addMultimedia(multimediaEntity);
@@ -161,30 +157,25 @@ public class HechosService implements IHechosService {
       hecho.getUbicacion().setLongitud(hechoDto.getLongitud());
     }
     hecho.setFechaUltimaModificacion(LocalDateTime.now());
-    /*
-    if (hecho.getMultimedia() != null && !hecho.getMultimedia().isEmpty()) {
-      hecho.getMultimedia().forEach(multimediaEntity -> {
-        try {
-          multimediaService.eliminarArchivo(multimediaEntity.getId());
-        } catch (IOException e) {
-          throw new RuntimeException("Error al eliminar archivo multimedia: " + e.getMessage(), e);
-        }
-      });
-      hecho.getMultimedia().clear();
-    }
+
+    hecho.getMultimedia().clear();
 
     if (multimedia != null && !multimedia.isEmpty()) {
-        multimedia.forEach(m -> {
-            try {
-                Multimedia multimediaEntity = multimediaService.guardarArchivo(m);
-                hecho.addMultimedia(multimediaEntity);
-            } catch (IOException | IllegalArgumentException e) {
-                throw new RuntimeException("Error al procesar archivo multimedia: " + e.getMessage(), e);
-            }
-        });
-    }
+        List<MultipartFile> validFiles = multimedia.stream()
+                .filter(f -> f != null && !f.isEmpty())
+                .toList();
 
-     */
+        if (!validFiles.isEmpty()) {
+            validFiles.forEach(file -> {
+                try {
+                    Multimedia multimediaEntity = multimediaService.guardarArchivo(file);
+                    hecho.addMultimedia(multimediaEntity);
+                } catch (IOException | IllegalArgumentException e) {
+                    throw new RuntimeException("Error al procesar archivo multimedia: " + e.getMessage(), e);
+                }
+            });
+        }
+    }
 
     Hecho hechoActualizado = hechosRepository.save(hecho);
 

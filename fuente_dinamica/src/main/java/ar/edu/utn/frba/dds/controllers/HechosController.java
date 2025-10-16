@@ -54,14 +54,16 @@ public class HechosController {
 
   @PreAuthorize("hasAnyRole('ADMINISTRADOR','CONTRIBUYENTE')")
   @PutMapping("/{id}")
-  public ResponseEntity<?> modificarHecho(@PathVariable Long id, @RequestBody HechoUpdateDTO hechoDto) {
+  public ResponseEntity<?> modificarHecho(@PathVariable Long id,
+                                          @RequestPart("hecho") HechoUpdateDTO hechoDto,
+                                          @RequestPart(value = "multimedia", required = false) List<MultipartFile> multimedia) {
     try {
       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
       String username = authentication.getName();
       System.out.println("== DEBUG MODIFICAR-HECHO ==");
       System.out.println("Nombre: " + username);
 
-      HechoOutputDTO hechoActualizado = hechosService.actualizarHecho(id, hechoDto, null, username);
+      HechoOutputDTO hechoActualizado = hechosService.actualizarHecho(id, hechoDto, multimedia, username);
 
       return ResponseEntity.ok(hechoActualizado);
     } catch (IllegalStateException e) {
