@@ -149,3 +149,103 @@ async function verificarArchivoCsv(inputFile) {
         errorMsg.style.display = "inline";
     }
 }
+
+// Mapa para saber qué tipos de filtro ya fueron usados
+const filtrosUsados = new Set();
+
+// Contenedor donde se agregarán los filtros
+const listaFiltros = document.getElementById("lista-filtros");
+
+// Select del tipo de filtro
+const selectTipoFiltro = document.getElementById("tipoFiltro");
+
+// Método principal: agregar un filtro
+function agregarFiltro() {
+  const tipoFiltro = selectTipoFiltro.value;
+  if (!tipoFiltro) return;
+
+  // Evitar duplicados
+  if (filtrosUsados.has(tipoFiltro)) {
+    alert("Ya se agregó un filtro de este tipo.");
+    return;
+  }
+
+  filtrosUsados.add(tipoFiltro);
+
+  const filtroIndex = listaFiltros.children.length;
+  const filtroDiv = document.createElement("div");
+  filtroDiv.classList.add("filtro-item", "border", "p-3", "mb-3", "rounded");
+  filtroDiv.dataset.tipo = tipoFiltro;
+
+  let contenido = "";
+
+  switch (tipoFiltro) {
+    case "FILTRO_CATEGORIA":
+    case "FILTRO_PROVINCIA":
+    case "FILTRO_DEPARTAMENTO":
+    case "FILTRO_MUNICIPIO":
+      let titulo = tipoFiltro.replace("FILTRO_", "").toLowerCase();
+      contenido = `
+        <label class="form-label">${}:</label>
+        <input type="hidden" name="tipoFiltro" value="${tipoFiltro}">
+        <input type="text" class="form-control" name="valor" placeholder="Ingrese valor">
+      `;
+      break;
+
+    case "FILTRO_FUENTE":
+      contenido = `
+        <label class="form-label">Tipo de fuente:</label>
+        <input type="hidden" name="tipoFiltro" value="${tipoFiltro}">
+        <select class="form-select" name="tipoFuente">
+          <option value="">Seleccione tipo de fuente</option>
+          <option value="ESTATICA">Estática</option>
+          <option value="DINAMICA">Dinámica</option>
+          <option value="PROXY_API">Proxy API</option>
+        </select>
+      `;
+      break;
+
+    case "FILTRO_FECHA_ACONTECIMIENTO":
+    case "FILTRO_FECHA_REPORTE":
+      contenido = `
+        <label class="form-label">${tipoFiltro === "FILTRO_FECHA_ACONTECIMIENTO" ? "Fecha de acontecimiento" : "Fecha de reporte"}:</label>
+        <input type="hidden" name="tipoFiltro" value="${tipoFiltro}">
+        <div class="d-flex gap-2 align-items-center">
+          <input type="date" class="form-control" name="fechaInicio">
+          <span>a</span>
+          <input type="date" class="form-control" name="fechaFin">
+        </div>
+      `;
+      break;
+
+    default:
+      return;
+  }
+
+  // Botón de eliminar
+  contenido += `
+    <button type="button" class="btn btn-danger mt-2" onclick="eliminarFiltro(this, '${tipoFiltro}')">Eliminar</button>
+  `;
+
+  filtroDiv.innerHTML = contenido;
+  listaFiltros.appendChild(filtroDiv);
+
+  // Reiniciar select
+  selectTipoFiltro.value = "";
+}
+
+// Eliminar un filtro
+function eliminarFiltro(button, tipoFiltro) {
+  const div = button.closest(".filtro-item");
+  div.remove();
+  filtrosUsados.delete(tipoFiltro);
+
+  // Reindexar nombres de los filtros restantes
+  Array.from(listaFiltros.children).forEach((child, index) => {
+    child.querySelectorAll("input, select").forEach(el => {
+      if (el.name) {
+        el.name = el.name.replace(/filtros\[\d+\]/, `filtros[${index}]`);
+      }
+    });
+  });
+}

@@ -1,4 +1,5 @@
 package ar.edu.utn.frba.dds.controllers;
+
 import ar.edu.utn.frba.dds.models.Coleccion;
 import ar.edu.utn.frba.dds.models.ColeccionDetallesDto;
 import ar.edu.utn.frba.dds.models.ColeccionNuevaDto;
@@ -44,23 +45,22 @@ public class MainController {
 
   @GetMapping("/")
   public String home() {
-    return "home";  }
+    return "home";
+  }
 
   @PostMapping("/solicitarEliminacion")
   public String procesarSolicitudEliminacion(@ModelAttribute("solicitudEliminacion") SolicitudEliminacionDto solicitud, HttpServletRequest request) {
     //envio solicitud
     Object username = request.getSession().getAttribute("username");
 
-    if(username !=null) solicitud.setCreador(username.toString());
+    if (username != null) solicitud.setCreador(username.toString());
     else solicitud.setCreador(" ");
     agregadorService.enviarSolicitud(solicitud);
     return "redirect:/colecciones";
   }
 
   @GetMapping("/colecciones/{idColeccion}/hechos/{idHecho}/solicitudEliminacion")
-  public String mostrarFormularioSolicitud(
-      @PathVariable String idColeccion, @PathVariable Long idHecho, Model model
-  ){
+  public String mostrarFormularioSolicitud(@PathVariable String idColeccion, @PathVariable Long idHecho, Model model) {
     SolicitudEliminacionDto solicitud = new SolicitudEliminacionDto();
     solicitud.setIdHecho(idHecho);
     model.addAttribute("solicitudEliminacion", solicitud);
@@ -87,16 +87,12 @@ public class MainController {
   }
 
   @PostMapping("/colecciones/{idColeccion}/actualizar")
-  public String actualizarColecion(@PathVariable String idColeccion,
-                                   @ModelAttribute("coleccion") ColeccionNuevaDto coleccion,
-                                   BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+  public String actualizarColecion(@PathVariable String idColeccion, @ModelAttribute("coleccion") ColeccionNuevaDto coleccion, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     try {
-      System.out.println(coleccion);
-      System.out.println(idColeccion);
-      if(coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
+      if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
       agregadorService.actualizarColeccion(idColeccion, coleccion);
       return "redirect:/colecciones";
-    } catch(Exception e) {
+    } catch (Exception e) {
       return "redirect:/";
     }
   }
@@ -109,7 +105,7 @@ public class MainController {
       coleccionNueva.setTitulo(coleccion.getTitulo());
       coleccionNueva.setAlgoritmo(coleccion.getAlgoritmoConsenso());
       coleccionNueva.setDescripcion(coleccion.getDescripcion());
-      if(coleccion.getFuentes() != null) {
+      if (coleccion.getFuentes() != null) {
         List<FuenteNuevaDto> fuentesColeccion = new ArrayList<>();
         coleccion.getFuentes().forEach(f -> {
           FuenteNuevaDto fuenteNuevaDto = new FuenteNuevaDto();
@@ -122,25 +118,19 @@ public class MainController {
       model.addAttribute("coleccionId", coleccion.getId());
       model.addAttribute("coleccion", coleccionNueva);
       return "/coleccion/editar";
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       //redirectAttributes.addFlashAttribute("mensaje", ex.getMessage());
       return "redirect:/colecciones";
     }
   }
+
   @PostMapping("/colecciones/crear")
-  public String crearColeccion(@ModelAttribute("coleccion")ColeccionNuevaDto coleccionNueva,
-                               BindingResult bindingResult,
-                               Model model,
-                               RedirectAttributes redirectAttributes) {
+  public String crearColeccion(@ModelAttribute("coleccion") ColeccionNuevaDto coleccionNueva, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     try {
       agregadorService.crearColeccion(coleccionNueva);
-
-//    redirectAttributes.addFlashAttribute("mensaje", "Alumno creado exitosamente");
-//    redirectAttributes.addFlashAttribute("tipoMensaje", "success");
       return "redirect:/colecciones";
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
+      System.out.println(e);
       return "redirect:/colecciones";
     }
   }
@@ -153,11 +143,7 @@ public class MainController {
 
 
   @GetMapping("/colecciones/{idColeccion}/hechos")
-  public String getHechosDeColeccion(
-      @PathVariable String idColeccion,
-      Model model,
-      @ModelAttribute("filtros") FiltrosDto filtros,
-      @RequestParam(name="page", required=false, defaultValue="1") int page) {
+  public String getHechosDeColeccion(@PathVariable String idColeccion, Model model, @ModelAttribute("filtros") FiltrosDto filtros, @RequestParam(name = "page", required = false, defaultValue = "1") int page) {
     //necesito recibir los hechos por parametro
     ColeccionDetallesDto coleccionDetalles = agregadorService.getHechosColeccion(idColeccion, filtros, page);
     List<HechoDto> hechos = coleccionDetalles.getData();
@@ -171,11 +157,7 @@ public class MainController {
   }
 
   @PostMapping("/colecciones/{idColeccion}/crearEstadistica")
-  public String crearEstadisticaColeccion(@PathVariable String idColeccion,
-                                          @ModelAttribute("nuevaEstadistica")NuevaEstadisticaDto nuevaEstadisticaDto,
-                                          BindingResult bindingResult,
-                                          Model model,
-                                          RedirectAttributes redirectAttributes) {
+  public String crearEstadisticaColeccion(@PathVariable String idColeccion, @ModelAttribute("nuevaEstadistica") NuevaEstadisticaDto nuevaEstadisticaDto, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 
     try {
       estadisticaService.crearEstadistica(nuevaEstadisticaDto);
@@ -188,7 +170,7 @@ public class MainController {
   }
 
   @GetMapping("/colecciones/{idColeccion}/nuevaEstadistica")
-  public String mostrarFormulario(@PathVariable String idColeccion, Model model){
+  public String mostrarFormulario(@PathVariable String idColeccion, Model model) {
     NuevaEstadisticaDto nuevaEstadisticaDto = new NuevaEstadisticaDto();
     nuevaEstadisticaDto.setUrlColeccion(agregadorUrl + "/colecciones/" + idColeccion);
     model.addAttribute("nuevaEstadistica", nuevaEstadisticaDto);
@@ -197,12 +179,13 @@ public class MainController {
     }
     return "coleccion/nuevaEstadistica";
   }
+
   @GetMapping("/colecciones")
   public String getColecciones(Model model, RedirectAttributes redirectAttributes) {
     try {
       List<Coleccion> colecciones = agregadorService.obtenerColecciones();
       model.addAttribute("colecciones", colecciones);
-    } catch(Exception e) {
+    } catch (Exception e) {
       System.out.println(e.getMessage());
       model.addAttribute("errorMessage", e.getMessage());
     }
@@ -210,23 +193,26 @@ public class MainController {
   }
 
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/hecho")
-  public String detallesHechoSolicitudEliminacion (@PathVariable Long idSolicitud, Model model) {
+  public String detallesHechoSolicitudEliminacion(@PathVariable Long idSolicitud, Model model) {
     SolicitudEliminacionDetallesDto solicitudEliminacionDetallesDto = agregadorService.obtenerSolicitud(idSolicitud);
     HechoDetallesDto hecho = agregadorService.getDetallesHecho(solicitudEliminacionDetallesDto.getIdHecho());
     model.addAttribute("idSolicitud", solicitudEliminacionDetallesDto.getId());
     model.addAttribute("hecho", hecho);
     return "solicitudes/detallesHechoSolicitudEliminacion";
   }
+
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/aceptar")
   public String procesarAceptacionSolicitud(@PathVariable Long idSolicitud) {
     agregadorService.aceptarSolicitud(idSolicitud);
     return "redirect:/panel-control/solicitudesEliminacion";
   }
+
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}/rechazar")
   public String procesarRechazoSolicitud(@PathVariable Long idSolicitud) {
     agregadorService.rechazarSolicitud(idSolicitud);
     return "redirect:/panel-control/solicitudesEliminacion";
   }
+
   @GetMapping("/panel-control/solicitudesEliminacion/{idSolicitud}")
   public String verDetallesSolicitud(Model model, @PathVariable Long idSolicitud) {
     SolicitudEliminacionDetallesDto solicitudEliminacionDetallesDto = agregadorService.obtenerSolicitud(idSolicitud);
@@ -234,8 +220,9 @@ public class MainController {
     model.addAttribute("pendiente", solicitudEliminacionDetallesDto.getEstadoActual() == "PENDIENTE");
     return "solicitudes/solicitudEliminacionDetalles";
   }
+
   @GetMapping("/panel-control/solicitudesEliminacion")
-  public String mostrarSolicitudesEliminacion(Model model, @RequestParam(defaultValue = "1") int page,  @RequestParam(required = false, defaultValue = "true") Boolean pendientes) {
+  public String mostrarSolicitudesEliminacion(Model model, @RequestParam(defaultValue = "1") int page, @RequestParam(required = false, defaultValue = "true") Boolean pendientes) {
     SolicitudesPaginasDto solicitudesPaginadoDto = agregadorService.obtenerSolicitudes(page, pendientes);
     System.out.println(solicitudesPaginadoDto.getCurrentPage());
     System.out.println(solicitudesPaginadoDto.getTotalPages());
@@ -245,6 +232,7 @@ public class MainController {
     model.addAttribute("pendientes", pendientes);
     return "solicitudes/solicitudesEliminacion";
   }
+
   @GetMapping("/panel-control")
   public String mostrarPanelControl(Model model) {
     try {
@@ -275,7 +263,7 @@ public class MainController {
         model.addAttribute("totalPages", solicitudesPaginadoDto.getTotalPages());
         model.addAttribute("solicitudes", solicitudesPaginadoDto.getData());
         model.addAttribute("pendientes", pendientes);
-      } catch(Exception e) {
+      } catch (Exception e) {
         model.addAttribute("erroMessage", "Error obteniendo solicitudes");
       }
     } else {

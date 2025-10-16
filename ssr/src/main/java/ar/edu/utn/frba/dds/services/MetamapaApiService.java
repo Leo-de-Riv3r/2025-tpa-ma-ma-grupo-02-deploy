@@ -11,6 +11,7 @@ import ar.edu.utn.frba.dds.models.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.RolesPermisosDTO;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
@@ -115,6 +116,14 @@ public class MetamapaApiService {
   }
 
   public void crearColeccion(ColeccionNuevaDto coleccionDto) {
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      String jsonBody = mapper.writeValueAsString(coleccionDto);
+      System.out.println("📤 Enviando colección DTO: " + jsonBody);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
     webApiCallerService.post(agregadorServiceUrl + "/colecciones", coleccionDto, Void.class);
   }
 

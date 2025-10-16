@@ -105,12 +105,6 @@ public class AgregadorService {
 
   public void crearColeccion(ColeccionNuevaDto coleccionNueva) {
     if (coleccionNueva.getAlgoritmo().isBlank()) coleccionNueva.setAlgoritmo(null);
-//    ResponseEntity<ColeccionDetallesDto> response = restTemplate.exchange(
-//          urlBase + "/colecciones",
-//          HttpMethod.POST,
-//          new HttpEntity<>(coleccionNueva),
-//          ColeccionDetallesDto.class
-//    );
     metamapaApiService.crearColeccion(coleccionNueva);
   }
 
