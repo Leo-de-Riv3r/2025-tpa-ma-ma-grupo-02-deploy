@@ -11,7 +11,7 @@ async function obtenerLinksFuentesCsv(event) {
     contenedorFuentes = input.parentElement
 
     if (tipo === "ESTATICA" && input.files !== null && input.files.length > 0) {
-            console.log("ESTO")
+      console.log("ESTO")
       const formData = new FormData();
       formData.append("file", input.files[0]);
 
@@ -35,7 +35,7 @@ async function obtenerLinksFuentesCsv(event) {
       }
     }
   }
-        event.target.submit();
+  event.target.submit();
 }
 
 
@@ -47,7 +47,7 @@ function cambiarInput(select) {
   if (select.value === "ESTATICA") {
     newInput.type = "file"
     newInput.accept = ".csv";
-    newInput.onchange= () => verificarArchivoCsv(newInput);
+    newInput.onchange = () => verificarArchivoCsv(newInput);
     newInput.required = true
   } else {
     newInput.type = "text";
@@ -59,10 +59,10 @@ function cambiarInput(select) {
 
 
 function agregarFuente() {
-    const container = document.getElementById('fuentes-container');
-    const nuevaFuente = document.createElement('div');
-    const id = container.querySelectorAll('.fuente-item').length;
-    nuevaFuente.innerHTML = `
+  const container = document.getElementById('fuentes-container');
+  const nuevaFuente = document.createElement('div');
+  const id = container.querySelectorAll('.fuente-item').length;
+  nuevaFuente.innerHTML = `
 <div class="fuente-item d-flex flex-row mb-4 p-2 align-items-center justify-content-start gap-3">
                         <select class="form-select" aria-label="seleccionar-fuente"
                         name="fuentes[${id}].tipoFuente" onchange="cambiarInput(this)"
@@ -78,27 +78,27 @@ function agregarFuente() {
                     </div>
     `;
 
-    container.appendChild(nuevaFuente);
+  container.appendChild(nuevaFuente);
 
-    // Animación de entrada
-    setTimeout(() => {
-        nuevaFuente.style.opacity = '1';
-        nuevaFuente.style.transform = 'translateY(0)';
-    }, 10);
+  // Animación de entrada
+  setTimeout(() => {
+    nuevaFuente.style.opacity = '1';
+    nuevaFuente.style.transform = 'translateY(0)';
+  }, 10);
 }
 
 
 function eliminarFuente(boton) {
-    const fuente = boton.closest('.fuente-item');
-    // Animación de salida
-    fuente.style.transition = 'all 0.3s ease';
-    fuente.style.opacity = '0';
-    fuente.style.transform = 'translateX(-100%)';
+  const fuente = boton.closest('.fuente-item');
+  // Animación de salida
+  fuente.style.transition = 'all 0.3s ease';
+  fuente.style.opacity = '0';
+  fuente.style.transform = 'translateX(-100%)';
 
-    setTimeout(() => {
-        fuente.remove();
-        reindexarFuentes()
-    }, 200);
+  setTimeout(() => {
+    fuente.remove();
+    reindexarFuentes()
+  }, 200);
 }
 
 function reindexarFuentes() {
@@ -114,40 +114,41 @@ function reindexarFuentes() {
 
 async function verificarArchivoCsv(inputFile) {
 
-    const errorMsg = document.getElementById("errorMsg");
+  const errorMsg = document.getElementById("errorMsg");
 
-    errorMsg.style.display = "none";
+  errorMsg.style.display = "none";
 
-    if (inputFile.files.length === 0) return;
+  if (inputFile.files.length === 0) return;
 
-    const formData = new FormData();
-    formData.append("file", inputFile.files[0]);
+  const formData = new FormData();
+  formData.append("file", inputFile.files[0]);
 
-    try {
-        // Consulta API externa para validar si es CSV
-        const resp = await fetch("http://localhost:4080/api/fuentes/validar-csv", {
-            method: "POST",
-            body: formData
-        });
-        const result = await resp.json();
+  try {
+    // Consulta API externa para validar si es CSV
+    const resp = await fetch("http://localhost:4080/api/fuentes/validar-csv", {
+      method: "POST",
+      body: formData
+    });
+    const result = await resp.json();
 
-        if (!result.esCsv) {
-            errorMsg.innerText = "El archivo no es un CSV válido.";
-            errorMsg.style.display = "inline";
-            inputFile.classList.add("is-invalid");
-        } else {
-        if (result.registros >= 10000){
-                        inputFile.classList.add("is-valid");
-                        } else {
-                        errorMsg.innerText = "Tiene menos de 10000";
-                                                errorMsg.style.display = "inline";
-                                                inputFile.classList.add("is-invalid");
-                        }
-        }
-    } catch (e) {
-        errorMsg.innerText = "Error consultando API externa.";
-        errorMsg.style.display = "inline";
+    if (!result.esCsv) {
+      errorMsg.innerText = "El archivo no es un CSV válido.";
+      errorMsg.style.display = "inline";
+      inputFile.classList.add("is-invalid");
+    } else {
+      // if (result.registros >= 10000) {
+      //   inputFile.classList.add("is-valid");
+      // } else {
+      //   errorMsg.innerText = "Tiene menos de 10000";
+      //   errorMsg.style.display = "inline";
+      //   inputFile.classList.add("is-invalid");
+      // }s
+      inputFile.classList.add("is-valid");
     }
+  } catch (e) {
+    errorMsg.innerText = "Error consultando API externa.";
+    errorMsg.style.display = "inline";
+  }
 }
 
 const filtrosUsados = new Set();
