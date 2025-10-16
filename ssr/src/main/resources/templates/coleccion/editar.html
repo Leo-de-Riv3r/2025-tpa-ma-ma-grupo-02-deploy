@@ -1,21 +1,19 @@
 <html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="contenido">
     <main class="p-3 container border border-solid">
-        <h1>Crear coleccion</h1>
-        <form class="d-flex flex-column row-gap-5", th:action="@{/colecciones/{coleccionId}/actualizar (coleccionId=${coleccionId})}" th:object="${coleccion}" method="post"
-              onSubmit="obtenerLinksFuentesCsv(event)"
-        >
+        <h1>Editar coleccion</h1>
+        <form class="d-flex flex-column row-gap-5" ,
+            th:action="@{/colecciones/{coleccionId}/actualizar (coleccionId=${coleccionId})}" th:object="${coleccion}"
+            method="post" onSubmit="obtenerLinksFuentesCsv(event)">
             <div class="mb-3">
                 <label for="titulo_coleccion" class="form-label">Titulo</label>
                 <input id="titulo_coleccion" type="text" class="form-control" placeholder="Ingrese titulo" required
-                       th:field="*{titulo}"
-                >
+                    th:field="*{titulo}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Descripcion</label>
                 <textarea class="form-control" placeholder="Ingrese descripcion de la coleccion" required
-                          th:field="*{descripcion}"
-                ></textarea>
+                    th:field="*{descripcion}"></textarea>
             </div>
 
             <div class="mb-3">
@@ -37,18 +35,18 @@
                 <button type="button" class="btn btn-success" onclick="agregarFuente(this)">Agregar</button>
                 <span id="errorMsg" style="color:red; display:none;"></span>
                 <div id="fuentes-container">
-                    <div class="fuente-item d-flex flex-row mb-4 p-2 align-items-center justify-content-start gap-3" th:each="fuente, iterStat : *{fuentes}">
-                        <select class="form-select" aria-label="elegir-fuente" th:field="*{fuentes[__${iterStat.index}__].tipoFuente}"
-                                onchange=cambiarInput(this)>
-                            <option selected value = "">Tipo de fuente</option>
+                    <div class="fuente-item d-flex flex-row mb-4 p-2 align-items-center justify-content-start gap-3"
+                        th:each="fuente, iterStat : *{fuentes}">
+                        <select class="form-select" aria-label="elegir-fuente"
+                            th:field="*{fuentes[__${iterStat.index}__].tipoFuente}" onchange=cambiarInput(this)>
+                            <option selected value="">Tipo de fuente</option>
                             <option value="ESTATICA">Estatica</option>
                             <option value="DINAMICA">Dinamica</option>
                             <option value="PROXY_API">Proxy api</option>
                         </select>
-                        <input class="form-control fuente-input" type="text"
-                               placeholder="URL"
-                               th:field="*{fuentes[__${iterStat.index}__].url}" required>
-                        <button type="button" class="btn btn-danger"  onclick="eliminarFuente(this)">Eliminar</button>
+                        <input class="form-control fuente-input" type="text" placeholder="URL"
+                            th:field="*{fuentes[__${iterStat.index}__].url}" required>
+                        <button type="button" class="btn btn-danger" onclick="eliminarFuente(this)">Eliminar</button>
                     </div>
                 </div>
             </div>
@@ -60,4 +58,5 @@
     </main>
     <script src="/js/crear-coleccion.js"></script>
 </div>
+
 </html>
