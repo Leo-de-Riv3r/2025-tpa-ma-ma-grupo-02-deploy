@@ -15,7 +15,7 @@ public class ColeccionDTOSalida {
   private String descripcion;
   private List<FuenteDTOOutput> fuentes;
   private Integer cantSolicitudesSpam;
-  private List<String> criterios;
+  private List<String> criterios = List.of();
   private String algoritmoConsenso;
   public ColeccionDTOSalida() {
     this.cantSolicitudesSpam = 0;
