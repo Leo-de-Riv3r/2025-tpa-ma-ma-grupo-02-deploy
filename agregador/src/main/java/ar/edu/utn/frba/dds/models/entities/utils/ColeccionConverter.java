@@ -29,15 +29,14 @@ public class ColeccionConverter {
     respuesta.setFuentes(fuentes.stream().map(fuenteConverter::fromEntity).toList());
 
     if(!coleccion.getCriterios().isEmpty()) {
-      List<CriterioDtoSalida> criterioDtoList = new ArrayList<>();
+      List<String> criterioDtoList = new ArrayList<>();
       coleccion.getCriterios().forEach(criterio -> {
-        CriterioDtoSalida criterioDtoSalida = new CriterioDtoSalida(criterio.getTipoFiltro().toString());
-        criterioDtoList.add(criterioDtoSalida);
+        criterioDtoList.add(criterio.getTipoFiltro().toString());
       });
       respuesta.setCriterios(criterioDtoList);
     }
     if(coleccion.getAlgoritmoConsenso() != null) {
-      respuesta.setAlgoritmoConsenso(  coleccion.getAlgoritmoConsenso().getClass().getSimpleName());
+      respuesta.setAlgoritmoConsenso(coleccion.getAlgoritmoConsenso().getClass().getSimpleName());
     }
     return respuesta;
   }
