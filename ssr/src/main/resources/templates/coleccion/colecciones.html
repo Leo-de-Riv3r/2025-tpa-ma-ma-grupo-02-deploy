@@ -24,7 +24,7 @@
                     </p>
                     <div th:unless="${c.criterios.isEmpty()}">
                     <div th:each="criterio : ${c.criterios}">
-                        <p th:text="${criterio.tipoCriterio}">tipo de criterio</p>
+                        <p th:text="${criterio}">tipo de criterio</p>
                     </div>
                     </div>
                     <h4>Algoritmo de consenso:</h4>

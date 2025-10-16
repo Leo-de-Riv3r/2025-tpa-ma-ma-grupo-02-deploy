@@ -39,8 +39,7 @@
             <div class="mt-5">
                 <h1>Criterios de pertenencia</h1>
 
-                <div id="filtros-container">
-                    <label for="tipoFiltro">Tipo de filtro:</label>
+                <div class="d-flex gap-2 align-items-center mb-3">
                     <select id="tipoFiltro" class="form-select">
                         <option value="">Seleccione un tipo</option>
                         <option value="FILTRO_CATEGORIA">Categoría</option>
@@ -52,11 +51,14 @@
                         <option value="FILTRO_FUENTE">Tipo de Fuente</option>
                     </select>
 
-                    <button type="button" class="btn btn-primary mt-2" onclick="agregarFiltro()">Agregar filtro</button>
-
-                    <div id="lista-filtros" class="mt-3"></div>
+                    <button type="button" class="btn btn-success" onclick="agregarFiltro()">Agregar filtro</button>
                 </div>
+
+                <!-- Contenedor donde se agregan los filtros -->
+                <div id="lista-filtros" th:object="${coleccion}"></div>
             </div>
+
+            <script src="/js/crear-filtros.js"></script>
 
 
             <div class="mt-5">
