@@ -80,6 +80,7 @@ public class HechosService implements IHechosService {
                 .categoria(hechoDto.getCategoria())
                 .ubicacion(new Ubicacion(hechoDto.getLatitud(), hechoDto.getLongitud()))
                 .fechaAcontecimiento(hechoDto.getFechaAcontecimiento())
+                .nombreAutor(hechoDto.getAutor())
                 .build();
 
         if (multimedia != null && !multimedia.isEmpty()) {
@@ -120,6 +121,7 @@ public class HechosService implements IHechosService {
                 .createdAt(hechoGuardado.getFechaCarga())
                 .updatedAt(hechoGuardado.getFechaUltimaModificacion())
                 .multimedia(multimediaDto)
+                .autor(hechoGuardado.getNombreAutor())
                 .build();
     }
 
@@ -133,6 +135,8 @@ public class HechosService implements IHechosService {
     boolean isAdmin = authentication.getAuthorities().stream()
         .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMINISTRADOR"));
 
+    System.out.println("Autor: " + hecho.getNombreAutor());
+    System.out.println("Es admin:" + isAdmin);
     if (!isAdmin && !username.equals(hecho.getNombreAutor())) {
       throw new IllegalStateException("No tienes permiso para editar este hecho");
     }
@@ -157,15 +161,17 @@ public class HechosService implements IHechosService {
       hecho.getUbicacion().setLongitud(hechoDto.getLongitud());
     }
     hecho.setFechaUltimaModificacion(LocalDateTime.now());
-
-    hecho.getMultimedia().forEach(multimediaEntity -> {
+    /*
+    if (hecho.getMultimedia() != null && !hecho.getMultimedia().isEmpty()) {
+      hecho.getMultimedia().forEach(multimediaEntity -> {
         try {
-            multimediaService.eliminarArchivo(multimediaEntity.getId());
+          multimediaService.eliminarArchivo(multimediaEntity.getId());
         } catch (IOException e) {
-            throw new RuntimeException("Error al eliminar archivo multimedia: " + e.getMessage(), e);
+          throw new RuntimeException("Error al eliminar archivo multimedia: " + e.getMessage(), e);
         }
-    });
-    hecho.getMultimedia().clear();
+      });
+      hecho.getMultimedia().clear();
+    }
 
     if (multimedia != null && !multimedia.isEmpty()) {
         multimedia.forEach(m -> {
@@ -177,6 +183,8 @@ public class HechosService implements IHechosService {
             }
         });
     }
+
+     */
 
     Hecho hechoActualizado = hechosRepository.save(hecho);
 

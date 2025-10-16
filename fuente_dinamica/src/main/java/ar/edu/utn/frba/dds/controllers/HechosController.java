@@ -58,13 +58,17 @@ public class HechosController {
     try {
       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
       String username = authentication.getName();
+      System.out.println("== DEBUG MODIFICAR-HECHO ==");
+      System.out.println("Nombre: " + username);
 
       HechoOutputDTO hechoActualizado = hechosService.actualizarHecho(id, hechoDto, null, username);
 
       return ResponseEntity.ok(hechoActualizado);
     } catch (IllegalStateException e) {
+      System.out.println(e.getMessage());
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     } catch (RuntimeException ex) {
+      System.out.println(ex.getMessage());
       return ResponseEntity.badRequest().build();
     }
   }
