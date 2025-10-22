@@ -11,7 +11,6 @@ import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
 import ar.edu.utn.frba.dds.servicies.ISolicitudesService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import lombok.Builder;
 
 import java.util.List;
 import java.util.stream.Collectors;

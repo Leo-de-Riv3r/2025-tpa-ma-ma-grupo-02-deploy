@@ -2,15 +2,11 @@ package ar.edu.utn.frba.dds.models.entities.utils;
 
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.CriterioDtoSalida;
-import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
-import ar.edu.utn.frba.dds.models.entities.Hecho;
-import ar.edu.utn.frba.dds.services.SolicitudService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.stereotype.Component;
 
 @Component

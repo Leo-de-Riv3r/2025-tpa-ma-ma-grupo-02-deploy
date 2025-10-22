@@ -6,7 +6,6 @@ import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;

@@ -3,7 +3,6 @@ package ar.edu.utn.frba.dds.externalApi;
 import ar.edu.utn.frba.dds.models.dtos.LugarDTO;
 import ar.edu.utn.frba.dds.models.entities.Lugar;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.function.client.WebClient;
 
 public class GeoRefApiAdapter implements NormalizadorUbicacionAdapter{

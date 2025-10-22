@@ -6,12 +6,14 @@ import ar.edu.utn.frba.dds.estadisticas.models.entities.DetalleEstadistica;
 import ar.edu.utn.frba.dds.estadisticas.models.entities.Estadistica;
 import ar.edu.utn.frba.dds.estadisticas.models.repositories.IRepositoryEstadisticas;
 import ar.edu.utn.frba.dds.estadisticas.services.IEstadisticasService;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,7 +28,12 @@ public class EstadisticasService implements IEstadisticasService{
   @Override
   public Estadistica createEstadistica(EstadisticaNuevaDTO dto) {
     if (dto.getUrlColeccion() == null || dto.getUrlColeccion().isBlank() || dto.getCategoriaEspecifica() == null || dto.getCategoriaEspecifica().isBlank()) {
-      throw new RuntimeException("Url de coleccion y categoria especifica no pueden ser vacias o nulas");
+      throw new IllegalArgumentException("Url de coleccion y categoria especifica no pueden ser vacias o nulas");
+    }
+
+    Optional<Estadistica> estadisticaExistente = repositoryEstadisticas.findByUrlColeccionAndCategoriaEspecifica(dto.getUrlColeccion(), dto.getCategoriaEspecifica());
+    if (estadisticaExistente.isPresent()){
+      throw new EntityExistsException("Ya existe una estadistica con los datos ingresados");
     }
     Estadistica estadistica = consultadorColeccion.generarEstadistica(dto.getUrlColeccion(), dto.getCategoriaEspecifica());
     return repositoryEstadisticas.save(estadistica);
@@ -35,10 +42,15 @@ public class EstadisticasService implements IEstadisticasService{
   @Override
   @Transactional
   public void actualizarEstadisticas(){
-    List<Estadistica> estadisticas = repositoryEstadisticas.findAll();
+    List<Estadistica> estadisticas = repositoryEstadisticas.findByVigente(1);
     estadisticas.forEach(estadistica -> {
-      DetalleEstadistica detallesNuevos = consultadorColeccion.calcularDetalles(estadistica);
-      estadistica.setDetalle(detallesNuevos);
+      try {
+        DetalleEstadistica detallesNuevos = consultadorColeccion.calcularDetalles(estadistica);
+        estadistica.setDetalle(detallesNuevos);
+      } catch (Exception e){
+        //coleccion
+        estadistica.setVigente(0);
+      }
     });
     repositoryEstadisticas.saveAll(estadisticas);
   }
@@ -89,5 +101,12 @@ public class EstadisticasService implements IEstadisticasService{
     }
 
     return rutaArchivo;
+  }
+
+  @Override
+  @Transactional
+  public void eliminarEstadisticasNoVigentes() {
+    List<Estadistica> estadisticas = repositoryEstadisticas.findByVigente(1);
+    repositoryEstadisticas.deleteAll(estadisticas);
   }
 }

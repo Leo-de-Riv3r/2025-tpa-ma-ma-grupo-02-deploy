@@ -11,7 +11,6 @@ import ar.edu.utn.frba.dds.models.entities.Multimedia;
 import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.Formato;
-import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import java.util.ArrayList;
 import java.util.List;

@@ -2,13 +2,11 @@ package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechoDTO;
 import ar.edu.utn.frba.dds.models.dtos.external.api.hecho.HechosPagDTO;
-import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
 @Service
 public class HechoApiService {

@@ -1,7 +1,4 @@
 package ar.edu.utn.frba.dds.models.dtos.output;
-import ar.edu.utn.frba.dds.models.entities.Multimedia;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 

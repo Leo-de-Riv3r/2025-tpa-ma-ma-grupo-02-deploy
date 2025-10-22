@@ -2,13 +2,10 @@ package ar.edu.utn.frba.dds.estadisticas.models.entities;
 
 import ar.edu.utn.frba.dds.estadisticas.models.dto.input.ColeccionDTO;
 import ar.edu.utn.frba.dds.estadisticas.models.dto.input.HechoDTO;
-import ar.edu.utn.frba.dds.estadisticas.models.dto.input.LugarDTO;
-import ar.edu.utn.frba.dds.estadisticas.models.dto.input.UbicacionDTO;
-import java.net.ConnectException;
+import ar.edu.utn.frba.dds.estadisticas.models.dto.input.HechoPagDto;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -27,34 +24,16 @@ public class ConsultadorColeccion {
     }
   }
 
-  private Set<HechoDTO> consultarHechos(String urlColeccion) {
+  private List<HechoDTO> consultarHechos(String urlColeccion) {
     WebClient webClient = WebClient.builder().baseUrl(urlColeccion).build();
     try {
-      Set<HechoDTO> hechos = webClient.get()
-          .uri(uriBuilder -> uriBuilder.path("/hechos").build())
-          .retrieve()
-          .bodyToFlux(HechoDTO.class)
-          .collect(Collectors.toSet())
-          .block();
-      hechos.forEach(h -> {
-        //manejo valores nulos de lugar
-        LugarDTO lugar = new LugarDTO();
-        if (h.getUbicacion().getLugar() != null) {
-          lugar = h.getUbicacion().getLugar();
-          if (lugar.getProvincia() == null) {
-            lugar.setProvincia(" ");
-          }
-          if (lugar.getMunicipio() == null) {
-            lugar.setMunicipio(" ");
-          }
-          if (lugar.getDepartamento() == null) {
-            lugar.setDepartamento(" ");
-          }
-        }
-        UbicacionDTO ubicacionDTO = h.getUbicacion();
-        ubicacionDTO.setLugar(lugar);
-        h.setUbicacion(ubicacionDTO);
-      });
+      List<HechoDTO> hechos = Objects.requireNonNull(webClient.get()
+              .uri(uriBuilder -> uriBuilder.path("/hechos").build())
+              .retrieve()
+              .bodyToMono(HechoPagDto.class)
+              .block())
+          .getData();
+
       return hechos;
     } catch (Exception e) {
       throw new RuntimeException("No se pudo conectar hechos de coleccion url " + urlColeccion);
@@ -70,7 +49,7 @@ public class ConsultadorColeccion {
     estadistica.setUrlColeccion(urlColeccion);
     estadistica.setNombre(coleccionDTO.getTitulo());
     estadistica.setCategoriaEspecifica(categoriaEspecifica);
-    Set<HechoDTO> hechos = this.consultarHechos(urlColeccion);
+    List<HechoDTO> hechos = this.consultarHechos(urlColeccion);
 
     DetalleEstadistica detalles = this.calcularDetalles(estadistica);
 
@@ -83,7 +62,7 @@ public class ConsultadorColeccion {
 
   public DetalleEstadistica calcularDetalles(Estadistica estadistica) {
     DetalleEstadistica detalle = new DetalleEstadistica();
-    Set<HechoDTO> hechos = this.consultarHechos(estadistica.getUrlColeccion());
+    List<HechoDTO> hechos = this.consultarHechos(estadistica.getUrlColeccion());
 //    private String categoriaMayoresHechos;
     Map<String, Long> conteoCategorias = hechos.stream()
         .collect(Collectors.groupingBy(HechoDTO::getCategoria, Collectors.counting()));
@@ -99,8 +78,8 @@ public class ConsultadorColeccion {
 //    private String provinciaMayorHecho;
     Map<String, Long> conteoProvincias = hechos
         .stream()
-        .filter(h -> h.getUbicacion().getLugar().getProvincia() != null)
-        .collect(Collectors.groupingBy(hechoDTO -> hechoDTO.getUbicacion().getLugar().getProvincia(), Collectors.counting()));
+        .filter(h -> h.getProvincia() != null)
+        .collect(Collectors.groupingBy(HechoDTO::getProvincia, Collectors.counting()));
 
     String provinciaMayorCantHechos = conteoProvincias.keySet().stream()
         .reduce("",
@@ -116,9 +95,9 @@ public class ConsultadorColeccion {
     if(estadistica.getCategoriaEspecifica() != null)
     {
       Map<String, Long> conteoProvinciasCategoria = hechos.stream()
-        .filter(h -> Objects.equals(h.getCategoria(), estadistica.getCategoriaEspecifica()) && h.getUbicacion().getLugar().getProvincia() != null)
+        .filter(h -> Objects.equals(h.getCategoria(), estadistica.getCategoriaEspecifica()) && h.getProvincia() != null)
         .collect(Collectors.groupingBy(
-            hecho -> hecho.getUbicacion().getLugar().getProvincia(),
+            HechoDTO::getProvincia,
             Collectors.counting()
         ));
 

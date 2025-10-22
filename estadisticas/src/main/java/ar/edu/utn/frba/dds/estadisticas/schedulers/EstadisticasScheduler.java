@@ -15,4 +15,9 @@ public class EstadisticasScheduler {
   public void actualizarEstadisticas() {
     estadisticasService.actualizarEstadisticas();
   }
+
+  @Scheduled(fixedRate = 14400000)
+  public void eliminarEstadisticasNoVigentes() {
+    estadisticasService.eliminarEstadisticasNoVigentes();
+  }
 }
