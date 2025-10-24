@@ -32,13 +32,10 @@ public class SecurityConfig {
             auth -> auth
                 // Recursos estáticos y login público
                 .requestMatchers("/", "/home/**","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/colecciones/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/colecciones").permitAll()
                 //new config
-                .requestMatchers(HttpMethod.GET, "/colecciones/*/hechos/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/colecciones/*/hechos/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/solicitarEliminacion").permitAll()
-                // Ejemplo: Acceso a alumnos: ADMIN y DOCENTE
-                //.requestMatchers("/alumnos/**").hasAnyRole("ADMIN", "DOCENTE")
-                // Lo demás requiere autenticación
                 .anyRequest().authenticated()
         )
         .oauth2Login(oauth -> oauth

@@ -1,4 +1,6 @@
-async function obtenerLinksFuentesCsv(event) {
+
+
+async function procesarSubmit(event) {
   event.preventDefault()
   //agregar animaciones de espera
   let submitButton = document.querySelector("#submit-button")
@@ -11,7 +13,6 @@ async function obtenerLinksFuentesCsv(event) {
     contenedorFuentes = input.parentElement
 
     if (tipo === "ESTATICA" && input.files !== null && input.files.length > 0) {
-      console.log("ESTO")
       const formData = new FormData();
       formData.append("file", input.files[0]);
 
@@ -22,20 +23,24 @@ async function obtenerLinksFuentesCsv(event) {
         });
 
         const data = await resp.json();
-        console.log(data)
         let newInput = document.createElement('input')
         newInput.type = "text"
         newInput.value = "http://localhost:4080/api/fuentes/" + data.id;
         newInput.name = input.name; // mantiene el binding
-        console.log(newInput)
         contenedorFuentes.replaceChild(newInput, input)
       } catch (err) {
         alert("Error guardando archivo csv: " + err.message);
+        submitButton.disabled = false
         return;
       }
     }
   }
+
+  //replace container content with spinner
   event.target.submit();
+  const mainContainer = document.querySelector(".container")
+  mainContainer.innerHTML = "<div class='d-flex flex-column align-items-center justify-content-center'> <div class='spinner-border' role='status'><span class='visually-hidden'>Loading...</span></div><h4>Subiendo coleccion, aguarde unos instantes</h4></div>"
+
 }
 
 

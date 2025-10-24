@@ -33,8 +33,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
 
     // Extraer email o nombre
-    System.out.println("Objeto user: " + oauthUser);
-    System.out.println("Enlace:" + request.getRequestURL());
     String url = request.getRequestURL().toString();
 
 
@@ -47,7 +45,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
       // Si no existe, lo registramos y volvemos a loguear
       if (tokens == null) {
-        System.out.println("Usuario no encontrado, registrando...");
         boolean registered = metamapaApiService.register(username, password);
         if (!registered) {
           throw new RuntimeException("No se pudo registrar el usuario externo");
@@ -86,7 +83,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     }
 
     catch (Exception e) {
-      System.out.println(e.getClass());
       response.sendRedirect("/login?auth0err");
       SecurityContextHolder.clearContext();
       request.getSession().invalidate();

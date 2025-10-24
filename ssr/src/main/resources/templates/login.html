@@ -39,6 +39,10 @@
             <div th:if="${param.auth0err}" class="alert alert-danger mt-3">
                 Error al loguear con servicio externo
             </div>
+
+            <div th:if="${param.unauthorized}" class="alert alert-danger mt-3">
+                Debe tener una sesion iniciada para acceder
+            </div>
         </div>
     </div>
     </body>

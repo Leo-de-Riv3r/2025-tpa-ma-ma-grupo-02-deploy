@@ -240,6 +240,9 @@ public class ColeccionService {
     Set<Hecho> hechos = new LinkedHashSet<>();
     if (coleccionId != null) {
       Optional<Coleccion> coleccion = coleccionRepository.findById(coleccionId);
+      if (coleccion.isEmpty()) {
+        throw new EntityNotFoundException("Coleccion con id " + coleccionId + " no encontrada");
+      }
       if (navegacionCurada) {
         hechos = coleccion.map(Coleccion::getHechosCurados).orElse(null);
       } else {

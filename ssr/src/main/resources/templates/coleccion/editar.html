@@ -4,7 +4,7 @@
         <h1>Editar coleccion</h1>
         <form class="d-flex flex-column row-gap-5" ,
             th:action="@{/colecciones/{coleccionId}/actualizar (coleccionId=${coleccionId})}" th:object="${coleccion}"
-            method="post" onSubmit="obtenerLinksFuentesCsv(event)">
+            method="post" onSubmit="procesarSubmit(event)">
             <div class="mb-3">
                 <label for="titulo_coleccion" class="form-label">Titulo</label>
                 <input id="titulo_coleccion" type="text" class="form-control" placeholder="Ingrese titulo" required

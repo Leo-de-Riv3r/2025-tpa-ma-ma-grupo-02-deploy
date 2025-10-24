@@ -43,7 +43,6 @@ public class AgregadorService {
 //        .block();
 //  }
   public List<Coleccion> obtenerColecciones() {
-    try {
       ResponseEntity<List<Coleccion>> response = restTemplate.exchange(
           urlBase + "/colecciones",
           HttpMethod.GET,
@@ -52,9 +51,6 @@ public class AgregadorService {
           }
       );
       return response.getBody();
-    } catch (Exception e) {
-      throw new RuntimeException("Error al obtener colecciones");
-    }
   }
 
   public ColeccionDetallesDto getHechosColeccion(String idColeccion, FiltrosDto filtros, int page) {
@@ -85,12 +81,6 @@ public class AgregadorService {
       builder.queryParam("fecha_acontecimiento_hasta", filtros.getFecha_acontecimiento_hasta());
     }
 
-    // Si tu paginación también viene en el filtro:
-//    if (filtros.getPage() != null) {
-//      builder.queryParam("page", filtros.getPage());
-//    }
-
-    // Construir la URL final
     String url = builder.toUriString();
 
     ResponseEntity<ColeccionDetallesDto> response = restTemplate.exchange(

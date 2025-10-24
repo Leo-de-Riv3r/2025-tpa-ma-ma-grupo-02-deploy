@@ -15,6 +15,7 @@ public class EstadisticaService {
 
 
   public void crearEstadistica(NuevaEstadisticaDto dto) {
+
     this.metamapaApiService.crearEstadistica(dto);
   }
 

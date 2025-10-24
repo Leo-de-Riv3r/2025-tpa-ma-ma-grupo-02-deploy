@@ -79,10 +79,8 @@ public class MetamapaApiService {
         return null;
       }
       // Otros errores HTTP
-      System.out.println("ERROR HTTP");
       throw new RuntimeException("Error en el servicio de autenticación: " + e.getMessage(), e);
     } catch (Exception e) {
-      System.out.println("NO CONNECTION");
       throw new RuntimeException("Error de conexión con el servicio de autenticación: " + e.getMessage(), e);
     }
   }
@@ -117,13 +115,6 @@ public class MetamapaApiService {
 
   public void crearColeccion(ColeccionNuevaDto coleccionDto) {
     ObjectMapper mapper = new ObjectMapper();
-    try {
-      String jsonBody = mapper.writeValueAsString(coleccionDto);
-      System.out.println("📤 Enviando colección DTO: " + jsonBody);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
     webApiCallerService.post(agregadorServiceUrl + "/colecciones", coleccionDto, Void.class);
   }
 
@@ -155,17 +146,12 @@ public class MetamapaApiService {
         throw new RuntimeException("No se pudo conectar con el servicio externo. Por favor, intentá más tarde.");
       }
 
-      // Caso: respuesta HTTP conocida (por ejemplo, 400 o 409)
       if (e.getCause() instanceof WebClientResponseException wcre) {
         if (wcre.getStatusCode().equals(CONFLICT)) {
-          throw new RuntimeException("Ya existe una estadística sobre la coleccion con la categoria ingresada.");
-        } else if (wcre.getStatusCode().equals(BAD_REQUEST)) {
-          throw new RuntimeException("Los datos enviados son inválidos.");
+          throw new IllegalArgumentException("Ya existe una estadística sobre la coleccion con la categoria ingresada.");
         }
-        throw new RuntimeException("Error del servicio externo: " + wcre.getStatusCode());
       }
 
-      // Caso genérico
       throw new RuntimeException("Error al crear estadística: " + e.getMessage());
     }
   }

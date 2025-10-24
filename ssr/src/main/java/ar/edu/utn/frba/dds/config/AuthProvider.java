@@ -29,8 +29,6 @@ public class AuthProvider implements AuthenticationProvider {
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();
-    System.out.println(username);
-    System.out.println(password);
     try {
       AuthResponseDTO authResponse = externalAuthService.login(username, password);
 
