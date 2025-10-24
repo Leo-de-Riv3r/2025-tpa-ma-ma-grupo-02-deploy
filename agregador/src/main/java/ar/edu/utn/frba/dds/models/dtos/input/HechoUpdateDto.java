@@ -1,10 +1,8 @@
 package ar.edu.utn.frba.dds.models.dtos.input;
 
-import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Data;
 

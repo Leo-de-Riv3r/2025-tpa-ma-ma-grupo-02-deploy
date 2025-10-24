@@ -23,9 +23,8 @@
 hs_err_pid*
 
 # maven build
-target/**
+**/target/
 
 # IJ files
 *.iml
 .idea/**
-/agregador/target/classes/application.properties

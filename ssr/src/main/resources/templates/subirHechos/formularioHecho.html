@@ -1,0 +1,46 @@
+<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="contenido">
+  <main class="p-4">
+    <div class="p-4 container border border-solid bg-light">
+      <form class="d-flex flex-column row-gap-5">
+        <div class="mb-3">
+          <label class="form-label">Titulo</label>
+          <input type="text" class="form-control"  placeholder="Ingrese el Titulo">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descripcion</label>
+          <input type="text" class="form-control"  placeholder="Ingrese la Descripcion">
+        </div>
+        <div class="mb-3">
+          <div class="row">
+            <div class="col-12 col-lg-4 col-md-4">
+              <label class="form-label">Categoria</label>
+              <input type="text" class="form-control" placeholder="Elegir Categoria">
+            </div>
+            <div class="col-12 col-lg-4 col-md-4">
+              <label class="form-label">Lugar del acontecimiento</label>
+              <input type="text" class="form-control" placeholder="Ubicacion">
+            </div>
+            <div class="col-12 col-lg-4 col-md-4">
+              <label class="form-label">Fecha del hecho</label>
+              <input type="date" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2>Multimedia</h2>
+          <div class="row">
+            <div class="col-12 col col-lg-4 col-md-4">
+              <label class="form-label">Media</label>
+              <input type="file" class="form-control" placeholder="Subir multimedia" accept="image/*,video/*,audio/*">
+            </div>
+          </div>
+        </div>
+        <div>
+          <button type="submit" class="btn btn-dark">Subir hecho</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+</html>

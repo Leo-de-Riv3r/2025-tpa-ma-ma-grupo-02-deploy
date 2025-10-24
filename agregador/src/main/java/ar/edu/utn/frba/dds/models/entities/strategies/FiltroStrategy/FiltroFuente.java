@@ -1,10 +1,7 @@
 package ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 
 import ar.edu.utn.frba.dds.models.entities.Hecho;
-import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
-import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
-import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.dds.models.dtos.output;
 
-import ar.edu.utn.frba.dds.models.entities.Multimedia;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,4 +21,5 @@ public class HechoDetallesDtoSalida {
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
   private List<MultimediaDtoOutput> multimedia;
+  private String nombreAutor;
 }

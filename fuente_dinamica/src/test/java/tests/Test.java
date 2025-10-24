@@ -1,9 +1,5 @@
 package tests;
-import ar.edu.utn.frba.dds.models.entities.Categoria;
-import ar.edu.utn.frba.dds.models.entities.Hecho;
-import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.*;
 public class Test {
   @BeforeEach

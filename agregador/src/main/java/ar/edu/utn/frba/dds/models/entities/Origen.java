@@ -24,6 +24,6 @@ public class Origen {
   private String autor;
 
   public Origen() {
-    this.autor = null;
+    this.autor = "";
   }
 }

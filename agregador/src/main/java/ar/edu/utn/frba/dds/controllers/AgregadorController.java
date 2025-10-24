@@ -11,17 +11,21 @@ import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
+import ar.edu.utn.frba.dds.models.dtos.output.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudResumenDtoOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import ar.edu.utn.frba.dds.services.ColeccionService;
 import ar.edu.utn.frba.dds.services.SolicitudService;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,9 +45,17 @@ public class AgregadorController {
     this.coleccionService = coleccionService;
   }
 
+  //Panel control
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @GetMapping("/resumen")
+  public ResponseEntity<ResumenActividadDto> getResumenActividad() {
+    ResumenActividadDto resumenActividadDto = coleccionService.getResumenActividad();
+    return ResponseEntity.status(HttpStatus.OK).body(resumenActividadDto);
+  }
   //COLECCIONES
 
   //CRUD COLECCIONES
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping("/colecciones")
   public ResponseEntity<ColeccionDTOSalida> createColeccion(@RequestBody ColeccionDTOEntrada dto) {
     ColeccionDTOSalida coleccionCreada = coleccionService.createColeccion(dto);
@@ -60,11 +72,13 @@ public class AgregadorController {
     return coleccionService.getColeccionDTO(id);
   }
 
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/colecciones/{id}")
   public void updateColeccion(@PathVariable String id, @RequestBody ColeccionDTOEntrada dto) {
     coleccionService.updateColeccion(id, dto);
   }
 
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @DeleteMapping("/colecciones/{id}")
   public void deleteColeccion(@PathVariable String id) {
     coleccionService.deleteColeccion(id);
@@ -76,8 +90,8 @@ public class AgregadorController {
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false, defaultValue = "false") Boolean curados,
       @RequestParam(required = false) String categoria,
-      @RequestParam(required = false) LocalDateTime fecha_acontecimiento_desde,
-      @RequestParam(required = false) LocalDateTime fecha_acontecimiento_hasta,
+      @RequestParam(required = false) LocalDate fecha_acontecimiento_desde,
+      @RequestParam(required = false) LocalDate fecha_acontecimiento_hasta,
       @RequestParam(required = false) String provincia,
       @RequestParam(required = false) String municipio,
       @RequestParam(required = false) String departamento
@@ -147,29 +161,40 @@ public class AgregadorController {
     solicitudService.createSolicitud(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body("Solicitud creada");
   }
-
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
   @GetMapping("/solicitudes")
-  public List<SolicitudDTOOutput> getSolicitudes(){
-    return solicitudService.getSolicitudes();
+  public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(
+      @RequestParam (required = false, defaultValue = "1") Integer page,
+      @RequestParam (required = false, defaultValue = "true") Boolean pendientes,
+      @RequestParam (required = false, defaultValue = "false") Boolean filterByCreator
+  ){
+    return solicitudService.getSolicitudes(page, pendientes, filterByCreator);
   }
 
-  @GetMapping("solicitudes/{id}")
+
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
+  @GetMapping("/solicitudes/{id}")
   public SolicitudDTOOutput getSolicitud(
       @PathVariable Long id
   ){
     return solicitudService.getSolicitudDto(id);
   }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/solicitudes/{id}/aceptar")
-  public void aceptarSolicitud(
+  public ResponseEntity<String> aceptarSolicitud(
       @PathVariable Long id
   ) {
     solicitudService.aceptarSolicitud(id);
+    return ResponseEntity.noContent().build();
   }
 
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/solicitudes/{id}/denegar")
-  public void rechazarSolicitud(
+  public ResponseEntity<String> rechazarSolicitud(
       @PathVariable Long id
   ) {
     solicitudService.rechazarSolicitud(id);
+    return ResponseEntity.noContent().build();
   }
 }

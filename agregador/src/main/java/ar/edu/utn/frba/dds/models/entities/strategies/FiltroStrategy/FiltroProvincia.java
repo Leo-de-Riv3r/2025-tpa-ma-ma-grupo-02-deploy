@@ -4,14 +4,9 @@ import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.util.Timer;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @Entity @Table(name = "filtroProvincia")
@@ -29,7 +24,8 @@ public class FiltroProvincia extends IFiltroStrategy{
   }
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
-    return hecho.getUbicacion().getLugar().getProvincia().toLowerCase().contains(provincia);
+    if(hecho.getUbicacion().getLugar() != null) return hecho.getUbicacion().getLugar().getProvincia().toLowerCase().contains(provincia);
+    else return true;
   }
 
 }

@@ -11,16 +11,12 @@ import java.util.List;
 
 @Data
 public class HechoInputDTO {
-  private Long id;
   private String titulo;
   private String descripcion;
   private String categoria;
   private Double latitud;
   private Double longitud;
-
-  @JsonSetter(nulls = Nulls.AS_EMPTY)
-  private List<MultimediaInputDTO> multimedia;
-
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private LocalDateTime fechaAcontecimiento;
+  private String autor;
 }

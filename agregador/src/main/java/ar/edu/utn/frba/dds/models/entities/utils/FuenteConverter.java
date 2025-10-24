@@ -5,9 +5,7 @@ import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOOutput;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.FuenteDefault;
 import ar.edu.utn.frba.dds.models.entities.FuenteProxyMetamapa;
-import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
-import jakarta.persistence.EntityExistsException;
 import org.springframework.stereotype.Component;
 
 @Component

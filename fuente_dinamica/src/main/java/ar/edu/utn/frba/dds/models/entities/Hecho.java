@@ -28,14 +28,8 @@ public class Hecho {
     @Column(name = "descripcion", nullable = false)
     private String descripcion;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "categoria_id")
-    private Categoria categoria;
-
-    // OneToMany
-    @OneToMany
-    @JoinColumn(name = "hecho_id")
-    private Set<Etiqueta> etiquetas;
+    @Column(name = "categoria", nullable = false)
+    private String categoria;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "ubicacion_id", referencedColumnName = "id")
@@ -44,15 +38,15 @@ public class Hecho {
     @Column(name = "fecha_acontecimiento")
     private LocalDateTime fechaAcontecimiento;
 
+    @Builder.Default
     @Column(name = "fecha_carga")
     private LocalDateTime fechaCarga = LocalDateTime.now();
 
     @Column(name = "fecha_ultima_modificacion")
     private LocalDateTime fechaUltimaModificacion;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "origen_id")
-    private Origen origen;
+    @Column(name = "nombre_autor")
+    private String nombreAutor;
 
     @Builder.Default
     @OneToMany
@@ -63,11 +57,6 @@ public class Hecho {
     @Column(name = "estado", nullable = false)
     @Builder.Default
     private EstadoHecho estadoHecho = EstadoHecho.PENDIENTE;
-
-    //
-    @Builder.Default
-    @Column(name = "eliminado")
-    private Boolean eliminado = Boolean.FALSE;
 
     @Column(name = "motivo_rechazo", columnDefinition = "TEXT")
     private String motivoRechazo = null;
@@ -89,27 +78,9 @@ public class Hecho {
     return titulo.equals(hecho.titulo);
   }
 
-  public boolean addEtiqueta(Etiqueta etiqueta) {
+  /*public boolean addEtiqueta(Etiqueta etiqueta) {
     return this.etiquetas.add(etiqueta);
-  }
-
-  public void actualizarDesde(HechoInputDTO dto) {
-    if (dto.getTitulo() != null && !dto.getTitulo().isBlank()) {
-      this.titulo = dto.getTitulo();
-    }
-    if (dto.getDescripcion() != null && !dto.getDescripcion().isBlank()) {
-      this.descripcion = dto.getDescripcion();
-    }
-    if (dto.getCategoria() != null) {
-      this.categoria = Categoria.builder()
-          .nombre(dto.getCategoria())
-          .build();
-    }
-    if (dto.getLatitud() != null && dto.getLongitud() != null) {
-      this.ubicacion = new Ubicacion(dto.getLatitud(), dto.getLongitud());
-    }
-    this.fechaUltimaModificacion = LocalDateTime.now();
-  }
+  }*/
 
   public void addMultimedia(Multimedia multimediaNueva) {
     multimedia.add(multimediaNueva);

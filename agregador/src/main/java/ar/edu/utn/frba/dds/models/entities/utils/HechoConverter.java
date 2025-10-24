@@ -11,7 +11,6 @@ import ar.edu.utn.frba.dds.models.entities.Multimedia;
 import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.Formato;
-import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +87,6 @@ public class HechoConverter {
     HechoDtoSalida hechoDtoSalida = new HechoDtoSalida();
     hechoDtoSalida.setId(hecho.getId());
     hechoDtoSalida.setTitulo(hecho.getTitulo());
-    hechoDtoSalida.setDescripcion(hecho.getDescripcion());
     if (hecho.getUbicacion().getLugar()!=null) {
       if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
         hechoDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
@@ -104,6 +102,8 @@ public class HechoConverter {
     hechoDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
     hechoDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
     hechoDtoSalida.setTipoFuente(hecho.getOrigen().getTipo().toString());
+    hechoDtoSalida.setNombreAutor(hecho.getOrigen().getAutor());
+    hechoDtoSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
     return hechoDtoSalida;
   }
 
@@ -111,15 +111,16 @@ public class HechoConverter {
     //
     HechoDetallesDtoSalida hechoDetallesDtoSalida = new HechoDetallesDtoSalida();
     hechoDetallesDtoSalida.setId(hecho.getId());
-
-    if(hecho.getUbicacion().getLugar().getDepartamento() != null) {
-      hechoDetallesDtoSalida.setDescripcion(hecho.getUbicacion().getLugar().getDepartamento());
-    }
-    if(hecho.getUbicacion().getLugar().getMunicipio() != null) {
-      hechoDetallesDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
-    }
-    if (hecho.getUbicacion().getLugar().getProvincia() != null) {
-      hechoDetallesDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+    if(hecho.getUbicacion().getLugar() != null) {
+      if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
+        hechoDetallesDtoSalida.setDescripcion(hecho.getUbicacion().getLugar().getDepartamento());
+      }
+      if (hecho.getUbicacion().getLugar().getMunicipio() != null) {
+        hechoDetallesDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
+      }
+      if (hecho.getUbicacion().getLugar().getProvincia() != null) {
+        hechoDetallesDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+      }
     }
     hechoDetallesDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
     hechoDetallesDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
@@ -129,7 +130,7 @@ public class HechoConverter {
     hechoDetallesDtoSalida.setDescripcion(hecho.getDescripcion());
     hechoDetallesDtoSalida.setTitulo(hecho.getTitulo());
     hechoDetallesDtoSalida.setTipoOrigen(hecho.getOrigen().getTipo());
-
+    hechoDetallesDtoSalida.setNombreAutor(hecho.getOrigen().getAutor());
     if (hecho.getMultimedia() != null) {
       List<MultimediaDtoOutput> listaMultimedia = new ArrayList<>();
       hecho.getMultimedia().forEach(multimedia -> {

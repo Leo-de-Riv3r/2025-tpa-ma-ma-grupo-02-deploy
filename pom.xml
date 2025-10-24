@@ -6,12 +6,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.5</version>
-        <relativePath/>
+        <groupId>ar.edu.utn.frba.dds</groupId>
+        <artifactId>metamapa</artifactId>
+        <version>1.0-SNAPSHOT</version>
     </parent>
-
     <groupId>ar.edu.utn.frba.dds</groupId>
     <artifactId>metamapa</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -32,6 +30,8 @@
         <module>fuente_proxy</module>
         <module>agregador</module>
         <module>estadisticas</module>
+        <module>authManager</module>
+        <module>ssr</module>
     </modules>
 
     <dependencies>

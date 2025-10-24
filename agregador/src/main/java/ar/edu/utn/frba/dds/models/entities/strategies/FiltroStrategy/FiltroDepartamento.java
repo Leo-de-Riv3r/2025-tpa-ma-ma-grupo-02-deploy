@@ -4,10 +4,7 @@ import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,6 +26,7 @@ public class FiltroDepartamento extends IFiltroStrategy{
   }
   @Override
   public Boolean cumpleFiltro(Hecho hecho){
-    return hecho.getUbicacion().getLugar().getDepartamento().toLowerCase().contains(departamento.toLowerCase());
+    if(hecho.getUbicacion().getLugar() != null)return hecho.getUbicacion().getLugar().getDepartamento().toLowerCase().contains(departamento.toLowerCase());
+    else return true;
   }
 }
