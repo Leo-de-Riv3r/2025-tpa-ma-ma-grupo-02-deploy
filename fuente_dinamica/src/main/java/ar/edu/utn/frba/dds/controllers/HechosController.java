@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -46,7 +47,7 @@ public class HechosController {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public HechoOutputDTO crearHecho(
-          @RequestPart("hecho") HechoInputDTO hechoDto,
+          @ModelAttribute("hecho") HechoInputDTO hechoDto,
           @RequestPart(value = "multimedia", required = false) List<MultipartFile> multimedia) {
       return hechosService.crearHecho(hechoDto, multimedia);
   }

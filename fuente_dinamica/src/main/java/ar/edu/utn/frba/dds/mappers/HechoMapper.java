@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.mappers;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
+import ar.edu.utn.frba.dds.models.dtos.output.MultimediaOutputDTO;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Multimedia;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
