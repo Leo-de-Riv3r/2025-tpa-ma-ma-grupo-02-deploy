@@ -2,37 +2,39 @@
 <div th:fragment="contenido">
   <main class="p-4">
     <div class="p-4 container border border-solid bg-light">
-      <form class="d-flex flex-column row-gap-5">
+      <form class="d-flex flex-column row-gap-5" th:action="@{/subir-hecho}" method="post" enctype="multipart/form-data" th:object="${hechoDto}">
         <div class="mb-3">
           <label class="form-label">Titulo</label>
-          <input type="text" class="form-control"  placeholder="Ingrese el Titulo">
+          <input type="text" class="form-control"  placeholder="Ingrese el Titulo" th:field="*{titulo}" required>
         </div>
         <div class="mb-3">
           <label class="form-label">Descripcion</label>
-          <input type="text" class="form-control"  placeholder="Ingrese la Descripcion">
+          <input type="text" class="form-control"  placeholder="Ingrese la Descripcion" th:field="*{descripcion}" required>
         </div>
         <div class="mb-3">
           <div class="row">
             <div class="col-12 col-lg-4 col-md-4">
               <label class="form-label">Categoria</label>
-              <input type="text" class="form-control" placeholder="Elegir Categoria">
+              <input type="text" class="form-control" placeholder="Elegir Categoria" th:field="*{categoria}" required>
             </div>
             <div class="col-12 col-lg-4 col-md-4">
-              <label class="form-label">Lugar del acontecimiento</label>
-              <input type="text" class="form-control" placeholder="Ubicacion">
+              <input type="number" class="form-control" placeholder="Latitud" required step="any" th:field="*{latitud}" name="latitud">
+            </div>
+            <div class="col-12 col-lg-4 col-md-4">
+              <input type="number" class="form-control" placeholder="Longitud" required step="any" th:field="*{longitud}" name="longitud">
             </div>
             <div class="col-12 col-lg-4 col-md-4">
               <label class="form-label">Fecha del hecho</label>
-              <input type="date" class="form-control">
+              <input type="datetime-local" class="form-control" required th:field="*{fechaAcontecimiento}" name="fechaAcontecimiento">
             </div>
           </div>
         </div>
         <div>
           <h2>Multimedia</h2>
           <div class="row">
-            <div class="col-12 col col-lg-4 col-md-4">
-              <label class="form-label">Media</label>
-              <input type="file" class="form-control" placeholder="Subir multimedia" accept="image/*,video/*,audio/*">
+            <div>
+              <label for="multimedia">Archivos Multimedia (Fotos, Videos):</label>
+              <input type="file" id="multimedia" name="multimedia" multiple accept="image/*,video/*" />
             </div>
           </div>
         </div>

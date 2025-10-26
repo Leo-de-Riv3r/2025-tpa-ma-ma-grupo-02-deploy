@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,7 +48,7 @@ public class HechosController {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public HechoOutputDTO crearHecho(
-          @ModelAttribute("hecho") HechoInputDTO hechoDto,
+          @RequestPart("hecho") HechoInputDTO hechoDto,
           @RequestPart(value = "multimedia", required = false) List<MultipartFile> multimedia) {
       return hechosService.crearHecho(hechoDto, multimedia);
   }
@@ -81,7 +82,10 @@ public class HechosController {
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @GetMapping("/pendientes")
-  public List<HechoRevisionOutputDTO> getHechosPendientes() {
+  public List<HechoRevisionOutputDTO> getHechosPendientes(
+//      @RequestParam(required = false, defaultValue = "1") int page,
+//      @RequestParam(required = false, defaultValue = "15") int perPage
+  ) {
     return hechosService.getHechosPendientes();
   }
 

@@ -8,6 +8,7 @@ import ar.edu.utn.frba.dds.models.FiltrosDto;
 import ar.edu.utn.frba.dds.models.FuenteNuevaDto;
 import ar.edu.utn.frba.dds.models.HechoDetallesDto;
 import ar.edu.utn.frba.dds.models.HechoDto;
+import ar.edu.utn.frba.dds.models.HechoManualDTO;
 import ar.edu.utn.frba.dds.models.NuevaEstadisticaDto;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
@@ -15,6 +16,7 @@ import ar.edu.utn.frba.dds.models.SolicitudEliminacionDto;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import ar.edu.utn.frba.dds.services.AgregadorService;
 import ar.edu.utn.frba.dds.services.EstadisticaService;
+import ar.edu.utn.frba.dds.services.FuenteDinamicaService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,23 +32,53 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class MainController {
   private final AgregadorService agregadorService;
   private final EstadisticaService estadisticaService;
+  private final FuenteDinamicaService fuenteDinamicaService;
   @Value("${agregador.service.url}")
   private String agregadorUrl;
 
-  public MainController(AgregadorService agregadorService, EstadisticaService estadisticaService) {
+  public MainController(AgregadorService agregadorService, EstadisticaService estadisticaService, FuenteDinamicaService fuenteDinamicaService) {
     this.agregadorService = agregadorService;
     this.estadisticaService = estadisticaService;
+    this.fuenteDinamicaService = fuenteDinamicaService;
   }
 
   @GetMapping("/")
   public String home() {
     return "home";
+  }
+
+  @GetMapping("/crear-hecho")
+  public String subirHecho(
+      Model model){
+    model.addAttribute("hechoDto", new HechoManualDTO());
+    return "subirHechos/formularioHecho.html";
+  }
+
+  @GetMapping("/panel-control/hechosSubidos")
+  public String mostrarHechosSubidos(Model model) {
+
+    return "/hechosSubidos";
+  }
+  @PostMapping("/subir-hecho") // Asegúrate que esta URL coincida con el th:action
+  public String procesarCreacionDeHecho(
+      @ModelAttribute HechoManualDTO hechoDto,
+      @RequestParam(value = "multimedia", required = false) List<MultipartFile> multimedia,
+      HttpServletRequest request
+      ) {
+    //hechosService.crearHecho(hechoDto, multimedia);
+    Object username = request.getSession().getAttribute("username");
+
+    if (username != null) hechoDto.setAutor(username.toString());
+
+    fuenteDinamicaService.crearHecho(hechoDto, multimedia);
+    return "redirect:/colecciones";
   }
 
   @PostMapping("/solicitarEliminacion")

@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 import ar.edu.utn.frba.dds.models.AuthResponseDTO;
 import ar.edu.utn.frba.dds.models.ColeccionNuevaDto;
 import ar.edu.utn.frba.dds.models.EstadisticaDto;
+import ar.edu.utn.frba.dds.models.HechoManualDTO;
 import ar.edu.utn.frba.dds.models.NuevaEstadisticaDto;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.RolesPermisosDTO;
@@ -16,22 +17,27 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 public class MetamapaApiService {
   private final WebClient webClient = WebClient.builder().build();
-  ;
   private final WebApiCallerService webApiCallerService;
   private final String authServiceUrl;
   private final String agregadorServiceUrl;
   private final String estadisticasServiceUrl;
+  private final String fuenteDinamicaServiceUrl;
   public MetamapaApiService(
       WebApiCallerService webApiCallerService,
       @Value("${auth.service.url}")
@@ -39,12 +45,15 @@ public class MetamapaApiService {
       @Value("${agregador.service.url}")
       String agregadorServiceUrl,
       @Value("${estadisticas.service.url}")
-      String estadisticasServiceUrl
+      String estadisticasServiceUrl,
+      @Value("${fuenteDinamica.service.url}")
+      String fuenteDinamicaServiceUrl
   ) {
     this.webApiCallerService = webApiCallerService;
     this.authServiceUrl = authServiceUrl;
     this.agregadorServiceUrl = agregadorServiceUrl;
     this.estadisticasServiceUrl = estadisticasServiceUrl;
+    this.fuenteDinamicaServiceUrl = fuenteDinamicaServiceUrl;
   }
 
   public RolesPermisosDTO getRolesPermisos(String accessToken) {
