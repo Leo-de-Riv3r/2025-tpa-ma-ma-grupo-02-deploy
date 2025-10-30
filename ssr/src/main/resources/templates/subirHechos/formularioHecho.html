@@ -1,5 +1,17 @@
 <html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="contenido">
+
+  <th:block th:fragment="css-extra">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+  </th:block>
+
+  <th:block th:fragment="js-extra">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+  </th:block>
   <main class="p-4">
     <div class="p-4 container border border-solid bg-light">
       <form class="d-flex flex-column row-gap-5" th:action="@{/subir-hecho}" method="post" enctype="multipart/form-data" th:object="${hechoDto}">
@@ -11,21 +23,27 @@
           <label class="form-label">Descripcion</label>
           <input type="text" class="form-control"  placeholder="Ingrese la Descripcion" th:field="*{descripcion}" required>
         </div>
+
         <div class="mb-3">
           <div class="row">
+
             <div class="col-12 col-lg-4 col-md-4">
               <label class="form-label">Categoria</label>
               <input type="text" class="form-control" placeholder="Elegir Categoria" th:field="*{categoria}" required>
             </div>
-            <div class="col-12 col-lg-4 col-md-4">
-              <input type="number" class="form-control" placeholder="Latitud" required step="any" th:field="*{latitud}" name="latitud">
+
+            <div class="col-12 col-lg-8 col-md-8">
+              <label class="form-label">Ubicación (haz clic o arrastra el marcador)</label>
+
+              <div id="map" style="height: 300px; width: 100%; border-radius: 5px; z-index: 1;"></div>
+
+              <input type="hidden" class="form-control" th:field="*{latitud}" required step="any">
+              <input type="hidden" class="form-control" th:field="*{longitud}" required step="any">
             </div>
-            <div class="col-12 col-lg-4 col-md-4">
-              <input type="number" class="form-control" placeholder="Longitud" required step="any" th:field="*{longitud}" name="longitud">
-            </div>
+
             <div class="col-12 col-lg-4 col-md-4">
               <label class="form-label">Fecha del hecho</label>
-              <input type="datetime-local" class="form-control" required th:field="*{fechaAcontecimiento}" name="fechaAcontecimiento">
+              <input type="datetime-local" class="form-control" required th:field="*{fechaAcontecimiento}">
             </div>
           </div>
         </div>
@@ -34,7 +52,7 @@
           <div class="row">
             <div>
               <label for="multimedia">Archivos Multimedia (Fotos, Videos):</label>
-              <input type="file" id="multimedia" name="multimedia" multiple accept="image/*,video/*" />
+              <input type="file" id="multimedia" name="multimedia" multiple accept="image/*,video/*"/>
             </div>
           </div>
         </div>
@@ -44,5 +62,60 @@
       </form>
     </div>
   </main>
+
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // Obtenemos los valores iniciales del DTO (o usamos valores por defecto)
+    // Usamos el Elvis operator (?:) de Thymeleaf por si son nulos
+    const initialLat = /*[[${hechoDto.latitud ?: -34.6037}]]*/ -34.6037;
+    const initialLon = /*[[${hechoDto.longitud ?: -58.3816}]]*/ -58.3816;
+
+    // Obtenemos los campos del formulario
+    const latInput = document.getElementById('latitud');
+    const lonInput = document.getElementById('longitud');
+
+    // 1. Inicializar el mapa
+    // Centramos el mapa en los valores iniciales, con un zoom de 13
+    const map = L.map('map').setView([initialLat, initialLon], 13);
+
+    // 2. Añadir la capa de "tiles" (la imagen del mapa)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // 3. Añadir un marcador inicial (que se puede arrastrar)
+    let marker = L.marker([initialLat, initialLon], {
+      draggable: true
+    }).addTo(map);
+
+    // Función para actualizar los inputs
+    function updateInputs(latlng) {
+        latInput.value = latlng.lat.toFixed(6); // 6 decimales de precisión
+        lonInput.value = latlng.lng.toFixed(6);
+    }
+
+    // 4. Evento: Cuando el usuario termina de arrastrar el marcador
+    marker.on('dragend', function(e) {
+      updateInputs(marker.getLatLng());
+    });
+
+    // 5. Evento: Cuando el usuario hace clic en el mapa
+    map.on('click', function(e) {
+      const latlng = e.latlng;
+      marker.setLatLng(latlng); // Mover el marcador al punto de clic
+      updateInputs(latlng);
+    });
+
+    // Asegurarnos de que los inputs tengan los valores iniciales al cargar la página
+    // (en caso de que el DTO ya los trajera, ej: error de validación)
+    if (latInput.value && lonInput.value) {
+        map.setView([latInput.value, lonInput.value], 13);
+        marker.setLatLng([latInput.value, lonInput.value]);
+    }
+
+    /*]]>*/
+  </script>
 </div>
 </html>

@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.services;
 
+import ar.edu.utn.frba.dds.ExternalApiException;
 import ar.edu.utn.frba.dds.models.AuthResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,7 +57,7 @@ public class WebApiCallerService {
       }
       throw new RuntimeException("Error en llamada al API: " + e.getMessage(), e);
     } catch (Exception e) {
-      throw new RuntimeException("Error de conexión con el servicio: " + e.getMessage(), e);
+      throw new ExternalApiException("Error de conexión con el servicio: " + e.getMessage());
     }
   }
 

@@ -23,7 +23,7 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/error", "/error/**").permitAll()
+            .requestMatchers("/error", "/error/**", "/media/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/hechos").permitAll()
             .requestMatchers(HttpMethod.GET, "/hechos/{id}").permitAll()
             .requestMatchers(HttpMethod.POST, "/hechos").permitAll()

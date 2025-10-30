@@ -1,0 +1,19 @@
+<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="contenido" class="d-flex justify-content-center align-items-center min-vh-100">
+
+    <div class="p-4 rounded w-50">
+
+        <form class="form-group"
+              th:action="@{/panel-control/hechosSubidos/{hechoId}/{accionHecho}(hechoId=${hechoId}, accionHecho=${accionHecho})}"
+              method="post" th:object="${revisionHechoDto}">
+            <div>
+                <label class="form-label">Enviar comentarios</label>
+                <textarea type="textarea" class="form-control"  placeholder="Ingresar sugerencias/comentarios" th:field="*{comentario}" required>
+                </textarea>
+            </div>
+            <button class="btn btn-dark mt-3" type="submit">Enviar</button>
+        </form>
+    </div>
+</div>
+</html>

@@ -2,6 +2,9 @@ package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.HechoDetallesDto;
 import ar.edu.utn.frba.dds.models.HechoManualDTO;
+import ar.edu.utn.frba.dds.models.RevisionHechoDto;
+import ar.edu.utn.frba.dds.models.SolicitudHechoDto;
+import ar.edu.utn.frba.dds.models.SolicitudHechoInputDto;
 import jakarta.servlet.Servlet;
 import java.io.IOException;
 import java.util.List;
@@ -21,11 +24,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FuenteDinamicaService {
+  private final MetamapaApiService metamapaApiService;
   private final RestTemplate restTemplate ;
   private final String fuenteDinamicaServiceUrl;
   public FuenteDinamicaService(
-      @Value("${fuenteDinamica.service.url}")
+      MetamapaApiService metamapaApiService, @Value("${fuenteDinamica.service.url}")
      String fuenteDinamicaServiceUrl) {
+    this.metamapaApiService = metamapaApiService;
     this.fuenteDinamicaServiceUrl = fuenteDinamicaServiceUrl;
     this.restTemplate = new RestTemplate();
   }
@@ -77,7 +82,7 @@ public class FuenteDinamicaService {
     try {
       // Hacemos el POST a la API externa
       ResponseEntity<Void> response = restTemplate.postForEntity(
-          fuenteDinamicaServiceUrl,
+          fuenteDinamicaServiceUrl + "/hechos",
           requestEntity,
           Void.class
       );
@@ -88,4 +93,23 @@ public class FuenteDinamicaService {
     }
   }
 
+  public List<SolicitudHechoDto> obtenerSolicitudesHecho() {
+    return metamapaApiService.obtenerSolicitudesHecho();
+  }
+
+  public SolicitudHechoInputDto obtenerSolicitudById(Long idHecho) {
+    return metamapaApiService.obtenerSolicitudHechoById(idHecho);
+  }
+
+  public void aceptarSolicitud(Long idHecho, RevisionHechoDto revisionHechoDto) {
+    metamapaApiService.aceptarSolicitudHecho(idHecho, revisionHechoDto);
+  }
+
+  public void rechazarSolicitud(Long idHecho, RevisionHechoDto revisionHechoDto) {
+    metamapaApiService.rechazarSolicitudHecho(idHecho, revisionHechoDto);
+  }
+
+  public void aceptarConSugerencias(Long idHecho, RevisionHechoDto revisionHechoDto) {
+    metamapaApiService.aceptarSolicitudConSugerencias(idHecho, revisionHechoDto);
+  }
 }

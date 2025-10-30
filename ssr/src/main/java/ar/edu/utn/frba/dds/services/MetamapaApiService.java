@@ -1,32 +1,28 @@
 package ar.edu.utn.frba.dds.services;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 
 import ar.edu.utn.frba.dds.models.AuthResponseDTO;
 import ar.edu.utn.frba.dds.models.ColeccionNuevaDto;
 import ar.edu.utn.frba.dds.models.EstadisticaDto;
-import ar.edu.utn.frba.dds.models.HechoManualDTO;
 import ar.edu.utn.frba.dds.models.NuevaEstadisticaDto;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
+import ar.edu.utn.frba.dds.models.RevisionHechoDto;
 import ar.edu.utn.frba.dds.models.RolesPermisosDTO;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
+import ar.edu.utn.frba.dds.models.SolicitudHechoDto;
+import ar.edu.utn.frba.dds.models.SolicitudHechoInputDto;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -171,5 +167,25 @@ public class MetamapaApiService {
 
   public SolicitudesPaginasDto obtenerSolicitudesCreadasPor(int page, Boolean pendientes) {
     return webApiCallerService.get(agregadorServiceUrl + "/solicitudes?filterByCreator=true&page=" + page + "&pendientes=" + pendientes, SolicitudesPaginasDto.class);
+  }
+
+  public List<SolicitudHechoDto> obtenerSolicitudesHecho() {
+    return this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos/pendientes", SolicitudHechoDto.class);
+  }
+
+  public SolicitudHechoInputDto obtenerSolicitudHechoById(Long idHecho) {
+    return this.webApiCallerService.get(fuenteDinamicaServiceUrl + "/hechos/" + idHecho, SolicitudHechoInputDto.class);
+  }
+
+  public void aceptarSolicitudHecho(Long idHecho, RevisionHechoDto revisionHechoDto) {
+    this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/aceptar", revisionHechoDto, Void.class);
+  }
+
+  public void rechazarSolicitudHecho(Long idHecho, RevisionHechoDto revisionHechoDto) {
+    this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/rechazar", revisionHechoDto, Void.class);
+  }
+
+  public void aceptarSolicitudConSugerencias(Long idHecho, RevisionHechoDto revisionHechoDto) {
+    this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/aceptar-con-sugerencias", revisionHechoDto, Void.class);
   }
 }

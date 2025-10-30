@@ -45,7 +45,6 @@ public class HechosController {
     return hechosService.getHechoById(id); // TODO: try cath
   }
 
-
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public HechoOutputDTO crearHecho(
           @RequestPart("hecho") HechoInputDTO hechoDto,

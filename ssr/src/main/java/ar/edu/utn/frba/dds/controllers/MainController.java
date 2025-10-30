@@ -11,8 +11,11 @@ import ar.edu.utn.frba.dds.models.HechoDto;
 import ar.edu.utn.frba.dds.models.HechoManualDTO;
 import ar.edu.utn.frba.dds.models.NuevaEstadisticaDto;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
+import ar.edu.utn.frba.dds.models.RevisionHechoDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDto;
+import ar.edu.utn.frba.dds.models.SolicitudHechoDto;
+import ar.edu.utn.frba.dds.models.SolicitudHechoInputDto;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import ar.edu.utn.frba.dds.services.AgregadorService;
 import ar.edu.utn.frba.dds.services.EstadisticaService;
@@ -43,6 +46,9 @@ public class MainController {
   @Value("${agregador.service.url}")
   private String agregadorUrl;
 
+  @Value("${fuenteDinamica.service.url}")
+  private String fuenteDinamicaUrl;
+
   public MainController(AgregadorService agregadorService, EstadisticaService estadisticaService, FuenteDinamicaService fuenteDinamicaService) {
     this.agregadorService = agregadorService;
     this.estadisticaService = estadisticaService;
@@ -54,6 +60,14 @@ public class MainController {
     return "home";
   }
 
+
+//  @GetMapping("/hechos-usuario")
+//  public String visualizarHechosCreadorPor(Model model) {
+//    List<SolicitudHechoDto> solicitudHechoDtos = fuenteDinamicaService.obtenerHechosPorCreador();
+//    model.addAttribute("hechos", solicitudHechoDtos);
+//    return "hechosUsuario";
+//  }
+
   @GetMapping("/crear-hecho")
   public String subirHecho(
       Model model){
@@ -63,9 +77,65 @@ public class MainController {
 
   @GetMapping("/panel-control/hechosSubidos")
   public String mostrarHechosSubidos(Model model) {
-
+    List<SolicitudHechoDto> solicitudesHecho = fuenteDinamicaService.obtenerSolicitudesHecho();
+    model.addAttribute("solicitudesHechos", solicitudesHecho);
     return "/hechosSubidos";
   }
+
+  @GetMapping("/panel-control/hechosSubidos/{idHecho}")
+  public String mostrarDetallesSolicitudHecho(@PathVariable Long idHecho, Model model) {
+    SolicitudHechoInputDto solicitud = fuenteDinamicaService.obtenerSolicitudById(idHecho);
+    model.addAttribute("hechoId", idHecho);
+    model.addAttribute("solicitud", solicitud);
+    return "/detallesSolicitudHecho";
+  }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @GetMapping("/panel-control/hechosSubidos/{idHecho}/aceptar")
+  public String aceptarSolicitudHecho(@PathVariable Long idHecho, Model model, HttpServletRequest request) {
+    RevisionHechoDto revisionHechoDto = new RevisionHechoDto();
+    revisionHechoDto.setSupervisor(request.getSession().getAttribute("username").toString());
+    revisionHechoDto.setComentario("");
+
+    fuenteDinamicaService.aceptarSolicitud(idHecho, revisionHechoDto);
+    return "redirect:/panel-control/hechosSubidos";
+  }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PostMapping("/panel-control/hechosSubidos/{idHecho}/aceptarConSugerencia")
+  public String aceptarSolicitudHecho(@PathVariable Long idHecho, @ModelAttribute RevisionHechoDto revisionHechoDto) {
+    fuenteDinamicaService.aceptarConSugerencias(idHecho, revisionHechoDto);
+    return "redirect:/panel-control/hechosSubidos";
+  }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @GetMapping("/panel-control/hechosSubidos/{idHecho}/rechazoConSugerencias")
+  public String mostrarFormularioSugerenciasRechazo(@PathVariable Long idHecho, Model model, HttpServletRequest request) {
+    RevisionHechoDto revisionHechoDto = new RevisionHechoDto();
+    revisionHechoDto.setSupervisor(request.getSession().getAttribute("username").toString());
+    model.addAttribute("hechoId", idHecho);
+    model.addAttribute("revisionHechoDto", revisionHechoDto);
+    model.addAttribute("accionHecho", "rechazar");
+    return "/subirComentariosSolicitud";
+  }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @GetMapping("/panel-control/hechosSubidos/{idHecho}/aceptarConSugerencias")
+  public String mostrarFormularioSugerenciasAceptacion(@PathVariable Long idHecho, Model model, HttpServletRequest request) {
+    RevisionHechoDto revisionHechoDto = new RevisionHechoDto();
+    revisionHechoDto.setSupervisor(request.getSession().getAttribute("username").toString());
+    model.addAttribute("hechoId", idHecho);
+    model.addAttribute("revisionHechoDto", revisionHechoDto);
+    model.addAttribute("accionHecho", "aceptarConSugerencia");
+    return "/subirComentariosSolicitud";
+  }
+
+  @PostMapping("/panel-control/hechosSubidos/{idHecho}/rechazar")
+  public String rechazarSolicitudHecho(@PathVariable Long idHecho, @ModelAttribute RevisionHechoDto revisionHechoDto) {
+    fuenteDinamicaService.rechazarSolicitud(idHecho, revisionHechoDto);
+    return "redirect:/panel-control/hechosSubidos";
+  }
+
   @PostMapping("/subir-hecho") // Asegúrate que esta URL coincida con el th:action
   public String procesarCreacionDeHecho(
       @ModelAttribute HechoManualDTO hechoDto,

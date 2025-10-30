@@ -12,50 +12,45 @@
         <h1>Detalles hecho</h1>
         <form class="d-flex flex-column row-gap-5">
             <div class="mb-3">
-                <a th:href="@{/colecciones/{idColeccion}/hechos(idColeccion=${idColeccion})}" class="btn btn-secondary">
-                    Volver a mapa de hechos
-                </a>
-            </div>
-            <div class="mb-3">
                 <h4>Titulo hecho</h4>
-                <p th:text="${hecho.titulo}">titulo</p>
+                <p th:text="${solicitud.titulo}">titulo</p>
             </div>
             <div class="mb-3">
                 <h4>Categoria</h4>
-                <p th:text="${hecho.categoria}"></p>
+                <p th:text="${solicitud.categoria}"></p>
             </div>
             <div class="mb-2">
                 <h4>Descripcion</h4>
                 <div class="card mt-3">
                     <div class="card-body">
-                        <p th:text="${hecho.descripcion}"></p>
+                        <p th:text="${solicitud.descripcion}"></p>
                     </div>
                 </div>
             </div>
+
             <div class="mb-3">
                 <h4>Ubicacion:</h4>
-
                 <div id="map" style="height: 300px; width: 100%; border-radius: 5px; z-index: 1;"></div>
+                <p class="mt-2">Latitud: <span th:text="${solicitud.latitud}">latitud</span></p>
+                <p>Longitud: <span th:text="${solicitud.longitud}">longitud</span></p>
+            </div>
 
-                <p class="mt-2">Latitud: <span th:text="${hecho.latitud}">latitud</span></p>
-                <p>Longitud: <span th:text="${hecho.longitud}">longitud</span></p>
-                <p>Provincia: <span th:text="${hecho.provincia}">provincia</span></p>
-                <p>Municipio: <span th:text="${hecho.municipio}">municipio</span></p>
-                <p>Departamento: <span th:text="${hecho.departamento}">departamento</span></p>
+            <div class="mb-3">
+                <h4>Fecha del hecho: <span th:text="${solicitud.fechaHecho}">YYYY/MM/DD</span></h4>
             </div>
             <div class="mb-3">
-                <h4>Fecha del hecho: <span th:text="${hecho.fechaAcontecimiento}">YYYY/MM/DD</span></h4>
+                <h4>Fecha carga: <span th:text="${solicitud.createdAt}">YYYY/MM/DD</span></h4>
             </div>
             <div class="mb-3">
-                <h4>Nombre de autor: <span th:text="${hecho.nombreAutor}">Nombre autor</span></h4>
+                <h4>Nombre de autor: <span th:text="${solicitud.autor}">Nombre autor</span></h4>
             </div>
             <div class="mb-3">
                 <h4>Multimedia:</h4>
-                <div th:if="${hecho.multimedia.empty}">
+                <div th:if="${solicitud.multimedia.empty}">
                     <p>No hay multimedia para este hecho.</p>
                 </div>
 
-                <div th:each="media : ${hecho.multimedia}" style="margin-bottom: 20px;">
+                <div th:each="media : ${solicitud.multimedia}" style="margin-bottom: 20px;">
                     <img th:if="${media.formato.startsWith('IMAGEN')}" th:src="${media.ruta}" th:alt="${media.nombre}" style="width: 30rem; height: auto;"/>
                     <video th:if="${media.formato.startsWith('VIDEO')}" th:src="${media.ruta}" th:type="${media.formato}" controls style="width: 30rem;">Tu navegador no soporta la reproducción de video.</video>
                     <audio th:if="${media.formato.startsWith('AUDIO')}" controls th:src="${media.ruta}" th:type="${media.formato}" style="width: 100%;">Tu navegador no soporta la reproducción de audio.</audio>
@@ -66,42 +61,45 @@
                     <p th:text="${media.nombre}"></p>
                 </div>
             </div>
-            <div>
-                <a class="btn btn-danger" th:href="@{/colecciones/{idColeccion}/hechos/{idHecho}/solicitudEliminacion ( idColeccion=${idColeccion}, idHecho=${idHecho} )}">Solicitar eliminación</a>
-            </div>
         </form>
+
+        <div class="row">
+            <a class="btn btn-success col-12 col-lg-4 col-md-12" th:href="@{/panel-control/hechosSubidos/{idHecho}/aceptar (idHecho=${hechoId})}">Aceptar</a>
+            <a class="btn btn-danger col-12 col-lg-4 col-md-6" th:href="@{/panel-control/hechosSubidos/{idHecho}/rechazoConSugerencias (idHecho=${hechoId})}">Rechazar</a>
+            <a class="btn btn-primary col-12 col-lg-4 col-md-6" th:href="@{/panel-control/hechosSubidos/{idHecho}/aceptarConSugerencias (idHecho=${hechoId})}">Aceptar con sugerencias</a>
+        </div>
     </div>
 
     <script th:inline="javascript">
         /*<![CDATA[*/
 
-        // Obtenemos las coordenadas desde el modelo de Thymeleaf
-        const lat = /*[[${hecho.latitud}]]*/ null;
-        const lon = /*[[${hecho.longitud}]]*/ null;
+        // 1. Obtenemos las coordenadas desde el modelo de Thymeleaf
+        const lat = /*[[${solicitud.latitud}]]*/ null;
+        const lon = /*[[${solicitud.longitud}]]*/ null;
 
-        // Verificamos que las coordenadas existan
+        // 2. Verificamos que las coordenadas existan
         if (lat != null && lon != null) {
 
-            // Inicializamos el mapa y lo centramos en las coordenadas
+            // 3. Inicializamos el mapa y lo centramos en las coordenadas
             const map = L.map('map').setView([lat, lon], 15);
 
-            // Añadimos la capa de "tiles" (la imagen del mapa)
+            // 4. Añadimos la capa de "tiles" (la imagen del mapa)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
-            // Añadimos un marcador (no-arrastrable) en la ubicación
+            // 5. Añadimos un marcador (no-arrastrable) en la ubicación
             L.marker([lat, lon]).addTo(map)
-                .bindPopup(/*[[${hecho.titulo}]]*/)
+                .bindPopup(/*[[${solicitud.titulo}]]*/)
                 .openPopup();
 
         } else {
-            // Si no hay coordenadas, ocultamos el div del mapa
+            // 6. Si no hay coordenadas, ocultamos el div del mapa
             const mapDiv = document.getElementById('map');
             mapDiv.style.display = 'none';
         }
-
         /*]]>*/
     </script>
+
 </div>
 </html>

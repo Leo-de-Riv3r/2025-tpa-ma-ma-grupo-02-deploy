@@ -42,6 +42,7 @@ public class FuenteDefault extends Fuente {
         ubicacionNueva.setLugar(hechoConverter.obtenerLugar(ubicacionNueva));
         h.setUbicacion(ubicacionNueva);
       }));
+
       return hechos;
     } catch (Exception e) {
       throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.getUrl());

@@ -81,7 +81,6 @@ public class ColeccionService {
       }
     }
     if (dto.getFuentes() != null) {
-      System.out.println("SETEAR FUNTES");
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
         Fuente fuenteFinal;
@@ -91,13 +90,11 @@ public class ColeccionService {
           fuenteFinal = fuenteExistente.get();
         } else {
           //traigo hechos y normalizo
-          System.out.println("Guardo fuente con sus hechos");
           this.refrescarYNormalizarHechos(fuente);
           fuenteFinal = fuenteRepository.save(fuente);
           System.out.println("FUENTE GUARDADA");
         }
         fuentes.add(fuenteFinal);
-        System.out.println(fuenteFinal.getHechos().size());
       });
       coleccion.setFuentes(fuentes);
     }
@@ -162,6 +159,8 @@ public class ColeccionService {
           fuente = fuenteExistente.get();
         } else {
           //traigo hechos y normalizo
+          System.out.println("Nueva fuente");
+          System.out.println("url: " + fuente.getUrl());
           this.refrescarYNormalizarHechos(fuente);
         }
         fuentes.add(fuente);
@@ -211,7 +210,7 @@ public class ColeccionService {
   @Transactional
   public void refrescarYNormalizarHechos(Fuente fuente) {
     Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter);
-
+    System.out.println("normalizacion hechos");
     hechos.forEach(h -> {
       Optional<Hecho> hechoExistente = hechoRepository
           .findByTituloAndDescripcionAndFechaAcontecimiento(

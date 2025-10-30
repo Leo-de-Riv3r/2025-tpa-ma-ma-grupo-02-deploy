@@ -28,7 +28,12 @@ public class MultimediaFileSystemRepository implements IMultimediaRepository {
             throw new IllegalArgumentException("El archivo multimedia está vacío.");
         }
 
+
+
+
+
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+
         Files.createDirectories(uploadPath);
 
         String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
@@ -39,7 +44,7 @@ public class MultimediaFileSystemRepository implements IMultimediaRepository {
         Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
 
         Formato formato = determinarFormato(extension);
-        String rutaAcceso = basePath + "/" + uniqueFilename;
+        String rutaAcceso = "http://localhost:4040/media/" + uniqueFilename;
 
         return Multimedia.builder()
                 .nombre(originalFilename)
