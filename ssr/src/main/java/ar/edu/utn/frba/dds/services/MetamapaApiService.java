@@ -188,4 +188,8 @@ public class MetamapaApiService {
   public void aceptarSolicitudConSugerencias(Long idHecho, RevisionHechoDto revisionHechoDto) {
     this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/aceptar-con-sugerencias", revisionHechoDto, Void.class);
   }
+
+  public List<SolicitudHechoDto> obtenerHechosPorCreador() {
+    return this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos?filterByCreator=true", SolicitudHechoDto.class);
+  }
 }

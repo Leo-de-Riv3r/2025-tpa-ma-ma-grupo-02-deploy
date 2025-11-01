@@ -61,12 +61,13 @@ public class MainController {
   }
 
 
-//  @GetMapping("/hechos-usuario")
-//  public String visualizarHechosCreadorPor(Model model) {
-//    List<SolicitudHechoDto> solicitudHechoDtos = fuenteDinamicaService.obtenerHechosPorCreador();
-//    model.addAttribute("hechos", solicitudHechoDtos);
-//    return "hechosUsuario";
-//  }
+  @GetMapping("/hechos-usuario")
+  public String visualizarHechosCreadorPor(Model model) {
+    List<SolicitudHechoDto> solicitudHechoDtos = fuenteDinamicaService.obtenerHechosPorCreador();
+    System.out.println(solicitudHechoDtos.get(0));
+    model.addAttribute("solicitudesHechos", solicitudHechoDtos);
+    return "subirHechos/hechosSubidosPorUsuario.html";
+  }
 
   @GetMapping("/crear-hecho")
   public String subirHecho(
@@ -75,6 +76,7 @@ public class MainController {
     return "subirHechos/formularioHecho.html";
   }
 
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @GetMapping("/panel-control/hechosSubidos")
   public String mostrarHechosSubidos(Model model) {
     List<SolicitudHechoDto> solicitudesHecho = fuenteDinamicaService.obtenerSolicitudesHecho();

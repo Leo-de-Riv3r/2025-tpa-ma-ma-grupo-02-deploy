@@ -4,7 +4,6 @@ import ar.edu.utn.frba.dds.mappers.HechoMapper;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDTO;
-import ar.edu.utn.frba.dds.models.dtos.input.MultimediaInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoRevisionOutputDTO;
@@ -12,14 +11,10 @@ import ar.edu.utn.frba.dds.models.dtos.output.MultimediaOutputDTO;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Multimedia;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
-import ar.edu.utn.frba.dds.models.enums.Formato;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
-import ar.edu.utn.frba.dds.models.repositories.ISolicitudesRepository;
 import ar.edu.utn.frba.dds.services.IHechosService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import ar.edu.utn.frba.dds.services.IHechosService;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,9 +22,9 @@ import java.util.stream.Collectors;
 
 import ar.edu.utn.frba.dds.services.IMultimediaService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,7 +51,7 @@ public class HechosService implements IHechosService {
 
   @Override
   public List<HechoOutputDTO> getHechos() {
-    List<Hecho> hechos = hechosRepository.findHechosAceptados();
+    List <Hecho> hechos = hechosRepository.findHechosAceptados();
 
     return hechos.stream()
             .map(HechoMapper::toHechoOutputDTO)
@@ -235,6 +230,23 @@ public class HechosService implements IHechosService {
     Hecho hechoActualizado = hechosRepository.save(hecho);
 
     return toHechoRevisionOutputDTO(hechoActualizado);
+  }
+
+  @Override
+  public List<HechoRevisionOutputDTO> getHechosPendientesByCreador() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String username;
+    if (authentication.getPrincipal() instanceof UserDetails userDetails) {
+      username = userDetails.getUsername();
+    } else {
+      username = authentication.getPrincipal().toString();
+    }
+
+    List<Hecho> hechosPendientes = hechosRepository.findHechosPendientesByCreator(username);
+
+    return hechosPendientes.stream()
+            .map(this::toHechoRevisionOutputDTO)
+            .collect(Collectors.toList());
   }
 
   private HechoRevisionOutputDTO toHechoRevisionOutputDTO(Hecho hecho) {

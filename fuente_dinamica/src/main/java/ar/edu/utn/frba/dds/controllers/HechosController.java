@@ -36,6 +36,7 @@ public class HechosController {
   }
 
   @GetMapping
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR','CONTRIBUYENTE')")
   public List<HechoOutputDTO> getHechos() {
     return hechosService.getHechos();
   }
@@ -74,6 +75,11 @@ public class HechosController {
       System.out.println(ex.getMessage());
       return ResponseEntity.badRequest().build();
     }
+  }
+
+  @GetMapping("/pendientes_por_creador")
+  public List<HechoRevisionOutputDTO> getHechosPendientesBycreador() {
+    return hechosService.getHechosPendientesByCreador();
   }
 
 
