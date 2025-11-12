@@ -13,6 +13,7 @@ import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDto;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -27,6 +28,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AgregadorService {
   private final MetamapaApiService metamapaApiService;
   private String urlBase = "http://localhost:5010";
+  @Value("${fuenteDinamica.service.url}")
+  private String fuenteDinamicaUrl;
   private final RestTemplate restTemplate;
   private WebClient webClient = WebClient.builder().baseUrl("http://localhost:5010").build();
 
@@ -95,6 +98,14 @@ public class AgregadorService {
 
   public void crearColeccion(ColeccionNuevaDto coleccionNueva) {
     if (coleccionNueva.getAlgoritmo().isBlank()) coleccionNueva.setAlgoritmo(null);
+    //check if coleccionNueva has fuenteDinamica
+    if (coleccionNueva.getFuentes() != null) {
+      coleccionNueva.getFuentes().forEach(f -> {
+        if (f.getTipoFuente().equals("DINAMICA")) {
+          f.setUrl(fuenteDinamicaUrl);
+      }
+    });
+    }
     metamapaApiService.crearColeccion(coleccionNueva);
   }
 

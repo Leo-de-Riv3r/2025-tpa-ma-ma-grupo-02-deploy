@@ -36,7 +36,6 @@ public class HechosController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMINISTRADOR','CONTRIBUYENTE')")
   public List<HechoOutputDTO> getHechos() {
     return hechosService.getHechos();
   }
