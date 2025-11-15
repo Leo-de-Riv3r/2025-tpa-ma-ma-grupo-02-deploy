@@ -28,10 +28,11 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
     http.authorizeHttpRequests(
             auth -> auth
                 // Recursos estáticos y login público
-                .requestMatchers("/", "/home/**","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**", "/crear-hecho", "/subir-hecho").permitAll()
+                .requestMatchers("/", "/home/**","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**", "/crear-hecho", "/subir-hecho", "/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/colecciones").permitAll()
                 //new config
                 .requestMatchers(HttpMethod.GET, "/colecciones/*/hechos/**").permitAll()

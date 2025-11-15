@@ -36,6 +36,11 @@
     </modules>
 
     <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom -->
+
+
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -76,6 +81,7 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
     </dependencies>
+
 
     <build>
         <plugins>

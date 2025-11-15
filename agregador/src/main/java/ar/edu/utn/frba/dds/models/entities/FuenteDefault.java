@@ -37,12 +37,12 @@ public class FuenteDefault extends Fuente {
 
       //solo agrego hechos nuevos segun titulo categoria y descripcion
       hechos = hechos.stream().filter(h -> !this.existeHecho(h)).collect(Collectors.toSet());
+
       hechos.forEach((h -> {
         Ubicacion ubicacionNueva = h.getUbicacion();
         ubicacionNueva.setLugar(hechoConverter.obtenerLugar(ubicacionNueva));
         h.setUbicacion(ubicacionNueva);
       }));
-
       return hechos;
     } catch (Exception e) {
       throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.getUrl());

@@ -2,6 +2,8 @@ package ar.edu.utn.frba.dds.models.dtos;
 
 import ar.edu.utn.frba.dds.models.dtos.output.CriterioDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOOutput;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;

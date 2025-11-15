@@ -24,7 +24,7 @@ public class FiltroProvincia extends IFiltroStrategy{
   }
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
-    if(hecho.getUbicacion().getLugar() != null) return hecho.getUbicacion().getLugar().getProvincia().toLowerCase().contains(provincia);
+    if(hecho.getUbicacion().getLugar() != null && hecho.getUbicacion().getLugar().getProvincia() != null) return hecho.getUbicacion().getLugar().getProvincia().toLowerCase().contains(provincia);
     else return true;
   }
 

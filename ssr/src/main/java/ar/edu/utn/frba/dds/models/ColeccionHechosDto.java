@@ -3,9 +3,7 @@ package ar.edu.utn.frba.dds.models;
 import lombok.Data;
 
 @Data
-public class Fuente {
+public class ColeccionHechosDto {
   private String id;
-  private String tipoFuente;
-  private String url;
+  private PaginacionDtoHechoDtoSalida hechos;
 }
-

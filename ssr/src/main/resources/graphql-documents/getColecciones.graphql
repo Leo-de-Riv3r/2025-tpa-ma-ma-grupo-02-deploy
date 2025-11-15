@@ -1,0 +1,11 @@
+# src/main/resources/graphql/client/getColecciones.graphql
+query GetColecciones {
+    colecciones {
+        id
+        titulo
+        descripcion
+        criterios
+        algoritmoConsenso
+    }
+}
+

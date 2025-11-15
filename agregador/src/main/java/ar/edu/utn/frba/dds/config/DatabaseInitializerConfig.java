@@ -1,4 +1,4 @@
-package arahr.edu.utn.frba.dds.config;
+package ar.edu.utn.frba.dds.config;
 
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;

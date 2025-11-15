@@ -33,6 +33,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   )
       throws ServletException, IOException {
 
+    System.out.println("=== JWT FILTER DEBUG ===");
+    System.out.println("URL: " + request.getRequestURL());
+
     final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
     // 1. Verificar el encabezado

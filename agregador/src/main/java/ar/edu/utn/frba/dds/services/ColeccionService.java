@@ -4,6 +4,7 @@ import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
+import ar.edu.utn.frba.dds.models.dtos.output.ColeccionDTOSalidaGQL;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
@@ -210,7 +211,7 @@ public class ColeccionService {
   @Transactional
   public void refrescarYNormalizarHechos(Fuente fuente) {
     Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter);
-    System.out.println("normalizacion hechos");
+
     hechos.forEach(h -> {
       Optional<Hecho> hechoExistente = hechoRepository
           .findByTituloAndDescripcionAndFechaAcontecimiento(
@@ -382,7 +383,6 @@ public class ColeccionService {
   public void refrescarHechosFiltrados() {
     List <Coleccion> colecciones = coleccionRepository.findAll();
     colecciones.forEach(Coleccion::actualizarHechosFiltrados);
-    //elimino los hechos con fuente_id nulo porque ya son obsoletos
     coleccionRepository.saveAll(colecciones);
   }
 
@@ -392,6 +392,14 @@ public class ColeccionService {
     resumenActividadDto.setFuentesTotales(fuenteRepository.count());
     resumenActividadDto.setSolicitudesEliminacion(solicitudRepository.count());
     return resumenActividadDto;
+  }
+
+  public ColeccionDTOSalidaGQL getColeccionOutputDto(String id, Boolean curadosFinal, Integer page, Set<IFiltroStrategy> filtros) {
+    Coleccion coleccion = this.getColeccion(id);
+    ColeccionDTOSalida coleccionDto = coleccionConverter.fromEntity(coleccion);
+    ColeccionDTOSalidaGQL respuesta = new ColeccionDTOSalidaGQL(coleccionDto);
+    respuesta.setHechos(this.getHechos(id, curadosFinal, page, filtros));
+    return respuesta;
   }
 
 //  public void actualizarHecho(Long idHecho, HechoUpdateDto hechoDto) {

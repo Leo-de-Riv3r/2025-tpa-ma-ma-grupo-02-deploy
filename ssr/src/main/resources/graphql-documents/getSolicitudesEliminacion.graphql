@@ -1,0 +1,7 @@
+query{
+    solicitudes(
+        ){
+        currentPage
+        totalPages
+    }
+}

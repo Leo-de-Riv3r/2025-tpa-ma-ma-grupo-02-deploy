@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.Coleccion;
 import ar.edu.utn.frba.dds.models.ColeccionDetallesDto;
+import ar.edu.utn.frba.dds.models.ColeccionHechosDto;
 import ar.edu.utn.frba.dds.models.ColeccionNuevaDto;
 import ar.edu.utn.frba.dds.models.EstadisticaDto;
 import ar.edu.utn.frba.dds.models.FiltrosDto;
@@ -9,7 +10,9 @@ import ar.edu.utn.frba.dds.models.FuenteNuevaDto;
 import ar.edu.utn.frba.dds.models.HechoDetallesDto;
 import ar.edu.utn.frba.dds.models.HechoDto;
 import ar.edu.utn.frba.dds.models.HechoManualDTO;
+import ar.edu.utn.frba.dds.models.HechoPaginacionDto;
 import ar.edu.utn.frba.dds.models.NuevaEstadisticaDto;
+import ar.edu.utn.frba.dds.models.PaginacionDtoHechoDtoSalida;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.RevisionHechoDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
@@ -64,7 +67,6 @@ public class MainController {
   @GetMapping("/hechos-usuario")
   public String visualizarHechosCreadorPor(Model model) {
     List<SolicitudHechoDto> solicitudHechoDtos = fuenteDinamicaService.obtenerHechosPorCreador();
-    System.out.println(solicitudHechoDtos.get(0));
     model.addAttribute("solicitudesHechos", solicitudHechoDtos);
     return "subirHechos/hechosSubidosPorUsuario.html";
   }
@@ -236,13 +238,13 @@ public class MainController {
 
   @GetMapping("/colecciones/{idColeccion}/hechos")
   public String getHechosDeColeccion(@PathVariable String idColeccion, Model model, @ModelAttribute("filtros") FiltrosDto filtros, @RequestParam(name = "page", required = false, defaultValue = "1") int page) {
-      ColeccionDetallesDto coleccionDetalles = agregadorService.getHechosColeccion(idColeccion, filtros, page);
-      List<HechoDto> hechos = coleccionDetalles.getData();
-      model.addAttribute("paginaActual", coleccionDetalles.getCurrentPage());
-      model.addAttribute("paginasTotales", coleccionDetalles.getTotalPages());
+      ColeccionHechosDto coleccionHechosDto = agregadorService.getHechosColeccion(idColeccion, filtros, page);
+      List<HechoPaginacionDto> hechos = coleccionHechosDto.getHechos().getData();
+      model.addAttribute("paginaActual", coleccionHechosDto.getHechos().getCurrentPage());
+      model.addAttribute("paginasTotales", coleccionHechosDto.getHechos().getTotalPages());
       model.addAttribute("hechos", hechos);
       model.addAttribute("idColeccion", idColeccion);
-      model.addAttribute("titulo", "hechos de coleccion " + idColeccion);
+      model.addAttribute("titulo", "Hechos de coleccion " + idColeccion);
       model.addAttribute("filtros", filtros);
       return "coleccion/hechosColeccion";
   }

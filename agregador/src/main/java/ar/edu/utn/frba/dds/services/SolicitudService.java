@@ -76,6 +76,8 @@ public class SolicitudService {
   }
 
     public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(Integer page, Boolean pendientes, Boolean filterByCreator) {
+    if (filterByCreator == null) filterByCreator = false;
+    if (pendientes == null) pendientes = true;
       int pageNumber = (page == null || page < 1) ? 0 : page - 1;
       int pageSize = 20;
       Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("fecha").descending());

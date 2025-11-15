@@ -4,8 +4,8 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class SolicitudesPaginasDto {
+public class PaginacionDtoHechoDtoSalida {
   private Integer currentPage;
   private Integer totalPages;
-  private List<SolicitudResumenDto> data;
+  private List<HechoPaginacionDto> data;
 }

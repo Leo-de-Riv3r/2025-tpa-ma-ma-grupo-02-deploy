@@ -3,6 +3,7 @@ package ar.edu.utn.frba.dds.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -12,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfig {
 
   @Bean
@@ -21,10 +23,10 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             //modificar esto
             // Permitir GET libremente
-            .requestMatchers(HttpMethod.GET, "/colecciones/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/colecciones/**", "/actuator/**", "/graphql/**").permitAll()
             //new config
             .requestMatchers(HttpMethod.GET, "/hechos/**").permitAll()
-            .requestMatchers(HttpMethod.POST, "/solicitudes").permitAll()
+            .requestMatchers(HttpMethod.POST, "/solicitudes", "/graphql/**").permitAll()
             // Requerir autenticación para POST y PUT
             .requestMatchers(HttpMethod.POST, "/colecciones/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/colecciones/**").authenticated()
