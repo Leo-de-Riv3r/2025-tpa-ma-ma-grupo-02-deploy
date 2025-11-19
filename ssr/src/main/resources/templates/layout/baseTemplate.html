@@ -48,7 +48,7 @@
           </form>
       </div>
       <div sec:authorize="isAnonymous()">
-        <li><a th:href="login" class="btn btn-dark">Iniciar sesion</a></li>
+        <li><a th:href="@{/login}" class="btn btn-dark">Iniciar sesion</a></li>
 
         <li><form th:action="@{/registro}" method="get" class="d-inline">
           <button class="btn btn-light" type="submit">

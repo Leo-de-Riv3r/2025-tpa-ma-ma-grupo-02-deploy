@@ -37,8 +37,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   ) throws ServletException, IOException {
     String path = request.getServletPath();
 
-    System.out.println("=== JWT FILTER DEBUG ===");
-    System.out.println("URL: " + request.getRequestURL());
     // 🔹 Solo analizar el token si la ruta es /auth/login o /auth/refresh
 
     if (request.getServletPath().equals("/auth/login") ||

@@ -20,3 +20,15 @@ datasources:
     # Esto conecta Trazas -> Métricas
     tracesToMetrics:
       datasourceUid: 'Prometheus'
+    tracesToLogs:
+      datasourceUid: 'loki-ds' # UID que acabamos de asignar a Loki
+      tags: [ 'traceId' ]        # Buscar por la etiqueta 'traceId'
+      query: '{traceId="${__trace.id}"}'
+        # --- Datasource de Logs (Loki) ---
+  - name: Loki
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://loki:3100 # Apunta al servicio 'loki' en Docker
+    uid: loki-ds # Asigna un UID para que Tempo pueda referenciarlo
+    isDefault: false

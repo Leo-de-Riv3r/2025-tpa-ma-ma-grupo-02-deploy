@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import ar.edu.utn.frba.dds.services.IMultimediaService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 
+@Slf4j
 @Service
 public class HechosService implements IHechosService {
   private final IHechosRepository hechosRepository;
@@ -101,7 +103,7 @@ public class HechosService implements IHechosService {
                         .ruta(m.getRuta())
                         .formato(m.getFormato().name().toLowerCase())
                         .build()).toList();
-
+        log.info("Nuevo hecho guardado: Titulo: {}, Categoria: {}", hechoGuardado.getTitulo(), hechoGuardado.getCategoria());
         return HechoOutputDTO.builder()
                 .titulo(hechoGuardado.getTitulo())
                 .descripcion(hechoGuardado.getDescripcion())
@@ -199,7 +201,7 @@ public class HechosService implements IHechosService {
 
     hecho.aceptar(revisionDto.getSupervisor());
     Hecho hechoActualizado = hechosRepository.save(hecho);
-
+    log.info("Hecho aceptado: Titulo: {}, Categoria: {}", hechoActualizado.getTitulo(), hechoActualizado.getCategoria());
     return toHechoRevisionOutputDTO(hechoActualizado);
   }
 
@@ -213,7 +215,7 @@ public class HechosService implements IHechosService {
     }
     hecho.aceptarConSugerencias(revisionDto.getSupervisor(), revisionDto.getComentario());
     Hecho hechoActualizado = hechosRepository.save(hecho);
-
+  log.info("Hecho aceptado: Titulo: {}, Categoria: {}", hechoActualizado.getTitulo(), hechoActualizado.getCategoria());
     return toHechoRevisionOutputDTO(hechoActualizado);
   }
 
@@ -228,7 +230,7 @@ public class HechosService implements IHechosService {
 
     hecho.rechazar(revisionDto.getSupervisor(), revisionDto.getComentario());
     Hecho hechoActualizado = hechosRepository.save(hecho);
-
+    log.info("Hecho rechazado: Titulo: {}, Categoria: {}", hechoActualizado.getTitulo(), hechoActualizado.getCategoria());
     return toHechoRevisionOutputDTO(hechoActualizado);
   }
 

@@ -1,5 +1,5 @@
 global:
-  scrape_interval: 15s # Lee métricas cada 15 segundos
+  scrape_interval: 60s # Lee métricas cada 15 segundos
 
 scrape_configs:
   # Job 1: Leerse a sí mismo

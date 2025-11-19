@@ -29,7 +29,6 @@ services:
     container_name: tempo
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
-      # --- LÍNEA CORREGIDA ---
       # Apunta al archivo que SÍ existe en tu raíz
       - ./tempo-config.yml:/etc/tempo.yaml:ro
 
@@ -38,8 +37,30 @@ services:
     ports:
       - "3200:3200" # Tempo
       - "9411:9411" # zipkin
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    command: [ "-config.file=/etc/loki-config.yml" ]
+    volumes:
+      - ./loki:/loki
+      - ./loki-config.yml:/etc/loki-config.yml
+      - ./docker/loki/loki-data:/loki # Persistencia de datos de Loki
+    ports:
+      - "3100:3100" # Puerto para Grafana y Promtail
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    command: [ "-config.file=/etc/promtail-config.yml" ]
+    volumes:
+      - ./promtail-config.yml:/etc/promtail-config.yml
+      - ./logs:/var/log/spring-logs:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - loki
+    restart: always
 # Volúmenes para persistir datos entre reinicios
 volumes:
   grafana-data: {}
   prometheus-data: {}
   tempo-data: {}
+  loki-data: {}

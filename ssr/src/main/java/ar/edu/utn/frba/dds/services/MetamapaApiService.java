@@ -28,14 +28,15 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 @Service
 public class MetamapaApiService {
-  private final WebClient webClient = WebClient.builder().build();
+  private final WebClient webClient;
   private final WebApiCallerService webApiCallerService;
+  private final RestTemplate restTemplate;
   private final String authServiceUrl;
   private final String agregadorServiceUrl;
   private final String estadisticasServiceUrl;
   private final String fuenteDinamicaServiceUrl;
   public MetamapaApiService(
-      WebApiCallerService webApiCallerService,
+      WebApiCallerService webApiCallerService, RestTemplate restTemplate,
       @Value("${auth.service.url}")
       String authServiceUrl,
       @Value("${agregador.service.url}")
@@ -43,13 +44,16 @@ public class MetamapaApiService {
       @Value("${estadisticas.service.url}")
       String estadisticasServiceUrl,
       @Value("${fuenteDinamica.service.url}")
-      String fuenteDinamicaServiceUrl
+      String fuenteDinamicaServiceUrl,
+      WebClient.Builder webClientBuilder
   ) {
     this.webApiCallerService = webApiCallerService;
+    this.restTemplate = restTemplate;
     this.authServiceUrl = authServiceUrl;
     this.agregadorServiceUrl = agregadorServiceUrl;
     this.estadisticasServiceUrl = estadisticasServiceUrl;
     this.fuenteDinamicaServiceUrl = fuenteDinamicaServiceUrl;
+    this.webClient = webClientBuilder.build();
   }
 
   public RolesPermisosDTO getRolesPermisos(String accessToken) {
@@ -91,7 +95,6 @@ public class MetamapaApiService {
   }
 
   public Boolean register(String username, String password) {
-    RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<Void> response = restTemplate.exchange(
         authServiceUrl + "/register",
         HttpMethod.POST,

@@ -37,9 +37,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
+@Slf4j
 @Service
 public class ColeccionService {
   private final IColeccionRepository coleccionRepository;
@@ -51,11 +54,11 @@ public class ColeccionService {
   private final HechoConverter hechoConverter;
   private final IFuenteRepository fuenteRepository;
   private final ISolicitudRepository solicitudRepository;
-
+  private final WebClient webClient;
   @PersistenceContext
   private EntityManager em;
 
-  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository, ISolicitudRepository solicitudRepository) {
+  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository, ISolicitudRepository solicitudRepository, WebClient.Builder webClientBuilder) {
     this.coleccionRepository = coleccionRepository;
     this.solicitudService = solicitudService;
     this.hechoRepository = hechoRepository;
@@ -65,6 +68,7 @@ public class ColeccionService {
     this.hechoConverter = hechoConverter;
     this.fuenteRepository = fuenteRepository;
     this.solicitudRepository = solicitudRepository;
+    this.webClient = webClientBuilder.build();
   }
 
   public ColeccionDTOSalida createColeccion(ColeccionDTOEntrada dto) {
@@ -108,6 +112,10 @@ public class ColeccionService {
       }
     }
     Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+
+    log.info("EVENTO_CREACIÓN - Colección creada exitosamente. ID: {}, Título: '{}'",
+        coleccionGuardada.getId(),
+        coleccionGuardada.getTitulo());
     return coleccionConverter.fromEntity(coleccionGuardada);
   }
 
@@ -191,13 +199,15 @@ public class ColeccionService {
       }
     }
 
-    coleccionRepository.save(coleccion);
+    Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+    log.info("EVENTO_MODIFICACIÓN - Colección actualizada. ID: {}, Titulo: '{}'", coleccionGuardada.getId()
+    , coleccionGuardada.getTitulo());
   }
 
   public void deleteColeccion(String coleccionId) {
     coleccionRepository.deleteById(coleccionId);
+    log.info("EVENTO_ELIMINACION - Colección eliminada. ID: {}", coleccionId);
   }
-
 
   @Transactional
   public void refrescoFuentes() {
@@ -210,8 +220,8 @@ public class ColeccionService {
 
   @Transactional
   public void refrescarYNormalizarHechos(Fuente fuente) {
-    Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter);
-
+    Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter, webClient);
+    //mover logica de obtencion de hechos a componente u funcion
     hechos.forEach(h -> {
       Optional<Hecho> hechoExistente = hechoRepository
           .findByTituloAndDescripcionAndFechaAcontecimiento(

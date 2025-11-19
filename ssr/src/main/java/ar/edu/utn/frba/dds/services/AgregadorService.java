@@ -29,29 +29,27 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Service
 public class AgregadorService {
   private final MetamapaApiService metamapaApiService;
-  private final HttpGraphQlClient httpGraphQlClient;
+  private final HttpGraphQlClient gqlAgregadorClient;
 
   private String urlBase = "http://localhost:5010";
   @Value("${fuenteDinamica.service.url}")
   private String fuenteDinamicaUrl;
   private final RestTemplate restTemplate;
-  private WebClient webClient = WebClient.builder().baseUrl("http://localhost:5010").build();
 
-  public AgregadorService(MetamapaApiService metamapaApiService, HttpGraphQlClient httpGraphQlClient) {
+  public AgregadorService(MetamapaApiService metamapaApiService, HttpGraphQlClient gqlAgregadorClient, RestTemplate restTemplate) {
     this.metamapaApiService = metamapaApiService;
-    this.httpGraphQlClient = httpGraphQlClient;
-
-    this.restTemplate = new RestTemplate();
+    this.gqlAgregadorClient = gqlAgregadorClient;
+    this.restTemplate = restTemplate;
   }
 
   public List<Coleccion> obtenerColecciones() {
-      return httpGraphQlClient.documentName("getColecciones")
+      return gqlAgregadorClient.documentName("getColecciones")
           .retrieve("colecciones")
           .toEntityList(Coleccion.class).block();
   }
 
   public ColeccionHechosDto getHechosColeccion(String idColeccion, FiltrosDto filtros, int page) {
-    return httpGraphQlClient.documentName("getHechosColeccion")
+    return gqlAgregadorClient.documentName("getHechosColeccion")
         .variable("id", idColeccion)
         .variable("page", page)
         .variable("filtro", filtros)
@@ -94,26 +92,11 @@ public class AgregadorService {
   }
 
   public void eliminarColeccion(String idColeccion) {
-//    ResponseEntity<Void> response = restTemplate.exchange(
-//        urlBase + "/colecciones/" + idColeccion,
-//        HttpMethod.DELETE,
-//        null,
-//        Void.class
-//    );
     metamapaApiService.eliminarColeccion(idColeccion);
   }
 
   public HechoDetallesDto getDetallesHecho(Long idHecho) {
-    /*
-    ResponseEntity<HechoDetallesDto> response = restTemplate.exchange(
-        urlBase + "/hechos/" + idHecho,
-        HttpMethod.GET,
-        null,
-        HechoDetallesDto.class
-    );
-    return response.getBody();
-    */
-    return httpGraphQlClient.documentName("getHechoById")
+    return gqlAgregadorClient.documentName("getHechoById")
         .variable("id", idHecho)
         .retrieve("hecho")
         .toEntity(HechoDetallesDto.class).block();
@@ -137,8 +120,7 @@ public class AgregadorService {
   }
 
   public SolicitudEliminacionDetallesDto obtenerSolicitud(Long idSolicitud) {
-    //return metamapaApiService.obtenerSolicitud(idSolicitud);
-    return httpGraphQlClient.documentName("getSolicitudEliminacion")
+    return gqlAgregadorClient.documentName("getSolicitudEliminacion")
         .variable("id", idSolicitud)
         .retrieve("solicitud")
         .toEntity(SolicitudEliminacionDetallesDto.class).block();

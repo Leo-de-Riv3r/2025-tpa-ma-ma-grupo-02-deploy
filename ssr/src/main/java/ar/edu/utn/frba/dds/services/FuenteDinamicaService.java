@@ -20,14 +20,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class FuenteDinamicaService {
   private final MetamapaApiService metamapaApiService;
-  private final RestTemplate restTemplate ;
+  private final RestTemplate restTemplate;
   private final String fuenteDinamicaServiceUrl;
   public FuenteDinamicaService(
-      MetamapaApiService metamapaApiService, @Value("${fuenteDinamica.service.url}")
+      MetamapaApiService metamapaApiService, RestTemplate restTemplate, @Value("${fuenteDinamica.service.url}")
      String fuenteDinamicaServiceUrl) {
     this.metamapaApiService = metamapaApiService;
+    this.restTemplate = restTemplate;
     this.fuenteDinamicaServiceUrl = fuenteDinamicaServiceUrl;
-    this.restTemplate = new RestTemplate();
   }
 
   public void  crearHecho(HechoManualDTO hechoDto, List<MultipartFile> multimedia) {
