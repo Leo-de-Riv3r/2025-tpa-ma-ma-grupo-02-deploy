@@ -1,0 +1,13 @@
+<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="contenido">
+    <h1>Solicitudes creadas</h1>
+    <div th:if="${hechos.empty}" class="text-center py-5">
+        <h1>No hay colecciones existentes</h1>
+    </div>
+    <div class="gap-3 grid-content" th:unless="${hechos.empty}">
+        <div th:each="hecho : ${hechos}" class="card custom-card bg-dark-subtle">
+            <h1>titulo hecho</h1>
+        </div>
+    </div>
+</h1>
+</html>

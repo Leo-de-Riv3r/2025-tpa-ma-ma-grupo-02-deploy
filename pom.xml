@@ -6,9 +6,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>ar.edu.utn.frba.dds</groupId>
-        <artifactId>metamapa</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.5</version>
+        <relativePath/>
     </parent>
     <groupId>ar.edu.utn.frba.dds</groupId>
     <artifactId>metamapa</artifactId>
@@ -35,6 +36,11 @@
     </modules>
 
     <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom -->
+
+
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -74,7 +80,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
     </dependencies>
+
 
     <build>
         <plugins>

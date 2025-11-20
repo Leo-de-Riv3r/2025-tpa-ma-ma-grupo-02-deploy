@@ -14,6 +14,7 @@ import ar.edu.utn.frba.dds.models.entities.enums.Formato;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.dialect.SybaseSqlAstTranslator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -45,6 +46,7 @@ public class HechoConverter {
       List<Multimedia> listaMultimedia = new ArrayList<>();
       dto.getMultimedia().forEach(multimediaDtoInput -> {
         Multimedia multimedia = new Multimedia();
+        multimedia.setHecho(hecho);
         multimedia.setNombre(multimediaDtoInput.getNombre());
         multimedia.setRuta(multimediaDtoInput.getRuta());
         try {
@@ -53,34 +55,40 @@ public class HechoConverter {
         } catch (Exception e){
           throw new IllegalArgumentException("Tipo de formato " + multimediaDtoInput + " no soportado");
         }
+        listaMultimedia.add(multimedia);
       });
 
       hecho.setMultimedia(listaMultimedia);
     }
-
     return hecho;
   }
 
   public Lugar obtenerLugar(Ubicacion ubicacion) {
-    String url = "https://apis.datos.gob.ar/georef/api/ubicacion";
+    String url = "https://apis.datos.gob.ar/georef/api/v2.0/ubicacion";
 
-    WebClient webClient = WebClient.builder().baseUrl(url).build();
-    LugarDTO ubi = webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .queryParam("lat", ubicacion.getLatitud())
-            .queryParam("lon", ubicacion.getLongitud())
-            .build())
-        .retrieve()
-        .bodyToMono(LugarDTO.class)
-        .block();
-
-    //convertir dto a lugar/
-    Lugar lugar = new Lugar();
-    assert ubi != null;
-    lugar.setDepartamento(ubi.getUbicacion().getDepartamento().getNombre());
-    lugar.setProvincia(ubi.getUbicacion().getProvincia().getNombre());
-    lugar.setMunicipio(ubi.getUbicacion().getMunicipio().getNombre());
-    return lugar;
+    try {
+      WebClient webClient = WebClient.builder().baseUrl(url).build();
+      LugarDTO ubi = webClient.get()
+          .uri(uriBuilder -> uriBuilder
+              .queryParam("lat", ubicacion.getLatitud())
+              .queryParam("lon", ubicacion.getLongitud())
+              .build())
+          .retrieve()
+          .bodyToMono(LugarDTO.class)
+          .block();
+      //convertir dto a lugar/
+      Lugar lugar = new Lugar();
+      System.out.println(ubi);
+      assert ubi != null;
+      lugar.setDepartamento(ubi.getUbicacion().getDepartamento().getNombre());
+      lugar.setProvincia(ubi.getUbicacion().getProvincia().getNombre());
+      lugar.setMunicipio(ubi.getUbicacion().getMunicipio().getNombre());
+      return lugar;
+    } catch (Exception e) {
+      System.out.println("error en api lugares");
+      Lugar lugar = new Lugar();
+      return lugar;
+    }
   }
 
   public HechoDtoSalida fromEntity(Hecho hecho) {

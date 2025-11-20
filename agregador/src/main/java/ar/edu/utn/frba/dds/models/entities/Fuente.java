@@ -15,13 +15,18 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.boot.actuate.autoconfigure.metrics.MetricsProperties;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Entity
 @Table(name = "fuente")
@@ -55,7 +60,7 @@ public abstract class Fuente {
     this.tipoFuente = tipoFuente;
   }
 
-  public abstract Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter);
+  public abstract Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter, WebClient webClient);
 
   public abstract Set<Hecho> getHechos();
 

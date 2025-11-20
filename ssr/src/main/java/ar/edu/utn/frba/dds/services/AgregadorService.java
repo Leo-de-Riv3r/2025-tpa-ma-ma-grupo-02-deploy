@@ -4,16 +4,19 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 
 import ar.edu.utn.frba.dds.models.Coleccion;
 import ar.edu.utn.frba.dds.models.ColeccionDetallesDto;
+import ar.edu.utn.frba.dds.models.ColeccionHechosDto;
 import ar.edu.utn.frba.dds.models.ColeccionNuevaDto;
 
 import ar.edu.utn.frba.dds.models.FiltrosDto;
 import ar.edu.utn.frba.dds.models.HechoDetallesDto;
+import ar.edu.utn.frba.dds.models.PaginacionDtoHechoDtoSalida;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDto;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import java.util.List;
-import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -26,75 +29,45 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Service
 public class AgregadorService {
   private final MetamapaApiService metamapaApiService;
+  private final HttpGraphQlClient gqlAgregadorClient;
+
   private String urlBase = "http://localhost:5010";
+  @Value("${fuenteDinamica.service.url}")
+  private String fuenteDinamicaUrl;
   private final RestTemplate restTemplate;
-  private WebClient webClient = WebClient.builder().baseUrl("http://localhost:5010").build();
 
-  public AgregadorService(MetamapaApiService metamapaApiService) {
+  public AgregadorService(MetamapaApiService metamapaApiService, HttpGraphQlClient gqlAgregadorClient, RestTemplate restTemplate) {
     this.metamapaApiService = metamapaApiService;
-    this.restTemplate = new RestTemplate();
+    this.gqlAgregadorClient = gqlAgregadorClient;
+    this.restTemplate = restTemplate;
   }
 
-  //  public ColeccionesDto obtenerColecciones() {
-//    return this.webClient.get()
-//        .uri("/colecciones")
-//        .retrieve()
-//        .bodyToMono(ColeccionesDto.class)
-//        .block();
-//  }
   public List<Coleccion> obtenerColecciones() {
-      ResponseEntity<List<Coleccion>> response = restTemplate.exchange(
-          urlBase + "/colecciones",
-          HttpMethod.GET,
-          null,
-          new ParameterizedTypeReference<List<Coleccion>>() {
-          }
-      );
-      return response.getBody();
+      return gqlAgregadorClient.documentName("getColecciones")
+          .retrieve("colecciones")
+          .toEntityList(Coleccion.class).block();
   }
 
-  public ColeccionDetallesDto getHechosColeccion(String idColeccion, FiltrosDto filtros, int page) {
-    UriComponentsBuilder builder = UriComponentsBuilder
-        .fromHttpUrl(urlBase + "/colecciones/" + idColeccion + "/hechos")
-        .queryParam("page", page);
-
-    // Agregar los parámetros solo si no son nulos o vacíos
-    if (filtros.getCategoria() != null && !filtros.getCategoria().isEmpty()) {
-      builder.queryParam("categoria", filtros.getCategoria());
-    }
-    if (filtros.getProvincia() != null && !filtros.getProvincia().isEmpty()) {
-      builder.queryParam("provincia", filtros.getProvincia());
-    }
-    if (filtros.getMunicipio() != null && !filtros.getMunicipio().isEmpty()) {
-      builder.queryParam("municipio", filtros.getMunicipio());
-    }
-    if (filtros.getDepartamento() != null && !filtros.getDepartamento().isEmpty()) {
-      builder.queryParam("departamento", filtros.getDepartamento());
-    }
-    if (filtros.getCurados() != null && !filtros.getCurados().isEmpty()) {
-      builder.queryParam("curados", filtros.getCurados().equalsIgnoreCase("Si"));
-    }
-    if (filtros.getFecha_acontecimiento_desde() != null) {
-      builder.queryParam("fecha_acontecimiento_desde", filtros.getFecha_acontecimiento_desde());
-    }
-    if (filtros.getFecha_acontecimiento_hasta() != null) {
-      builder.queryParam("fecha_acontecimiento_hasta", filtros.getFecha_acontecimiento_hasta());
-    }
-
-    String url = builder.toUriString();
-
-    ResponseEntity<ColeccionDetallesDto> response = restTemplate.exchange(
-        url,
-        HttpMethod.GET,
-        null,
-        ColeccionDetallesDto.class
-    );
-
-    return response.getBody();
+  public ColeccionHechosDto getHechosColeccion(String idColeccion, FiltrosDto filtros, int page) {
+    return gqlAgregadorClient.documentName("getHechosColeccion")
+        .variable("id", idColeccion)
+        .variable("page", page)
+        .variable("filtro", filtros)
+        .variable("curados", (filtros != null && filtros.getCurados() != null && filtros.getCurados().equalsIgnoreCase("Si") ))
+        .retrieve("coleccion")
+        .toEntity(ColeccionHechosDto.class).block();
   }
 
   public void crearColeccion(ColeccionNuevaDto coleccionNueva) {
     if (coleccionNueva.getAlgoritmo().isBlank()) coleccionNueva.setAlgoritmo(null);
+    //check if coleccionNueva has fuenteDinamica
+    if (coleccionNueva.getFuentes() != null) {
+      coleccionNueva.getFuentes().forEach(f -> {
+        if (f.getTipoFuente().equals("DINAMICA")) {
+          f.setUrl(fuenteDinamicaUrl);
+      }
+    });
+    }
     metamapaApiService.crearColeccion(coleccionNueva);
   }
 
@@ -119,23 +92,14 @@ public class AgregadorService {
   }
 
   public void eliminarColeccion(String idColeccion) {
-//    ResponseEntity<Void> response = restTemplate.exchange(
-//        urlBase + "/colecciones/" + idColeccion,
-//        HttpMethod.DELETE,
-//        null,
-//        Void.class
-//    );
     metamapaApiService.eliminarColeccion(idColeccion);
   }
 
   public HechoDetallesDto getDetallesHecho(Long idHecho) {
-    ResponseEntity<HechoDetallesDto> response = restTemplate.exchange(
-        urlBase + "/hechos/" + idHecho,
-        HttpMethod.GET,
-        null,
-        HechoDetallesDto.class
-    );
-    return response.getBody();
+    return gqlAgregadorClient.documentName("getHechoById")
+        .variable("id", idHecho)
+        .retrieve("hecho")
+        .toEntity(HechoDetallesDto.class).block();
   }
 
   public void enviarSolicitud(SolicitudEliminacionDto solicitud) {
@@ -156,7 +120,10 @@ public class AgregadorService {
   }
 
   public SolicitudEliminacionDetallesDto obtenerSolicitud(Long idSolicitud) {
-    return metamapaApiService.obtenerSolicitud(idSolicitud);
+    return gqlAgregadorClient.documentName("getSolicitudEliminacion")
+        .variable("id", idSolicitud)
+        .retrieve("solicitud")
+        .toEntity(SolicitudEliminacionDetallesDto.class).block();
   }
 
   public void aceptarSolicitud(Long idSolicitud) {
@@ -169,5 +136,11 @@ public class AgregadorService {
 
   public SolicitudesPaginasDto obtenerSolicitudesCreadasPor(int page, Boolean pendientes) {
     return metamapaApiService.obtenerSolicitudesCreadasPor(page, pendientes);
+//    return httpGraphQlClient.documentName("getSolicitudesEliminacionDeUsuario")
+//        .variable("page", page)
+//        .variable("pendientes", pendientes)
+//        .variable("filterByCreator", true)
+//        .retrieve("solicitudes")
+//        .toEntity(SolicitudesPaginasDto.class).block();
   }
 }

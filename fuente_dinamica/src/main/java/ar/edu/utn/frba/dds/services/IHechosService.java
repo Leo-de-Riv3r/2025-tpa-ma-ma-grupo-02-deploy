@@ -11,7 +11,8 @@ import java.util.List;
 
 public interface IHechosService {
   //public void modificarHecho(SolicitudModificacionInputDTO solicitudModificacion);
-  public List<HechoOutputDTO> getHechos();
+  List<HechoOutputDTO> getHechos();
+
   public HechoOutputDTO getHechoById(Long id);
 
   HechoOutputDTO crearHecho(HechoInputDTO hecho, List<MultipartFile> multimedia);
@@ -22,4 +23,6 @@ public interface IHechosService {
   public HechoRevisionOutputDTO aceptarHecho(Long id, RevisionInputDTO revisionDto);
   public HechoRevisionOutputDTO aceptarHechoConSugerencias(Long id, RevisionInputDTO revisionDto);
   public HechoRevisionOutputDTO rechazarHecho(Long id, RevisionInputDTO revisionDto);
+
+  List<HechoRevisionOutputDTO> getHechosPendientesByCreador();
 }

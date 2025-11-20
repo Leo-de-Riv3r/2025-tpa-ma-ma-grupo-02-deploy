@@ -20,6 +20,7 @@ import java.util.EmptyStackException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class SolicitudService {
   private final ISolicitudRepository solicitudesEliminacionRepo;
@@ -46,6 +48,7 @@ public class SolicitudService {
   public void createSolicitud(SolicitudDTOEntrada dtoSolicitud) {
     Solicitud solicitud = solicitudConverter.fromDto(dtoSolicitud);
     Solicitud solicitudGuardada = solicitudesEliminacionRepo.save(solicitud);
+    log.info("Nueva solicitud de eliminacion, Titulo: {}", solicitudGuardada.getTitulo());
     if (detectorSpam.esSpam(solicitud.getTexto()) || !solicitud.estaFundado()) {
       this.marcarComospam(solicitudGuardada.getId());
       this.rechazarSolicitud(solicitudGuardada.getId());
@@ -55,18 +58,21 @@ public class SolicitudService {
   private void marcarComospam(Long id) {
     Solicitud solicitud = this.getSolicitudById(id);
     solicitud.marcarSpam();
+    log.info("Solicitud marcada como spam");
     solicitudesEliminacionRepo.save(solicitud);
   }
 
   public void rechazarSolicitud(Long id) {
     Solicitud solicitud = this.getSolicitudById(id);
     solicitud.rechazar();
+    log.info("Solicitud rechazada, Id: {}, Titulo: {}", solicitud.getId(), solicitud.getTitulo());
     solicitudesEliminacionRepo.save(solicitud);
   }
 
   public void aceptarSolicitud(Long id) {
     Solicitud solicitud = this.getSolicitudById(id);
     solicitud.aceptar();
+    log.info("Solicitud aceptada, Id: {}, Titulo: {}", solicitud.getId(), solicitud.getTitulo());
     solicitudesEliminacionRepo.save(solicitud);
   }
 
@@ -76,6 +82,8 @@ public class SolicitudService {
   }
 
     public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(Integer page, Boolean pendientes, Boolean filterByCreator) {
+    if (filterByCreator == null) filterByCreator = false;
+    if (pendientes == null) pendientes = true;
       int pageNumber = (page == null || page < 1) ? 0 : page - 1;
       int pageSize = 20;
       Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("fecha").descending());

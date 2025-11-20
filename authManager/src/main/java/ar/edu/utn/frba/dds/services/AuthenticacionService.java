@@ -13,6 +13,7 @@ import jakarta.persistence.EntityExistsException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class AuthenticacionService implements IAuthenticationService {
   //logica para creacion de administrador
@@ -59,7 +61,8 @@ public class AuthenticacionService implements IAuthenticationService {
       rol.setPermisos(List.of(Permiso.EDITAR_HECHO));
     }
     user.setRol(rol);
-    userRepository.save(user);
+    User registeredUser = userRepository.save(user);
+    log.info("{} se ha registrado con rol {}", registeredUser.getUsername(), registeredUser.getRol().getTiporol().toString());
     var token = jwtService.generateAccessToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
     UserTokensDto resp = UserTokensDto.builder().

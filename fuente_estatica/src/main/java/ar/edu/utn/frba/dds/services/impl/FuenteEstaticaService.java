@@ -10,9 +10,11 @@ import jakarta.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 public class FuenteEstaticaService implements IFuenteEstaticaService {
   private IFuenteRepository fuenteRepository;
@@ -88,6 +90,7 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
     fuente.setHechos(hechosCsv);
     fuente.setUrl(link.getOriginalFilename());
     Fuente fuenteGuardado = fuenteRepository.save(fuente);
+    log.info("Nueva fuente csv de archivo {}", link.getOriginalFilename());
     return new FuenteCsvDTOOutput(fuente.getId(), link.getOriginalFilename(), fuenteGuardado.getHechos().size());
   }
 }

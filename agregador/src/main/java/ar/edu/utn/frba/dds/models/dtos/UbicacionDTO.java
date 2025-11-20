@@ -9,7 +9,7 @@ public class UbicacionDTO {
   private DepartamentoDTO departamento;
   @JsonProperty("provincia")
   private ProvinciaDTO provincia;
-  @JsonProperty("municipio")
+  @JsonProperty("gobierno_local")
   private MunicipioDTO municipio;
 }
 

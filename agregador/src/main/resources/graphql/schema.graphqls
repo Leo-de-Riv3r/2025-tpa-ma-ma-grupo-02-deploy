@@ -1,0 +1,152 @@
+
+type FuenteDtoOutput{
+    id: ID!
+    tipoFuente : String
+    url: String
+}
+
+type ColeccionDTOSalidaGQL {
+    id: ID!
+    titulo: String
+    descripcion: String
+    cantSolicitudesSpam: Int
+    fuentes: [FuenteDtoOutput]
+    criterios: [String]
+    algoritmoConsenso: String
+    hechos : PaginacionDtoHechoDtoSalida
+}
+
+type HechoDtoSalida {
+    id: ID!
+    titulo: String
+    descripcion: String
+    categoria: String
+    latitud: Float
+    longitud: Float
+    provincia: String
+    municipio: String
+    departamento: String
+    tipoFuente: String
+    nombreAutor: String
+    fechaAcontecimiento: String
+    multimedia: MultimediaDtoOutput
+}
+
+# Basado en PaginacionDto<HechoDtoSalida>
+type PaginacionDtoHechoDtoSalida {
+    data: [HechoDtoSalida]
+    currentPage: Int
+    totalPages: Int
+}
+
+type MultimediaDtoOutput{
+    nombre: String
+    ruta: String
+    formato: String
+}
+
+type HechoDetallesDtoSalida {
+    id: ID!
+    titulo: String
+    descripcion: String
+    latitud: Float
+    longitud: Float
+    categoria : String
+    provincia: String
+    municipio: String
+    departamento: String
+    tipoOrigen: String
+    fechaAcontecimiento: String
+    fechaCarga: String
+    multimedia: [MultimediaDtoOutput]
+    nombreAutor: String
+}
+
+type SolicitudDtoSalida {
+    id: ID!
+    titulo: String
+    motivo: String
+    fecha: String
+    estadoActual: String
+    creador: String
+    esSpam: Int
+    idHecho: Int
+}
+
+type PaginacionDtoSolicitudDtoSalida {
+    data: [SolicitudDtoSalida]
+    currentPage: Int
+    totalPages: Int
+}
+
+# ==================================
+# INPUTS (Basados en tus DTOs de Entrada)
+# ==================================
+
+# Basado en ColeccionDTOEntrada
+# Usamos 'input' para los argumentos de las mutaciones
+input ColeccionDTOEntrada {
+    nombre: String
+    descripcion: String
+    # ...otros campos
+}
+
+input HechosFiltroInput {
+    categoria: String
+    curados: String
+    fecha_acontecimiento_desde: String
+    fecha_acontecimiento_hasta: String
+    provincia: String
+    municipio: String
+    departamento: String
+}
+
+# ==================================
+# OPERACIONES
+# ==================================
+
+type Query {
+    # GET /colecciones
+    colecciones: [ColeccionDTOSalidaGQL]
+
+    # GET /colecciones/{id}
+    coleccion(id: ID!, page: Int, curados: Boolean, filtro: HechosFiltroInput): ColeccionDTOSalidaGQL
+
+    # GET /colecciones/{id}/hechos
+    hechos (
+        id: ID!
+        page: Int
+        curados: Boolean
+        filtro: HechosFiltroInput
+    ) : PaginacionDtoHechoDtoSalida
+
+
+    hecho(
+        id: ID!
+    ) : HechoDetallesDtoSalida
+
+    solicitudes(
+        page: Int
+        pendientes: Boolean
+        filterByCreator: Boolean
+    ) : PaginacionDtoSolicitudDtoSalida
+
+    solicitud(
+        id: ID!
+    ) : SolicitudDtoSalida
+}
+
+type Mutation {
+    # POST /colecciones
+    createColeccion(dto: ColeccionDTOEntrada!): ColeccionDTOSalidaGQL
+
+    # PUT /colecciones/{id}
+    # Nota: Hacemos que la mutación devuelva el objeto actualizado
+    updateColeccion(id: ID!, dto: ColeccionDTOEntrada!): ColeccionDTOSalidaGQL
+
+    # DELETE /colecciones/{id}
+    deleteColeccion(id: ID!): ID
+
+    # PUT /solicitudes/{id}/aceptar
+    aceptarSolicitud(id: ID!): Boolean # O puedes devolver la SolicitudDTOOutput
+}

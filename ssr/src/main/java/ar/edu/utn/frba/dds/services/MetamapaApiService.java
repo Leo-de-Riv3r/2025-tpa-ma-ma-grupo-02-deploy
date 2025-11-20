@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.dds.services;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 
 import ar.edu.utn.frba.dds.models.AuthResponseDTO;
@@ -8,8 +7,11 @@ import ar.edu.utn.frba.dds.models.ColeccionNuevaDto;
 import ar.edu.utn.frba.dds.models.EstadisticaDto;
 import ar.edu.utn.frba.dds.models.NuevaEstadisticaDto;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
+import ar.edu.utn.frba.dds.models.RevisionHechoDto;
 import ar.edu.utn.frba.dds.models.RolesPermisosDTO;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
+import ar.edu.utn.frba.dds.models.SolicitudHechoDto;
+import ar.edu.utn.frba.dds.models.SolicitudHechoInputDto;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
@@ -26,25 +28,32 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 @Service
 public class MetamapaApiService {
-  private final WebClient webClient = WebClient.builder().build();
-  ;
+  private final WebClient webClient;
   private final WebApiCallerService webApiCallerService;
+  private final RestTemplate restTemplate;
   private final String authServiceUrl;
   private final String agregadorServiceUrl;
   private final String estadisticasServiceUrl;
+  private final String fuenteDinamicaServiceUrl;
   public MetamapaApiService(
-      WebApiCallerService webApiCallerService,
+      WebApiCallerService webApiCallerService, RestTemplate restTemplate,
       @Value("${auth.service.url}")
       String authServiceUrl,
       @Value("${agregador.service.url}")
       String agregadorServiceUrl,
       @Value("${estadisticas.service.url}")
-      String estadisticasServiceUrl
+      String estadisticasServiceUrl,
+      @Value("${fuenteDinamica.service.url}")
+      String fuenteDinamicaServiceUrl,
+      WebClient.Builder webClientBuilder
   ) {
     this.webApiCallerService = webApiCallerService;
+    this.restTemplate = restTemplate;
     this.authServiceUrl = authServiceUrl;
     this.agregadorServiceUrl = agregadorServiceUrl;
     this.estadisticasServiceUrl = estadisticasServiceUrl;
+    this.fuenteDinamicaServiceUrl = fuenteDinamicaServiceUrl;
+    this.webClient = webClientBuilder.build();
   }
 
   public RolesPermisosDTO getRolesPermisos(String accessToken) {
@@ -86,7 +95,6 @@ public class MetamapaApiService {
   }
 
   public Boolean register(String username, String password) {
-    RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<Void> response = restTemplate.exchange(
         authServiceUrl + "/register",
         HttpMethod.POST,
@@ -162,5 +170,29 @@ public class MetamapaApiService {
 
   public SolicitudesPaginasDto obtenerSolicitudesCreadasPor(int page, Boolean pendientes) {
     return webApiCallerService.get(agregadorServiceUrl + "/solicitudes?filterByCreator=true&page=" + page + "&pendientes=" + pendientes, SolicitudesPaginasDto.class);
+  }
+
+  public List<SolicitudHechoDto> obtenerSolicitudesHecho() {
+    return this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos/pendientes", SolicitudHechoDto.class);
+  }
+
+  public SolicitudHechoInputDto obtenerSolicitudHechoById(Long idHecho) {
+    return this.webApiCallerService.get(fuenteDinamicaServiceUrl + "/hechos/" + idHecho, SolicitudHechoInputDto.class);
+  }
+
+  public void aceptarSolicitudHecho(Long idHecho, RevisionHechoDto revisionHechoDto) {
+    this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/aceptar", revisionHechoDto, Void.class);
+  }
+
+  public void rechazarSolicitudHecho(Long idHecho, RevisionHechoDto revisionHechoDto) {
+    this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/rechazar", revisionHechoDto, Void.class);
+  }
+
+  public void aceptarSolicitudConSugerencias(Long idHecho, RevisionHechoDto revisionHechoDto) {
+    this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/aceptar-con-sugerencias", revisionHechoDto, Void.class);
+  }
+
+  public List<SolicitudHechoDto> obtenerHechosPorCreador() {
+    return this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos?filterByCreator=true", SolicitudHechoDto.class);
   }
 }

@@ -35,8 +35,8 @@
       <li><a th:href="@{/colecciones}">Colecciones</a></li>
       <li sec:authorize="hasRole('ADMINISTRADOR')"><a th:href="@{/panel-control}">Panel control</a></li>
       <li sec:authorize="isAuthenticated()"><a th:href="@{/solicitudes-usuario}">Mis Solicitudes</a></li>
-      <li sec:authorize="isAuthenticated()"><a th:href="@{/panel-control}">Mis hechos</a></li>
-      <li><a href="subirHechoManual.html">Subir hecho manual</a></li>
+      <li sec:authorize="isAuthenticated()"><a th:href="@{/hechos-usuario}">Mis hechos</a></li>
+      <li><a th:href="@{/crear-hecho}">Subir hecho manual</a></li>
       <div sec:authorize="isAuthenticated()">
         <li><p>Hi, <span th:text="${session.username}">Usuario</span> 👋</p></li>
         <li>
@@ -48,7 +48,7 @@
           </form>
       </div>
       <div sec:authorize="isAnonymous()">
-        <li><a th:href="login" class="btn btn-dark">Iniciar sesion</a></li>
+        <li><a th:href="@{/login}" class="btn btn-dark">Iniciar sesion</a></li>
 
         <li><form th:action="@{/registro}" method="get" class="d-inline">
           <button class="btn btn-light" type="submit">

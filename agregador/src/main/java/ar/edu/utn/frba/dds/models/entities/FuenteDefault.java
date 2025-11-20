@@ -22,12 +22,10 @@ public class FuenteDefault extends Fuente {
   }
 
   @Override
-  public Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter) {
+  public Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter, WebClient webClient) {
     try {
-      //this.hechos.clear();
-      WebClient webClient = WebClient.builder().baseUrl(url).build();
       Set<Hecho> hechos = webClient.get()
-          .uri(uriBuilder -> uriBuilder.path("/hechos").build())
+          .uri(url + "/hechos")
           .retrieve()
           .bodyToFlux(HechoDTOEntrada.class)
           .map(hecho -> hechoConverter.fromDTO(hecho, tipoFuente))
@@ -37,6 +35,7 @@ public class FuenteDefault extends Fuente {
 
       //solo agrego hechos nuevos segun titulo categoria y descripcion
       hechos = hechos.stream().filter(h -> !this.existeHecho(h)).collect(Collectors.toSet());
+
       hechos.forEach((h -> {
         Ubicacion ubicacionNueva = h.getUbicacion();
         ubicacionNueva.setLugar(hechoConverter.obtenerLugar(ubicacionNueva));

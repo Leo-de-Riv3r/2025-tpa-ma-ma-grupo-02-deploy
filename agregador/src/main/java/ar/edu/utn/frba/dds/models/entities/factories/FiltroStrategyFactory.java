@@ -41,9 +41,10 @@ public class FiltroStrategyFactory {
       String municipio,
       String departamento
   ) {
+
     Set<IFiltroStrategy> filtros = new HashSet<>();
 
-    if (categoria != null)
+    if (categoria != null && !categoria.isBlank())
       filtros.add(new FiltroCategoria(categoria));
 
     if (fechaAcontecimientoDesde != null || fechaAcontecimientoHasta != null)  {
@@ -56,15 +57,15 @@ public class FiltroStrategyFactory {
         filtros.add(new FiltroFechaAcontecimiento(fechaAcontecimientoDesde.atStartOfDay(), fechaAcontecimientoHasta.atStartOfDay()));
       }
     }
-    if (provincia != null) {
+    if (provincia != null && !provincia.isBlank()) {
       filtros.add(new FiltroProvincia(provincia));
     }
 
-    if (municipio != null) {
+    if (municipio != null && !municipio.isBlank()) {
       filtros.add(new FiltroMunicipio(municipio));
     }
 
-    if (departamento != null) {
+    if (departamento != null && !departamento.isBlank()) {
       filtros.add(new FiltroDepartamento(departamento));
     }
 

@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class SolicitudesPaginasDto {
-  private List<SolicitudResumenDto> data;
   private Integer currentPage;
   private Integer totalPages;
+  private List<SolicitudResumenDto> data;
 }

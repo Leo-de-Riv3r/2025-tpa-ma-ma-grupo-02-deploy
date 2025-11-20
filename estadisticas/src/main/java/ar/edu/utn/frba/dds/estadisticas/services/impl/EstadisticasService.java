@@ -14,8 +14,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class EstadisticasService implements IEstadisticasService{
   private final IRepositoryEstadisticas repositoryEstadisticas;
@@ -36,7 +38,9 @@ public class EstadisticasService implements IEstadisticasService{
       throw new EntityExistsException("Ya existe una estadistica con los datos ingresados");
     }
     Estadistica estadistica = consultadorColeccion.generarEstadistica(dto.getUrlColeccion(), dto.getCategoriaEspecifica());
-    return repositoryEstadisticas.save(estadistica);
+    Estadistica estadisticaGuardada = repositoryEstadisticas.save(estadistica);
+    log.info("Estadistica creada sobre coleccion {}, url:{}", estadisticaGuardada.getNombre(), estadisticaGuardada.getUrlColeccion());
+    return estadisticaGuardada;
   }
 
   @Override
@@ -99,7 +103,7 @@ public class EstadisticasService implements IEstadisticasService{
     } catch (IOException ex) {
       throw new RuntimeException("Error exportando estadísticas a CSV", ex);
     }
-
+    log.info("Estadisticas exportadas a CSV");
     return rutaArchivo;
   }
 

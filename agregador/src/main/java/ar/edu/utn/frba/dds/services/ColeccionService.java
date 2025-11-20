@@ -4,6 +4,7 @@ import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
+import ar.edu.utn.frba.dds.models.dtos.output.ColeccionDTOSalidaGQL;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
@@ -36,9 +37,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
+@Slf4j
 @Service
 public class ColeccionService {
   private final IColeccionRepository coleccionRepository;
@@ -50,11 +54,11 @@ public class ColeccionService {
   private final HechoConverter hechoConverter;
   private final IFuenteRepository fuenteRepository;
   private final ISolicitudRepository solicitudRepository;
-
+  private final WebClient webClient;
   @PersistenceContext
   private EntityManager em;
 
-  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository, ISolicitudRepository solicitudRepository) {
+  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository, ISolicitudRepository solicitudRepository, WebClient.Builder webClientBuilder) {
     this.coleccionRepository = coleccionRepository;
     this.solicitudService = solicitudService;
     this.hechoRepository = hechoRepository;
@@ -64,6 +68,7 @@ public class ColeccionService {
     this.hechoConverter = hechoConverter;
     this.fuenteRepository = fuenteRepository;
     this.solicitudRepository = solicitudRepository;
+    this.webClient = webClientBuilder.build();
   }
 
   public ColeccionDTOSalida createColeccion(ColeccionDTOEntrada dto) {
@@ -81,7 +86,6 @@ public class ColeccionService {
       }
     }
     if (dto.getFuentes() != null) {
-      System.out.println("SETEAR FUNTES");
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
         Fuente fuenteFinal;
@@ -91,13 +95,11 @@ public class ColeccionService {
           fuenteFinal = fuenteExistente.get();
         } else {
           //traigo hechos y normalizo
-          System.out.println("Guardo fuente con sus hechos");
           this.refrescarYNormalizarHechos(fuente);
           fuenteFinal = fuenteRepository.save(fuente);
           System.out.println("FUENTE GUARDADA");
         }
         fuentes.add(fuenteFinal);
-        System.out.println(fuenteFinal.getHechos().size());
       });
       coleccion.setFuentes(fuentes);
     }
@@ -110,6 +112,10 @@ public class ColeccionService {
       }
     }
     Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+
+    log.info("EVENTO_CREACIÓN - Colección creada exitosamente. ID: {}, Título: '{}'",
+        coleccionGuardada.getId(),
+        coleccionGuardada.getTitulo());
     return coleccionConverter.fromEntity(coleccionGuardada);
   }
 
@@ -162,6 +168,8 @@ public class ColeccionService {
           fuente = fuenteExistente.get();
         } else {
           //traigo hechos y normalizo
+          System.out.println("Nueva fuente");
+          System.out.println("url: " + fuente.getUrl());
           this.refrescarYNormalizarHechos(fuente);
         }
         fuentes.add(fuente);
@@ -191,13 +199,15 @@ public class ColeccionService {
       }
     }
 
-    coleccionRepository.save(coleccion);
+    Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+    log.info("EVENTO_MODIFICACIÓN - Colección actualizada. ID: {}, Titulo: '{}'", coleccionGuardada.getId()
+    , coleccionGuardada.getTitulo());
   }
 
   public void deleteColeccion(String coleccionId) {
     coleccionRepository.deleteById(coleccionId);
+    log.info("EVENTO_ELIMINACION - Colección eliminada. ID: {}", coleccionId);
   }
-
 
   @Transactional
   public void refrescoFuentes() {
@@ -210,8 +220,8 @@ public class ColeccionService {
 
   @Transactional
   public void refrescarYNormalizarHechos(Fuente fuente) {
-    Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter);
-
+    Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter, webClient);
+    //mover logica de obtencion de hechos a componente u funcion
     hechos.forEach(h -> {
       Optional<Hecho> hechoExistente = hechoRepository
           .findByTituloAndDescripcionAndFechaAcontecimiento(
@@ -383,7 +393,6 @@ public class ColeccionService {
   public void refrescarHechosFiltrados() {
     List <Coleccion> colecciones = coleccionRepository.findAll();
     colecciones.forEach(Coleccion::actualizarHechosFiltrados);
-    //elimino los hechos con fuente_id nulo porque ya son obsoletos
     coleccionRepository.saveAll(colecciones);
   }
 
@@ -393,6 +402,14 @@ public class ColeccionService {
     resumenActividadDto.setFuentesTotales(fuenteRepository.count());
     resumenActividadDto.setSolicitudesEliminacion(solicitudRepository.count());
     return resumenActividadDto;
+  }
+
+  public ColeccionDTOSalidaGQL getColeccionOutputDto(String id, Boolean curadosFinal, Integer page, Set<IFiltroStrategy> filtros) {
+    Coleccion coleccion = this.getColeccion(id);
+    ColeccionDTOSalida coleccionDto = coleccionConverter.fromEntity(coleccion);
+    ColeccionDTOSalidaGQL respuesta = new ColeccionDTOSalidaGQL(coleccionDto);
+    respuesta.setHechos(this.getHechos(id, curadosFinal, page, filtros));
+    return respuesta;
   }
 
 //  public void actualizarHecho(Long idHecho, HechoUpdateDto hechoDto) {

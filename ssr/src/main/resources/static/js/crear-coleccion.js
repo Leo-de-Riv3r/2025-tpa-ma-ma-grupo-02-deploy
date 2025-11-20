@@ -49,7 +49,11 @@ function cambiarInput(select) {
   const contenedor = select.parentElement;
   const oldInput = contenedor.querySelector('.fuente-input');
   let newInput = oldInput;
-  if (select.value === "ESTATICA") {
+  if(select.value === "DINAMICA"){
+    newInput.hidden = true
+    input.required = false;
+  }
+  else if (select.value === "ESTATICA") {
     newInput.type = "file"
     newInput.accept = ".csv";
     newInput.onchange = () => verificarArchivoCsv(newInput);

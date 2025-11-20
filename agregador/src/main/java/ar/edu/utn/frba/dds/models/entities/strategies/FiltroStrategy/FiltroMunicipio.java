@@ -26,7 +26,7 @@ public class FiltroMunicipio extends IFiltroStrategy{
 
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
-    if (hecho.getUbicacion().getLugar() != null) return hecho.getUbicacion().getLugar().getMunicipio().toLowerCase().contains(municipio);
+    if (hecho.getUbicacion().getLugar() != null && hecho.getUbicacion().getLugar().getMunicipio() != null) return hecho.getUbicacion().getLugar().getMunicipio().toLowerCase().contains(municipio);
     else return true;
   }
 }
