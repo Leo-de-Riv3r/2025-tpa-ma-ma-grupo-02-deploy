@@ -90,7 +90,7 @@ public class FuenteDinamicaService {
 
   public List<SolicitudHechoDto> obtenerSolicitudesHecho() {
     List<SolicitudHechoDto> hechosPendientes = metamapaApiService.obtenerSolicitudesHecho();
-    System.out.println(hechosPendientes.size());
+    System.out.println("hechos pendientes fuente dinaica : " + hechosPendientes.size());
     return hechosPendientes;
   }
 
