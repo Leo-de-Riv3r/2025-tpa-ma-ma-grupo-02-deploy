@@ -3,7 +3,7 @@ server:
 
 clients:
   # Apunta al servicio 'loki' en Docker
-  - url: http://loki:3100/loki/api/v1/push
+  - url: http://loki.railway.internal:3100/loki/api/v1/push
 
 scrape_configs:
   - job_name: spring-boot-logs

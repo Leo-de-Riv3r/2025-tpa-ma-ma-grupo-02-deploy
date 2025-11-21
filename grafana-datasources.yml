@@ -7,7 +7,7 @@ datasources:
     access: proxy
     orgId: 1
     # 'http://prometheus:9090' usa el nombre del servicio de Docker
-    url: http://prometheus:9090
+    url: http://prometheus.railway.internal:9090
     isDefault: true
 
   # --- Datasource de Trazas ---
@@ -15,7 +15,7 @@ datasources:
     type: tempo
     access: proxy
     orgId: 1
-    url: http://tempo:3200 # Puerto interno de Tempo
+    url: http://tempo.railway.internal:3200 # Puerto interno de Tempo
 
     # Esto conecta Trazas -> Métricas
     tracesToMetrics:
@@ -29,6 +29,6 @@ datasources:
     type: loki
     access: proxy
     orgId: 1
-    url: http://loki:3100 # Apunta al servicio 'loki' en Docker
+    url: http://loki.railway.internal:3100 # Apunta al servicio 'loki' en Docker
     uid: loki-ds # Asigna un UID para que Tempo pueda referenciarlo
     isDefault: false
