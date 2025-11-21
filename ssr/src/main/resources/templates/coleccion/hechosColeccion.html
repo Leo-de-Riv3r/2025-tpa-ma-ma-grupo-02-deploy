@@ -117,6 +117,10 @@
         var markers = [];
 
         hechos.forEach(function(hecho) {
+        if (hecho.latitud == null || hecho.longitud == null) {
+           console.warn("Hecho con coordenadas inválidas:", hecho);
+           return; // lo saltamos
+           }
             var marker = L.marker([hecho.latitud, hecho.longitud]).addTo(map);
             console.log(hecho)
             marker.bindPopup(
