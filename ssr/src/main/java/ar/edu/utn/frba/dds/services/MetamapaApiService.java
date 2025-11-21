@@ -115,6 +115,8 @@ public class MetamapaApiService {
       return true;
     } else if (response.getStatusCode() == CONFLICT) {
       return false;
+    } else {
+      log.error("Error consultando la url de registro: {}", authServiceUrl);
     }
     return false;
   }
