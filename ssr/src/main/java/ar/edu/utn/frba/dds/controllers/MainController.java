@@ -71,14 +71,14 @@ public class MainController {
   public String visualizarHechosCreadorPor(Model model) {
     List<SolicitudHechoDto> solicitudHechoDtos = fuenteDinamicaService.obtenerHechosPorCreador();
     model.addAttribute("solicitudesHechos", solicitudHechoDtos);
-    return "subirHechos/hechosSubidosPorUsuario.html";
+    return "/subirHechos/hechosSubidosPorUsuario.html";
   }
 
   @GetMapping("/crear-hecho")
   public String subirHecho(
       Model model){
     model.addAttribute("hechoDto", new HechoManualDTO());
-    return "subirHechos/formularioHecho.html";
+    return "/subirHechos/formularioHecho.html";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
@@ -95,7 +95,7 @@ public class MainController {
     SolicitudHechoInputDto solicitud = fuenteDinamicaService.obtenerSolicitudById(idHecho);
     model.addAttribute("hechoId", idHecho);
     model.addAttribute("solicitud", solicitud);
-    return "/detallesSolicitudHecho";
+    return "detallesSolicitudHecho";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
@@ -124,7 +124,7 @@ public class MainController {
     model.addAttribute("hechoId", idHecho);
     model.addAttribute("revisionHechoDto", revisionHechoDto);
     model.addAttribute("accionHecho", "rechazar");
-    return "/subirComentariosSolicitud";
+    return "subirComentariosSolicitud";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
@@ -135,7 +135,7 @@ public class MainController {
     model.addAttribute("hechoId", idHecho);
     model.addAttribute("revisionHechoDto", revisionHechoDto);
     model.addAttribute("accionHecho", "aceptarConSugerencia");
-    return "/subirComentariosSolicitud";
+    return "subirComentariosSolicitud";
   }
 
   @PostMapping("/panel-control/hechosSubidos/{idHecho}/rechazar")
