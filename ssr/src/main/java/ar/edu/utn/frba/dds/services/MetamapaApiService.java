@@ -181,9 +181,7 @@ public class MetamapaApiService {
   }
 
   public List<SolicitudHechoDto> obtenerSolicitudesHecho() {
-    System.out.println("url fuente dinamica: " + fuenteDinamicaServiceUrl);
     List<SolicitudHechoDto> hechosPendientes = this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos/pendientes", SolicitudHechoDto.class);
-    System.out.println("Hechos pendientes obtenidos: " + hechosPendientes.size() + " hechos");
     return hechosPendientes;
   }
 
