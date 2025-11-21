@@ -54,7 +54,6 @@ public class ExtractorHechosCSV {
 
   }
   public Map<String, Object> obtenerDatosValidacion(MultipartFile urlCsv) {
-    List<Hecho> hechosArchivo = new ArrayList<>();
     Map<String, Object> response = new HashMap<>();
     int count = 0;
     try {
