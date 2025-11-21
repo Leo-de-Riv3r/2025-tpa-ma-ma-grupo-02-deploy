@@ -52,6 +52,9 @@ public class MainController {
   @Value("${fuenteDinamica.service.url}")
   private String fuenteDinamicaUrl;
 
+  @Value("${auth.service.url}")
+  private String authServiceUrl;
+
   public MainController(AgregadorService agregadorService, EstadisticaService estadisticaService, FuenteDinamicaService fuenteDinamicaService) {
     this.agregadorService = agregadorService;
     this.estadisticaService = estadisticaService;

@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.services.MetamapaApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,11 +13,15 @@ import org.springframework.web.client.HttpClientErrorException;
 
 @Controller
 public class LoginController {
+  @Value("${auth.service.url}")
+  private String authServiceUrl;
+
   @Autowired
   private MetamapaApiService metamapaApiService;
 
   @GetMapping("/login")
   public String login() {
+    System.out.println("url de login: " + authServiceUrl);
     return "login";
   }
 
