@@ -1,20 +1,22 @@
-FROM maven:3.8.7-eclipse-temurin-17 AS builder
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+
 WORKDIR /app
 
-COPY pom.xml .
-COPY . /app
+# Copiamos todo el repo (importante para multimodulo)
+COPY . .
 
-RUN mvn clean package -DskipTests
+# Build SOLO del módulo seleccionado
+ARG MODULE_PATH
+RUN mvn -q -DskipTests -pl ${MODULE_PATH} -am package
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
+ARG MODULE_PATH
 ARG MODULE_NAME
-ARG CONTAINER_PORT
 
-EXPOSE ${CONTAINER_PORT}
+COPY --from=builder /app/${MODULE_PATH}/target/${MODULE_NAME}.jar app.jar
 
-COPY --from=builder /app/${MODULE_NAME}/target/${MODULE_NAME}-1.0-SNAPSHOT.jar app.jar
+EXPOSE 8080
 
-# Define el punto de entrada (el comando de inicio)
 ENTRYPOINT ["java", "-jar", "app.jar"]
