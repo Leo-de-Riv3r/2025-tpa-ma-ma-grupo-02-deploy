@@ -105,6 +105,7 @@
   <script th:inline="javascript">
     /*<![CDATA[*/
         var hechos = /*[[${hechos}]]*/ []; // Thymeleaf convierte la lista en JSON
+        console.log(hechos);
         var coleccionId = /*[[${idColeccion}]]*/;
 
         var map = L.map('map');

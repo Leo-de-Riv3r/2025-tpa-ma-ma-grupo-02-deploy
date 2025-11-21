@@ -222,7 +222,7 @@ public class MainController {
       }
       model.addAttribute("coleccionId", coleccion.getId());
       model.addAttribute("coleccion", coleccionNueva);
-      return "/coleccion/editar";
+      return "coleccion/editar";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
