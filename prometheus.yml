@@ -15,12 +15,12 @@ scrape_configs:
       # contenedor Docker (Prometheus) "ver" el localhost de tu PC
       # (donde corren tus módulos desde el IDE).
       - targets:
-          - 'host.docker.internal:5010' # Módulo Agregador
-          - 'host.docker.internal:6020' # Módulo Auth
-          - 'host.docker.internal:4020' # Módulo Estadistica
-          - 'host.docker.internal:4080' # Módulo Fuent Estatica(CSV)
-          - 'host.docker.internal:4040' # Módulo Fuente dinamica
-          - 'host.docker.internal:7080' # Módulo Fuente proxy
-          - 'host.docker.internal:8080' # SSR
+          - 'agregador:5010' # Módulo Agregador
+          - 'authManager:6020' # Módulo Auth
+          #- 'host.docker.internal:4020' # Módulo Estadistica
+          #- 'host.docker.internal:4080' # Módulo Fuent Estatica(CSV)
+          #- 'host.docker.internal:4040' # Módulo Fuente dinamica
+          #- 'host.docker.internal:7080' # Módulo Fuente proxy
+          #- 'host.docker.internal:8080' # SSR
         # Añade aquí más módulos si tienes...
         # - 'host.docker.internal:8082'
