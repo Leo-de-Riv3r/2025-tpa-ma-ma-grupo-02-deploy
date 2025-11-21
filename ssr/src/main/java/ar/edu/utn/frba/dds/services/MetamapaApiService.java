@@ -14,11 +14,14 @@ import ar.edu.utn.frba.dds.models.SolicitudHechoDto;
 import ar.edu.utn.frba.dds.models.SolicitudHechoInputDto;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+@Slf4j
 @Service
 public class MetamapaApiService {
   private final WebClient webClient;
@@ -88,8 +92,10 @@ public class MetamapaApiService {
         return null;
       }
       // Otros errores HTTP
+      log.error("Error consultando la url de login: {}", authServiceUrl);
       throw new RuntimeException("Error en el servicio de autenticación: " + e.getMessage(), e);
     } catch (Exception e) {
+      log.error("Error consultando la url de login: {}", authServiceUrl);
       throw new RuntimeException("Error de conexión con el servicio de autenticación: " + e.getMessage(), e);
     }
   }
