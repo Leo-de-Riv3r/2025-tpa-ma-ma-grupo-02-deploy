@@ -21,7 +21,6 @@ public class LoginController {
 
   @GetMapping("/login")
   public String login() {
-    System.out.println("url de login: " + authServiceUrl);
     return "login";
   }
 

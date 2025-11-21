@@ -83,6 +83,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     }
 
     catch (Exception e) {
+      System.out.println("Erro en auth externa" + e.getMessage());
       response.sendRedirect("/login?auth0err");
       SecurityContextHolder.clearContext();
       request.getSession().invalidate();
