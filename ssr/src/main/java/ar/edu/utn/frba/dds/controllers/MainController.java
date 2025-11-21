@@ -71,14 +71,14 @@ public class MainController {
   public String visualizarHechosCreadorPor(Model model) {
     List<SolicitudHechoDto> solicitudHechoDtos = fuenteDinamicaService.obtenerHechosPorCreador();
     model.addAttribute("solicitudesHechos", solicitudHechoDtos);
-    return "subirHechos/hechosSubidosPorUsuario.html";
+    return "subirHechos/hechosSubidosPorUsuario";
   }
 
   @GetMapping("/crear-hecho")
   public String subirHecho(
       Model model){
     model.addAttribute("hechoDto", new HechoManualDTO());
-    return "subirHechos/formularioHecho.html";
+    return "subirHechos/formularioHecho";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
