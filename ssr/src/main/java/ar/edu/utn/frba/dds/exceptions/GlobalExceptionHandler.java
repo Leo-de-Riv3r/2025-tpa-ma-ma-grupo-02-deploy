@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.exceptions;
 
 import ar.edu.utn.frba.dds.ExternalApiException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -10,6 +11,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
   @ExceptionHandler(AuthorizationDeniedException.class)
@@ -46,6 +48,7 @@ public class GlobalExceptionHandler {
   public String handleError(HttpServletRequest req, Exception ex, Model model) {
     model.addAttribute("titulo", ex.getClass());
     model.addAttribute("descripcion", ex.getMessage());
+    log.error("Error 5xx, tipo: {}, msg: {}", ex.getClass().toString(), ex.getMessage());
     return "error";
   }
 
