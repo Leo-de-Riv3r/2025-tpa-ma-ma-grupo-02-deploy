@@ -7,6 +7,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,7 +23,6 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(UsernameNotFoundException.class)
   public ResponseEntity<String> handleUsernameNotFound(UsernameNotFoundException ex) {
-    log.error("ERROR_404 - {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
 
@@ -30,6 +30,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, String>> handleDuplicatedUsername(EntityExistsException ex) {
     log.error("ERROR_409 - {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
+  }
+  @ExceptionHandler(BadCredentialsException.class)
+  public ResponseEntity<String> handleUsernameNotFound(BadCredentialsException ex) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
   }
 
   @ExceptionHandler(Exception.class)
