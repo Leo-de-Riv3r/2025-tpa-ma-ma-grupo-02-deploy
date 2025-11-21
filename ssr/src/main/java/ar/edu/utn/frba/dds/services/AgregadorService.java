@@ -30,8 +30,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AgregadorService {
   private final MetamapaApiService metamapaApiService;
   private final HttpGraphQlClient gqlAgregadorClient;
-
-  private String urlBase = "http://localhost:5010";
+  @Value("${agregador.service.url}")
+  private String urlBase;
   @Value("${fuenteDinamica.service.url}")
   private String fuenteDinamicaUrl;
   private final RestTemplate restTemplate;

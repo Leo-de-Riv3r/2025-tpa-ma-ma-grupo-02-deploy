@@ -85,6 +85,7 @@ public class MainController {
   @GetMapping("/panel-control/hechosSubidos")
   public String mostrarHechosSubidos(Model model) {
     List<SolicitudHechoDto> solicitudesHecho = fuenteDinamicaService.obtenerSolicitudesHecho();
+    System.out.println("Hechos subidos obtenidos");
     model.addAttribute("solicitudesHechos", solicitudesHecho);
     return "/hechosSubidos";
   }

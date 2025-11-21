@@ -17,7 +17,7 @@ async function procesarSubmit(event) {
       formData.append("file", input.files[0]);
 
       try {
-        const resp = await fetch("http://localhost:4080/api/fuentes", {
+        const resp = await fetch("http://fuente-estatica.railway.internal:4080/api/fuentes", {
           method: "POST",
           body: formData
         });
@@ -25,7 +25,7 @@ async function procesarSubmit(event) {
         const data = await resp.json();
         let newInput = document.createElement('input')
         newInput.type = "text"
-        newInput.value = "http://localhost:4080/api/fuentes/" + data.id;
+        newInput.value = "http://fuente-estatica.railway.internal:4080/api/fuentes/" + data.id;
         newInput.name = input.name; // mantiene el binding
         contenedorFuentes.replaceChild(newInput, input)
       } catch (err) {
@@ -134,7 +134,7 @@ async function verificarArchivoCsv(inputFile) {
 
   try {
     // Consulta API externa para validar si es CSV
-    const resp = await fetch("http://localhost:4080/api/fuentes/validar-csv", {
+    const resp = await fetch("http://fuente-estatica.railway.internal:4080/api/fuentes/validar-csv", {
       method: "POST",
       body: formData
     });
