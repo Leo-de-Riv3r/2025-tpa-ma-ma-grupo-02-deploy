@@ -5,7 +5,7 @@ WORKDIR /app
 # Copiamos todo el repo (importante para multimodulo)
 COPY . .
 
-# Build SOLO del módulo seleccionado
+# Build sólo del módulo indicado
 ARG MODULE_PATH
 RUN mvn -q -DskipTests -pl ${MODULE_PATH} -am package
 
@@ -15,8 +15,8 @@ WORKDIR /app
 ARG MODULE_PATH
 ARG MODULE_NAME
 
+# Copia el JAR correcto
 COPY --from=builder /app/${MODULE_PATH}/target/${MODULE_NAME}.jar app.jar
 
 EXPOSE 8080
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
