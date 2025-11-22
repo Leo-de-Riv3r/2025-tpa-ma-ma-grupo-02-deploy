@@ -23,13 +23,10 @@ public class MultimediaFileSystemRepository implements IMultimediaRepository {
     private String basePath;
 
     @Override
-    public Multimedia guardar(MultipartFile file) throws IOException {
+    public Multimedia guardar(MultipartFile file, String urlAccesoS3) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("El archivo multimedia está vacío.");
         }
-
-
-
 
 
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
@@ -40,15 +37,11 @@ public class MultimediaFileSystemRepository implements IMultimediaRepository {
         String extension = obtenerExtension(originalFilename);
         String uniqueFilename = UUID.randomUUID() + "." + extension;
 
-        Path destino = uploadPath.resolve(uniqueFilename);
-        Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
-
         Formato formato = determinarFormato(extension);
-        String rutaAcceso = "http://localhost:4040/media/" + uniqueFilename;
 
         return Multimedia.builder()
-                .nombre(originalFilename)
-                .ruta(rutaAcceso)
+                .nombre(uniqueFilename)
+                .ruta(urlAccesoS3)
                 .formato(formato)
                 .build();
     }

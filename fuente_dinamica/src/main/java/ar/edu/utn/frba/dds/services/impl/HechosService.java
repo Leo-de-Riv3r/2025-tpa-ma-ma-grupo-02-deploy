@@ -14,6 +14,7 @@ import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.repositories.IHechosRepository;
 import ar.edu.utn.frba.dds.services.IHechosService;
 
+import ar.edu.utn.frba.dds.services.S3Service;
 import java.time.LocalDateTime;
 
 import java.io.IOException;
@@ -35,15 +36,16 @@ import org.springframework.web.multipart.MultipartFile;
 public class HechosService implements IHechosService {
   private final IHechosRepository hechosRepository;
   private final IMultimediaService multimediaService;
-
+  private final S3Service s3Service;
   @Value("${modification.allowance-days}")
   private long DIAS_EDICION_PERMITIDOS;
 
   public HechosService(
       IHechosRepository hechosRepository,
-      IMultimediaService multimediaService) {
+      IMultimediaService multimediaService, S3Service s3Service) {
     this.hechosRepository = hechosRepository;
     this.multimediaService = multimediaService;
+    this.s3Service = s3Service;
   }
 
   private boolean sePuedeEditarHecho(Hecho hecho) {

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public interface IMultimediaRepository {
-    Multimedia guardar(MultipartFile file) throws IOException;
+    Multimedia guardar(MultipartFile file, String urlAccesoS3) throws IOException;
     InputStream obtener(String nombreArchivo) throws IOException;
     void eliminar(String nombreArchivo) throws IOException;
     boolean existe(String nombreArchivo);
