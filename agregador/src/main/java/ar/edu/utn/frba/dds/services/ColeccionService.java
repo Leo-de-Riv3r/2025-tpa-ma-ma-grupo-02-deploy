@@ -172,11 +172,10 @@ public class ColeccionService {
           System.out.println("Fuente ya existe en bd");
           System.out.println("fuent existente url: " + fuenteExistente.get().getUrl());
           fuente = fuenteExistente.get();
+          this.refrescarYNormalizarHechos(fuente);
           System.out.println("fuente obtenida");
         } else {
           //traigo hechos y normalizo
-          System.out.println("Nueva fuente");
-          System.out.println("url: " + fuente.getUrl());
           this.refrescarYNormalizarHechos(fuente);
         }
         fuentes.add(fuente);
