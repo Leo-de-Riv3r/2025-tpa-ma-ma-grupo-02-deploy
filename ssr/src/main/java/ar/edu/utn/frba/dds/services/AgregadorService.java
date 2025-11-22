@@ -69,7 +69,7 @@ public class AgregadorService {
         if (f.getTipoFuente().equals("DINAMICA")) {
           f.setUrl(fuenteDinamicaUrl);
         } else if (f.getTipoFuente().equals("ESTATICA")){
-          f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl() + "/hechos");
+          f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
         }
         System.out.println("url de fuente: " + f.getUrl());
     });

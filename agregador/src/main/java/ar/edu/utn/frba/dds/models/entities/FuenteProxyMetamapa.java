@@ -30,6 +30,7 @@ public class FuenteProxyMetamapa extends Fuente {
           .map(hecho -> hechoConverter.fromDTO(hecho, tipoFuente))
           .collect(Collectors.toSet())
           .block();
+
       //solo agrego hechos nuevos segun titulo categoria y descripcion
       hechos =  hechos.stream().filter(h -> !this.existeHecho(h)).collect(Collectors.toSet());
       hechos.forEach((h -> {
