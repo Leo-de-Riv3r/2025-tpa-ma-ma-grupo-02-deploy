@@ -1,46 +1,109 @@
+// =============================
+// CONFIG
+// =============================
+const BASE_URL_ESTATICA = "http://fuente-estatica.railway.internal:4080/api/fuentes";
 
 
-async function procesarSubmit(event) {
-  event.preventDefault()
-  //agregar animaciones de espera
-  let submitButton = document.querySelector("#submit-button")
-  submitButton.disabled = true
-  const fuentes = document.querySelectorAll('.fuente-item');
-  let contenedorFuentes
-  for (const fuente of fuentes) {
-    const tipo = fuente.querySelector('select').value;
-    const input = fuente.querySelector('.fuente-input');
-    contenedorFuentes = input.parentElement
+// =============================
+// HELPERS
+// =============================
 
-    if (tipo === "ESTATICA" && input.files !== null && input.files.length > 0) {
-      const formData = new FormData();
-      formData.append("file", input.files[0]);
+// Hace POST con archivo a un endpoint dado y retorna JSON
+async function postFile(url, file) {
+  const formData = new FormData();
+  formData.append("file", file);
 
-      try {
-        const resp = await fetch("http://fuente-estatica.railway.internal:4080/api/fuentes", {
-          method: "POST",
-          body: formData
-        });
+  const resp = await fetch(url, { method: "POST", body: formData });
 
-        const data = await resp.json();
-        let newInput = document.createElement('input')
-        newInput.type = "text"
-        newInput.value = "http://fuente-estatica.railway.internal:4080/api/fuentes/" + data.id;
-        newInput.name = input.name; // mantiene el binding
-        contenedorFuentes.replaceChild(newInput, input)
-      } catch (err) {
-        alert("Error guardando archivo csv: " + err.message);
-        submitButton.disabled = false
-        return;
-      }
-    }
+  if (!resp.ok) {
+    throw new Error("Error en respuesta del servidor (" + resp.status + ")");
   }
 
-  //replace container content with spinner
-  event.target.submit();
-  const mainContainer = document.querySelector(".container")
-  mainContainer.innerHTML = "<div class='d-flex flex-column align-items-center justify-content-center'> <div class='spinner-border' role='status'><span class='visually-hidden'>Loading...</span></div><h4>Subiendo coleccion, aguarde unos instantes</h4></div>"
+  return resp.json();
+}
 
+
+// =============================
+// VALIDACIÓN DEL CSV
+// =============================
+async function verificarArchivoCsv(inputFile) {
+  const errorMsg = document.getElementById("errorMsg");
+
+  // reset
+  errorMsg.style.display = "none";
+  inputFile.classList.remove("is-invalid", "is-valid");
+
+  if (inputFile.files.length === 0) return;
+
+  try {
+    const result = await postFile(`${BASE_URL_ESTATICA}/validar-csv`, inputFile.files[0]);
+
+    if (!result.esCsv) {
+      errorMsg.innerText = "El archivo no es un CSV válido.";
+      errorMsg.style.display = "inline";
+      inputFile.classList.add("is-invalid");
+    } else {
+      inputFile.classList.add("is-valid");
+    }
+
+  } catch (e) {
+    errorMsg.innerText = "Error consultando API de validación.";
+    errorMsg.style.display = "inline";
+    inputFile.classList.add("is-invalid");
+  }
+}
+
+
+
+// =============================
+// PROCESAMIENTO DEL SUBMIT
+// =============================
+async function procesarSubmit(event) {
+  event.preventDefault();
+
+  const submitButton = document.querySelector("#submit-button");
+  submitButton.disabled = true;
+
+  const fuentes = document.querySelectorAll('.fuente-item');
+
+  try {
+    for (const fuente of fuentes) {
+      const tipo = fuente.querySelector('select').value;
+      const input = fuente.querySelector('.fuente-input');
+
+      // Solo manejar fuentes estáticas con archivo seleccionado
+      if (tipo === "ESTATICA" && input.files?.length > 0) {
+
+        // Subir archivo al módulo Fuente Estática
+        const data = await postFile(BASE_URL_ESTATICA, input.files[0]);
+
+        // Reemplazar input file por input text
+        const contenedor = input.parentElement;
+        const newInput = document.createElement('input');
+        newInput.type = "text";
+        newInput.name = input.name;
+        newInput.value = `${BASE_URL_ESTATICA}/${data.id}`;
+
+        contenedor.replaceChild(newInput, input);
+      }
+    }
+
+    // Spinner mientras se sube la colección completa
+    const mainContainer = document.querySelector(".container");
+    mainContainer.innerHTML = `
+      <div class='d-flex flex-column align-items-center justify-content-center'>
+        <div class='spinner-border' role='status'><span class='visually-hidden'>Loading...</span></div>
+        <h4>Subiendo colección, aguarde unos instantes…</h4>
+      </div>
+    `;
+
+    // enviar formulario real
+    event.target.submit();
+
+  } catch (err) {
+    alert("Ocurrió un error procesando el archivo: " + err.message);
+    submitButton.disabled = false;
+  }
 }
 
 
@@ -119,45 +182,6 @@ function reindexarFuentes() {
     if (select) select.name = `fuentes[${index}].tipoFuente`;
     if (input) input.name = `fuentes[${index}].url`;
   });
-}
-
-async function verificarArchivoCsv(inputFile) {
-
-  const errorMsg = document.getElementById("errorMsg");
-
-  errorMsg.style.display = "none";
-
-  if (inputFile.files.length === 0) return;
-
-  const formData = new FormData();
-  formData.append("file", inputFile.files[0]);
-
-  try {
-    // Consulta API externa para validar si es CSV
-    const resp = await fetch("http://fuente-estatica.railway.internal:4080/api/fuentes/validar-csv", {
-      method: "POST",
-      body: formData
-    });
-    const result = await resp.json();
-
-    if (!result.esCsv) {
-      errorMsg.innerText = "El archivo no es un CSV válido.";
-      errorMsg.style.display = "inline";
-      inputFile.classList.add("is-invalid");
-    } else {
-      // if (result.registros >= 10000) {
-      //   inputFile.classList.add("is-valid");
-      // } else {
-      //   errorMsg.innerText = "Tiene menos de 10000";
-      //   errorMsg.style.display = "inline";
-      //   inputFile.classList.add("is-invalid");
-      // }s
-      inputFile.classList.add("is-valid");
-    }
-  } catch (e) {
-    errorMsg.innerText = "Error consultando API externa.";
-    errorMsg.style.display = "inline";
-  }
 }
 
 const filtrosUsados = new Set();
