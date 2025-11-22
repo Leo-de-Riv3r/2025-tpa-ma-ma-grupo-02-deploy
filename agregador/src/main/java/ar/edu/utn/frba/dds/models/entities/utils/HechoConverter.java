@@ -65,7 +65,7 @@ public class HechoConverter {
 
   public Lugar obtenerLugar(Ubicacion ubicacion) {
     String url = "https://apis.datos.gob.ar/georef/api/v2.0/ubicacion";
-
+    System.out.println("Obteniendo lugar de hecho");
     try {
       WebClient webClient = WebClient.builder().baseUrl(url).build();
       LugarDTO ubi = webClient.get()
