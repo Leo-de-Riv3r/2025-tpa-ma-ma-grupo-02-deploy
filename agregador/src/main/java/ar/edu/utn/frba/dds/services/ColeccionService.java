@@ -186,7 +186,7 @@ public class ColeccionService {
     } else {
       coleccion.limpiarFuentes();
     }
-    if (dto.getAlgoritmo() != null) {
+    if (dto.getAlgoritmo() != null && !dto.getAlgoritmo().isBlank()) {
       try {
         TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmo().toUpperCase());
         IConsensoStrategy algoritmoConsenso = tipoAlgoritmo.getStrategy();
