@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableMethodSecurity
 @Configuration
@@ -27,9 +28,11 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http, RateLimitFilter rateLimitFilter) throws Exception {
 
-    http.authorizeHttpRequests(
+    http
+        .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class).
+        authorizeHttpRequests(
             auth -> auth
                 // Recursos estáticos y login público
                 .requestMatchers("/", "/home/**","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**", "/crear-hecho", "/subir-hecho", "/actuator/**").permitAll()

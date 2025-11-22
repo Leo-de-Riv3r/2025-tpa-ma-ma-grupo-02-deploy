@@ -84,6 +84,13 @@
             <artifactId>zipkin-reporter-brave</artifactId>
         </dependency>
 
+        <!-- rate limiting -->
+        <!-- https://mvnrepository.com/artifact/com.bucket4j/bucket4j-core -->
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-core</artifactId>
+            <version>8.7.0</version>
+        </dependency>
     </dependencies>
 
     <build>
