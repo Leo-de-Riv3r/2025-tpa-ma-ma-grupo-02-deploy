@@ -90,6 +90,7 @@ public class AgregadorService {
   }
 
   public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccion) {
+    System.out.println("Coleccion nombre" + coleccion.getTitulo());
     if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
     if (coleccion.getFuentes() != null) {
       coleccion.getFuentes().forEach(f -> {

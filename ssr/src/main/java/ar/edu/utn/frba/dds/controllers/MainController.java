@@ -197,6 +197,7 @@ public class MainController {
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping("/colecciones/{idColeccion}/actualizar")
   public String actualizarColecion(@PathVariable String idColeccion, @ModelAttribute("coleccion") ColeccionNuevaDto coleccion, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+      System.out.println("Actualizar coleccion");
       if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
       agregadorService.actualizarColeccion(idColeccion, coleccion);
       return "redirect:/colecciones";
