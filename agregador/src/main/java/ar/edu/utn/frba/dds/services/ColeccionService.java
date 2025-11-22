@@ -72,6 +72,7 @@ public class ColeccionService {
   }
 
   public ColeccionDTOSalida createColeccion(ColeccionDTOEntrada dto) {
+    log.info("Creando nueva coleccion");
     Coleccion coleccion = new Coleccion();
     coleccion.setTitulo(dto.getTitulo());
     coleccion.setDescripcion(dto.getDescripcion());
