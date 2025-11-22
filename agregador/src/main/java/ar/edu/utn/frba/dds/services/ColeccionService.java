@@ -169,11 +169,8 @@ public class ColeccionService {
         Fuente fuente = fuenteConverter.fromDto(fuenteDTO);
         Optional<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
         if (fuenteExistente.isPresent()) {
-          System.out.println("Fuente ya existe en bd");
-          System.out.println("fuent existente url: " + fuenteExistente.get().getUrl());
           fuente = fuenteExistente.get();
           this.refrescarYNormalizarHechos(fuente);
-          System.out.println("fuente obtenida");
         } else {
           //traigo hechos y normalizo
           this.refrescarYNormalizarHechos(fuente);
@@ -227,6 +224,7 @@ public class ColeccionService {
   @Transactional
   public void refrescarYNormalizarHechos(Fuente fuente) {
     Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter, webClient);
+    System.out.println("fuente url: " + fuente.getUrl());
     System.out.println("Cantidad de hechos encontrados: " + hechos.size());
     //mover logica de obtencion de hechos a componente u funcion
     hechos.forEach(h -> {
