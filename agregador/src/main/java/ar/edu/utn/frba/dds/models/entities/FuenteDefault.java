@@ -25,7 +25,7 @@ public class FuenteDefault extends Fuente {
   public Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter, WebClient webClient) {
     try {
       Set<Hecho> hechos = webClient.get()
-          .uri(url + "/hechos")
+          .uri(this.getUrl() + "/hechos")
           .retrieve()
           .bodyToFlux(HechoDTOEntrada.class)
           .map(hecho -> hechoConverter.fromDTO(hecho, tipoFuente))
@@ -43,7 +43,7 @@ public class FuenteDefault extends Fuente {
       }));
       return hechos;
     } catch (Exception e) {
-      throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.getUrl());
+      throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.getUrl() + "/hechos");
     }
   }
 
