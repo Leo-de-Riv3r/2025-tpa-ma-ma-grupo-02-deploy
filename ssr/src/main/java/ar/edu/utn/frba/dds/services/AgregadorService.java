@@ -105,14 +105,14 @@ public class AgregadorService {
 
     System.out.println("Enviando actualizacion coleccion a " + urlBase);
 
-    restTemplate.exchange(
+    /*restTemplate.exchange(
         urlBase + "/colecciones/" + idColeccion,
         HttpMethod.PUT,
         new HttpEntity<>(coleccion),
         Void.class
-    );
+    );*/
+    metamapaApiService.actualizarColeccion(idColeccion, coleccion);
     System.out.println("Coleccion actualizada");
-    //metamapaApiService.actualizarColeccion(idColeccion, coleccion);
   }
 
   public void eliminarColeccion(String idColeccion) {
