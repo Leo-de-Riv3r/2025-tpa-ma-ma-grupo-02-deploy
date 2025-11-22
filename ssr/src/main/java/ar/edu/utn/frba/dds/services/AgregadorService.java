@@ -71,9 +71,11 @@ public class AgregadorService {
         } else if (f.getTipoFuente().equals("ESTATICA")){
           f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl() + "/hechos");
         }
+        System.out.println("url de fuente: " + f.getUrl());
     });
 
     }
+
     metamapaApiService.crearColeccion(coleccionNueva);
   }
 
