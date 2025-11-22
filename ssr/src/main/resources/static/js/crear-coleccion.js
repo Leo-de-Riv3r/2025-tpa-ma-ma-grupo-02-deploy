@@ -1,8 +1,7 @@
 // =============================
 // CONFIG
 // =============================
-const BASE_URL_ESTATICA = "http://fuente-estatica.railway.internal:4080/api/fuentes";
-
+const BASE_URL_ESTATICA = "https://fuente-estatica.up.railway.app/api/fuentes"
 
 // =============================
 // HELPERS

@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/fuentes")
-@CrossOrigin(origins = "http://localhost:8080")
+@CrossOrigin(origins = "*")
 public class FuentesController {
   private IFuenteEstaticaService fuenteEstaticaService;
   public FuentesController(IFuenteEstaticaService fuenteEstaticaService) {
