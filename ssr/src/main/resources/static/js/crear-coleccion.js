@@ -53,13 +53,10 @@ async function verificarArchivoCsv(inputFile) {
 }
 
 
-
-// =============================
-// PROCESAMIENTO DEL SUBMIT
-// =============================
 async function procesarSubmit(event) {
   event.preventDefault();
 
+  const form = event.target; // Guardamos referencia al form
   const submitButton = document.querySelector("#submit-button");
   submitButton.disabled = true;
 
@@ -72,7 +69,6 @@ async function procesarSubmit(event) {
 
       // Solo manejar fuentes estáticas con archivo seleccionado
       if (tipo === "ESTATICA" && input.files?.length > 0) {
-
         // Subir archivo al módulo Fuente Estática
         const data = await postFile(BASE_URL_ESTATICA, input.files[0]);
 
@@ -83,25 +79,38 @@ async function procesarSubmit(event) {
         newInput.name = input.name;
         newInput.value = `${data.id}`;
 
+        // IMPORTANTE: Ocultar el nuevo input para que no se vea el ID feo,
+        // pero que se envíe igual. O déjalo visible si prefieres.
+        newInput.hidden = true;
+
         contenedor.replaceChild(newInput, input);
       }
     }
 
-    // Spinner mientras se sube la colección completa
-    const mainContainer = document.querySelector(".container");
-    mainContainer.innerHTML = `
-      <div class='d-flex flex-column align-items-center justify-content-center'>
+    // --- CORRECCIÓN AQUÍ ---
+
+    // 1. Ocultamos el formulario (sin eliminarlo del DOM)
+    form.style.display = 'none';
+
+    // 2. Creamos el spinner
+    const spinnerDiv = document.createElement('div');
+    spinnerDiv.className = 'd-flex flex-column align-items-center justify-content-center mt-5';
+    spinnerDiv.innerHTML = `
         <div class='spinner-border' role='status'><span class='visually-hidden'>Loading...</span></div>
-        <h4>Subiendo colección, aguarde unos instantes…</h4>
-      </div>
+        <h4 class="mt-3">Subiendo colección, aguarde unos instantes…</h4>
     `;
 
-    // enviar formulario real
-    event.target.submit();
+    // 3. Agregamos el spinner al contenedor padre (donde estaba el form)
+    form.parentElement.appendChild(spinnerDiv);
+
+    // 4. Ahora sí, enviamos el formulario que sigue vivo (pero invisible)
+    form.submit();
 
   } catch (err) {
     alert("Ocurrió un error procesando el archivo: " + err.message);
     submitButton.disabled = false;
+    // Si falló, asegúrate de volver a mostrar el form si lo ocultaste
+    form.style.display = 'block';
   }
 }
 
