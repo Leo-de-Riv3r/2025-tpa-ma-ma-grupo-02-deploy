@@ -35,6 +35,9 @@ public class AgregadorService {
   @Value("${fuenteDinamica.service.url}")
   private String fuenteDinamicaUrl;
   private final RestTemplate restTemplate;
+  @Value("${fuenteEstatica.service.url}")
+  private String fuenteEstaticaUrl;
+
 
   public AgregadorService(MetamapaApiService metamapaApiService, HttpGraphQlClient gqlAgregadorClient, RestTemplate restTemplate) {
     this.metamapaApiService = metamapaApiService;
@@ -65,7 +68,9 @@ public class AgregadorService {
       coleccionNueva.getFuentes().forEach(f -> {
         if (f.getTipoFuente().equals("DINAMICA")) {
           f.setUrl(fuenteDinamicaUrl);
-      }
+        } else if (f.getTipoFuente().equals("ESTATICA")){
+          f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl() + "/hechos");
+        }
     });
     }
     metamapaApiService.crearColeccion(coleccionNueva);

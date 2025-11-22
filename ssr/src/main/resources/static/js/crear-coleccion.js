@@ -81,7 +81,7 @@ async function procesarSubmit(event) {
         const newInput = document.createElement('input');
         newInput.type = "text";
         newInput.name = input.name;
-        newInput.value = `${BASE_URL_ESTATICA}/${data.id}`;
+        newInput.value = `${data.id}`;
 
         contenedor.replaceChild(newInput, input);
       }
