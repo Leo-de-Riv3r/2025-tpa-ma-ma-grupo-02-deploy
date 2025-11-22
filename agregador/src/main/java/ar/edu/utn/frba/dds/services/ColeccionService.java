@@ -169,7 +169,10 @@ public class ColeccionService {
         Fuente fuente = fuenteConverter.fromDto(fuenteDTO);
         Optional<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
         if (fuenteExistente.isPresent()) {
+          System.out.println("Fuente ya existe en bd");
+          System.out.println("fuent existente url: " + fuenteExistente.get().getUrl());
           fuente = fuenteExistente.get();
+          System.out.println("fuente obtenida");
         } else {
           //traigo hechos y normalizo
           System.out.println("Nueva fuente");
