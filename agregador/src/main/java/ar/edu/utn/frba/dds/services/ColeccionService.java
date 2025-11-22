@@ -94,6 +94,9 @@ public class ColeccionService {
         Optional<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
         if (fuenteExistente.isPresent()) {
           fuenteFinal = fuenteExistente.get();
+          this.refrescarYNormalizarHechos(fuenteFinal);
+          fuenteFinal = fuenteRepository.save(fuenteFinal);
+          System.out.println("FUENTE EXISTENTE");
         } else {
           //traigo hechos y normalizo
           this.refrescarYNormalizarHechos(fuente);
