@@ -198,6 +198,7 @@ public class MainController {
   @PostMapping("/colecciones/{idColeccion}/actualizar")
   public String actualizarColecion(@PathVariable String idColeccion, @ModelAttribute("coleccion") ColeccionNuevaDto coleccion, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
       agregadorService.actualizarColeccion(idColeccion, coleccion);
+      System.out.println("coleccion actualizada, redirigiendo");
       return "redirect:/colecciones";
   }
 

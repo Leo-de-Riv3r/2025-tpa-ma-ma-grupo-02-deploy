@@ -111,6 +111,7 @@ public class AgregadorService {
         new HttpEntity<>(coleccion),
         Void.class
     );
+    System.out.println("Coleccion actualizada");
     //metamapaApiService.actualizarColeccion(idColeccion, coleccion);
   }
 
