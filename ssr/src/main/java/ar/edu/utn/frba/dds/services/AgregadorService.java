@@ -72,6 +72,7 @@ public class AgregadorService {
           f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl() + "/hechos");
         }
     });
+
     }
     metamapaApiService.crearColeccion(coleccionNueva);
   }

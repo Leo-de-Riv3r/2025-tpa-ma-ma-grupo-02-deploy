@@ -220,6 +220,7 @@ public class ColeccionService {
 
   @Transactional
   public void refrescarYNormalizarHechos(Fuente fuente) {
+    log.info("Url de fuente: " + fuente.getUrl());
     Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter, webClient);
     //mover logica de obtencion de hechos a componente u funcion
     hechos.forEach(h -> {
