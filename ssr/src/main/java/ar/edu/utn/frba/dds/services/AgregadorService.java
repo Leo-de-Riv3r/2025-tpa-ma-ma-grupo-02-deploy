@@ -96,6 +96,18 @@ public class AgregadorService {
 //        new HttpEntity<>(coleccion),
 //        Void.class
 //    );
+    if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
+    if (coleccion.getFuentes() != null) {
+      coleccion.getFuentes().forEach(f -> {
+        if (f.getTipoFuente().equals("DINAMICA")) {
+          f.setUrl(fuenteDinamicaUrl);
+        } else if (f.getTipoFuente().equals("ESTATICA") && (!f.getUrl().contains(fuenteEstaticaUrl))){
+          f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
+        }
+        System.out.println("url de fuente enviada: " + f.getUrl());
+      });
+
+    }
     metamapaApiService.actualizarColeccion(idColeccion, coleccion);
   }
 
