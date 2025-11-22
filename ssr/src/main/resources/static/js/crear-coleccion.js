@@ -106,23 +106,26 @@ async function procesarSubmit(event) {
 }
 
 
-
 function cambiarInput(select) {
   const contenedor = select.parentElement;
   const oldInput = contenedor.querySelector('.fuente-input');
-  let newInput = oldInput;
+  let newInput = oldInput; // Aquí defines la variable que debes usar
+
   if(select.value === "DINAMICA"){
-    newInput.hidden = true
-    input.required = false;
+    newInput.hidden = true;       // Esto estaba bien
+    newInput.required = false;    // <--- CORRECCIÓN: Cambiar 'input' por 'newInput'
   }
   else if (select.value === "ESTATICA") {
-    newInput.type = "file"
+    newInput.type = "file";
     newInput.accept = ".csv";
     newInput.onchange = () => verificarArchivoCsv(newInput);
-    newInput.required = true
+    newInput.required = true;
   } else {
     newInput.type = "text";
     newInput.placeholder = "URL";
+    // Asegúrate de que si cambian de Dinámica a otra, el input vuelva a ser visible
+    newInput.hidden = false;      // <--- RECOMENDACIÓN: Agrega esto por seguridad
+    newInput.required = true;     // <--- RECOMENDACIÓN: Agrega esto si las otras requieren URL
   }
 
   contenedor.replaceChild(newInput, oldInput);
