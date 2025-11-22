@@ -90,12 +90,6 @@ public class AgregadorService {
   }
 
   public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccion) {
-//    ResponseEntity<Void> response = restTemplate.exchange(
-//        urlBase + "/colecciones/" + idColeccion,
-//        HttpMethod.PUT,
-//        new HttpEntity<>(coleccion),
-//        Void.class
-//    );
     if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
     if (coleccion.getFuentes() != null) {
       coleccion.getFuentes().forEach(f -> {
@@ -108,7 +102,14 @@ public class AgregadorService {
       });
 
     }
-    metamapaApiService.actualizarColeccion(idColeccion, coleccion);
+
+    restTemplate.exchange(
+        urlBase + "/colecciones/" + idColeccion,
+        HttpMethod.PUT,
+        new HttpEntity<>(coleccion),
+        Void.class
+    );
+    //metamapaApiService.actualizarColeccion(idColeccion, coleccion);
   }
 
   public void eliminarColeccion(String idColeccion) {
