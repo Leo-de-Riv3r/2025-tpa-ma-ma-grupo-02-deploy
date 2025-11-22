@@ -92,6 +92,7 @@ public class AgregadorService {
   public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccion) {
     System.out.println("Coleccion nombre" + coleccion.getTitulo());
     if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
+    System.out.println("Tiene fuentes? : " + coleccion.getFuentes() != null && coleccion.getFuentes().size() > 0);
     if (coleccion.getFuentes() != null) {
       coleccion.getFuentes().forEach(f -> {
         if (f.getTipoFuente().equals("DINAMICA")) {
