@@ -203,6 +203,6 @@ public class MetamapaApiService {
   }
 
   public List<SolicitudHechoDto> obtenerHechosPorCreador() {
-    return this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos?filterByCreator=true", SolicitudHechoDto.class);
+    return this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos/pendientes_por_creador", SolicitudHechoDto.class);
   }
 }
