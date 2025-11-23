@@ -11,6 +11,7 @@ import ar.edu.utn.frba.dds.models.HechoDetallesDto;
 import ar.edu.utn.frba.dds.models.HechoDto;
 import ar.edu.utn.frba.dds.models.HechoManualDTO;
 import ar.edu.utn.frba.dds.models.HechoPaginacionDto;
+import ar.edu.utn.frba.dds.models.HechoUpdateDTO;
 import ar.edu.utn.frba.dds.models.NuevaEstadisticaDto;
 import ar.edu.utn.frba.dds.models.PaginacionDtoHechoDtoSalida;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
@@ -66,6 +67,29 @@ public class MainController {
     return "home";
   }
 
+  @GetMapping("/editar-hecho/{id}")
+  public String procesarEdicionDeHecho(@PathVariable Long id, Model model) {
+    var hecho = fuenteDinamicaService.obtenerHechoEdicion(id);
+    model.addAttribute("idHecho", id);
+    model.addAttribute("hecho", hecho);
+    return "subirHechos/formularioEdicionHecho.html";
+  }
+
+  @PostMapping("/editar-hecho/{id}")
+  public String procesarEdicionDeHecho(
+      @PathVariable Long id,
+      @ModelAttribute("hecho") HechoUpdateDTO hechoDto,
+      @RequestParam(value = "multimedia", required = false) List<MultipartFile> multimediaFiles,
+      RedirectAttributes redirectAttributes
+  ) {
+    try {
+      fuenteDinamicaService.editarHecho(id, hechoDto, multimediaFiles);
+      return "redirect:/colecciones";
+    } catch (Exception e) {
+      redirectAttributes.addFlashAttribute("error", "Error al intentar editar el hecho: " + e.getMessage());
+      return "redirect:/editar-hecho/" + id;
+    }
+  }
 
   @GetMapping("/hechos-usuario")
   public String visualizarHechosCreadorPor(Model model) {

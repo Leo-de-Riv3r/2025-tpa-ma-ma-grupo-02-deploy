@@ -14,7 +14,7 @@
             <div class="card-body bg-light">
                 <h4>Estado: </h4>
                 <p th:text="${s.estado_hecho}" >Estado de hecho</p>
-                <h4>Fecha de revision:</h4>
+                <h4>Fecha de carga: <span th:text="${s.fecha_carga}">fecha carga hecho</span></h4>
                 <p th:text="${s.categoria}">
                     Sin revision
                 </p>
@@ -22,8 +22,14 @@
                     <p th:text="${s.sugerencias}">Sugerencias</p>
                 </h4>
             </div>
+
             <a sec:authorize="hasRole('ADMINISTRADOR')"
                class="btn btn-primary" th:href="@{/panel-control/hechosSubidos/{idHecho} (idHecho=${s.id})}">Ver detalles</a>
+            <a th:if="${s.fecha_carga != null and s.fecha_carga.plusDays(7).isAfter(#temporals.createToday())}"
+               class="btn btn-warning"
+               th:href="@{/editar-hecho/{idHecho} (idHecho=${s.id})}">
+                Editar hecho
+            </a>
             <a sec:authorize="hasRole('ADMINISTRADOR')"
                class="btn btn-success" th:href="@{/panel-control/hechosSubidos/{idHecho}/aceptar (idHecho=${s.id})}">Aceptar</a>
             <a sec:authorize="hasRole('ADMINISTRADOR')"

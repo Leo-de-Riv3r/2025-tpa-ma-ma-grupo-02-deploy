@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.HechoManualDTO;
+import ar.edu.utn.frba.dds.models.HechoUpdateDTO;
 import ar.edu.utn.frba.dds.models.RevisionHechoDto;
 import ar.edu.utn.frba.dds.models.SolicitudHechoDto;
 import ar.edu.utn.frba.dds.models.SolicitudHechoInputDto;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,12 +24,82 @@ public class FuenteDinamicaService {
   private final MetamapaApiService metamapaApiService;
   private final RestTemplate restTemplate;
   private final String fuenteDinamicaServiceUrl;
+  private final WebApiCallerService webApiCallerService;
   public FuenteDinamicaService(
       MetamapaApiService metamapaApiService, RestTemplate restTemplate, @Value("${fuenteDinamica.service.url}")
-     String fuenteDinamicaServiceUrl) {
+     String fuenteDinamicaServiceUrl, WebApiCallerService webApiCallerService) {
     this.metamapaApiService = metamapaApiService;
     this.restTemplate = restTemplate;
     this.fuenteDinamicaServiceUrl = fuenteDinamicaServiceUrl;
+    this.webApiCallerService = webApiCallerService;
+  }
+
+  public HechoUpdateDTO obtenerHechoEdicion(Long id) {
+    Class<HechoUpdateDTO> responseType = HechoUpdateDTO.class;
+
+    String url = fuenteDinamicaServiceUrl + "/hechos/" + id;
+
+    try {
+      var response = restTemplate.getForEntity(url, responseType);
+
+      if (response.getStatusCode().is2xxSuccessful()) {
+        return response.getBody();
+      } else {
+        throw new RuntimeException("API devolvió código de estado " + response.getStatusCode() +
+            " al intentar obtener Hecho con ID " + id);
+      }
+    } catch (HttpClientErrorException e) {
+      throw new RuntimeException("Error del cliente HTTP al acceder a " + url + ": " + e.getStatusCode(), e);
+    } catch (Exception e) {
+      throw new RuntimeException("Error genérico al procesar la solicitud a la API para ID " + id, e);
+    }
+  }
+
+  public void editarHecho(Long id, HechoUpdateDTO hechoDto, List<MultipartFile> multimedia) {
+    if (hechoDto.getTitulo() == null || hechoDto.getTitulo().isBlank()) {
+      throw new IllegalArgumentException("DEBUG: El título del DTO es nulo o vacío después del post.");
+    }
+    if (hechoDto.getLatitud() == null || hechoDto.getLongitud() == null) {
+      throw new IllegalArgumentException("DEBUG: Latitud o Longitud son nulas. Revise el JS y los IDs del HTML.");
+    }
+
+    String targetUrl = fuenteDinamicaServiceUrl + "/hechos/" + id;
+    System.out.println("DEBUG URL de Edición: " + targetUrl);
+
+    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+    HttpHeaders jsonHeaders = new HttpHeaders();
+    jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
+    HttpEntity<HechoUpdateDTO> jsonPart = new HttpEntity<>(hechoDto, jsonHeaders);
+    body.add("hecho", jsonPart);
+
+    if (multimedia != null && !multimedia.isEmpty()) {
+      for (MultipartFile file : multimedia) {
+        if (file.isEmpty()) continue;
+
+        try {
+          ByteArrayResource fileResource = new ByteArrayResource(file.getBytes()) {
+            @Override
+            public String getFilename() {
+              return file.getOriginalFilename();
+            }
+          };
+          body.add("multimedia", fileResource);
+        } catch (Exception e) {
+          throw new RuntimeException("Error al procesar archivo para la API", e);
+        }
+      }
+    }
+
+    try {
+      webApiCallerService.put(
+          targetUrl,
+          body,
+          Void.class
+      );
+    } catch (Exception e) {
+      throw new RuntimeException("ERROR durante PUT Multipart a la API de Hechos: " + e.getMessage(), e);
+    }
   }
 
   public void  crearHecho(HechoManualDTO hechoDto, List<MultipartFile> multimedia) {
