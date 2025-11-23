@@ -1,4 +1,6 @@
-<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
+<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
 <div th:fragment="contenido">
     <h1>Hechos Subidos por Usuario</h1>
     <div th:if="${solicitudesHechos.empty}" class="text-center py-5">
@@ -20,10 +22,14 @@
                     <p th:text="${s.sugerencias}">Sugerencias</p>
                 </h4>
             </div>
-            <a class="btn btn-primary" th:href="@{/panel-control/hechosSubidos/{idHecho} (idHecho=${s.id})}">Ver detalles</a>
-            <a class="btn btn-success" th:href="@{/panel-control/hechosSubidos/{idHecho}/aceptar (idHecho=${s.id})}">Aceptar</a>
-            <a class="btn btn-danger" th:href="@{/panel-control/hechosSubidos/{idHecho}/rechazoConSugerencias (idHecho=${s.id})}">Rechazar</a>
-            <a class="btn btn-secondary" th:href="@{/panel-control/hechosSubidos/{idHecho}/aceptarConSugerencias (idHecho=${s.id})}">Aceptar con sugerencias</a>
+            <a sec:authorize="hasRole('ADMINISTRADOR')"
+               class="btn btn-primary" th:href="@{/panel-control/hechosSubidos/{idHecho} (idHecho=${s.id})}">Ver detalles</a>
+            <a sec:authorize="hasRole('ADMINISTRADOR')"
+               class="btn btn-success" th:href="@{/panel-control/hechosSubidos/{idHecho}/aceptar (idHecho=${s.id})}">Aceptar</a>
+            <a sec:authorize="hasRole('ADMINISTRADOR')"
+               class="btn btn-danger" th:href="@{/panel-control/hechosSubidos/{idHecho}/rechazoConSugerencias (idHecho=${s.id})}">Rechazar</a>
+            <a sec:authorize="hasRole('ADMINISTRADOR')"
+               class="btn btn-secondary" th:href="@{/panel-control/hechosSubidos/{idHecho}/aceptarConSugerencias (idHecho=${s.id})}">Aceptar con sugerencias</a>
         </div>
     </div>
 </div>
