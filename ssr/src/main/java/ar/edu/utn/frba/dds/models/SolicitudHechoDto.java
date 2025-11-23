@@ -13,7 +13,7 @@ public class SolicitudHechoDto {
   private Double longitud;
   private LocalDateTime fecha_acontecimiento;
   private LocalDateTime fecha_carga;
-  private String estado;
+  private String estado_hecho;
   private String motivo_rechazo;
   private String sugerencias;
   private LocalDateTime fecha_revision;
