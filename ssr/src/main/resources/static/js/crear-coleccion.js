@@ -56,7 +56,16 @@ async function verificarArchivoCsv(inputFile) {
 async function procesarSubmit(event) {
   event.preventDefault();
 
-  const form = event.target; // Guardamos referencia al form
+  const form = event.target;
+
+  // --- NUEVA VALIDACIÓN: BLOQUEAR SI HAY ERRORES ---
+  // Buscamos elementos que tengan la clase 'is-invalid'
+  if (form.querySelector('.is-invalid')) {
+    alert("No se puede enviar el formulario. Por favor, corrija los campos marcados en rojo (archivos inválidos).");
+    return;
+  }
+  // -------------------------------------------------
+
   const submitButton = document.querySelector("#submit-button");
   submitButton.disabled = true;
 
@@ -68,26 +77,27 @@ async function procesarSubmit(event) {
       const input = fuente.querySelector('.fuente-input');
 
       // Solo manejar fuentes estáticas con archivo seleccionado
+      if(tipo === "PROXY_API" && input.value == "") {
+        return;
+      }
       if (tipo === "ESTATICA" && input.files?.length > 0) {
+
         // Subir archivo al módulo Fuente Estática
         const data = await postFile(BASE_URL_ESTATICA, input.files[0]);
 
-        // Reemplazar input file por input text
+        // Reemplazar input file por input text con el ID
         const contenedor = input.parentElement;
         const newInput = document.createElement('input');
         newInput.type = "text";
         newInput.name = input.name;
         newInput.value = `${data.id}`;
 
-        // IMPORTANTE: Ocultar el nuevo input para que no se vea el ID feo,
-        // pero que se envíe igual. O déjalo visible si prefieres.
+        // Ocultar el input con el ID para que no moleste visualmente
         newInput.hidden = true;
 
         contenedor.replaceChild(newInput, input);
       }
     }
-
-    // --- CORRECCIÓN AQUÍ ---
 
     // 1. Ocultamos el formulario (sin eliminarlo del DOM)
     form.style.display = 'none';
@@ -100,20 +110,23 @@ async function procesarSubmit(event) {
         <h4 class="mt-3">Subiendo colección, aguarde unos instantes…</h4>
     `;
 
-    // 3. Agregamos el spinner al contenedor padre (donde estaba el form)
+    // 3. Agregamos el spinner al contenedor padre
     form.parentElement.appendChild(spinnerDiv);
 
-    // 4. Ahora sí, enviamos el formulario que sigue vivo (pero invisible)
+    // 4. Enviamos el formulario
     form.submit();
 
   } catch (err) {
-    alert("Ocurrió un error procesando el archivo: " + err.message);
+    alert("Ocurrió un error procesando el archivo");
     submitButton.disabled = false;
-    // Si falló, asegúrate de volver a mostrar el form si lo ocultaste
+    // Si falló, asegúrate de volver a mostrar el form
     form.style.display = 'block';
+
+    // Opcional: remover el spinner si quedó ahí
+    const spinner = document.querySelector('.spinner-border')?.parentElement;
+    if(spinner) spinner.remove();
   }
 }
-
 
 function cambiarInput(select) {
   const contenedor = select.parentElement;
