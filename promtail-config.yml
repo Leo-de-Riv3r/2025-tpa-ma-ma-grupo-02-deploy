@@ -2,27 +2,39 @@ server:
   http_listen_port: 9080
 
 clients:
-  # Apunta al servicio 'loki' en Docker
+  # Apunta al servicio 'loki' en Railway
   - url: http://loki.railway.internal:3100/loki/api/v1/push
 
 scrape_configs:
-  - job_name: spring-boot-logs
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: spring-boot-logs
-          # Lee todos los archivos .log en la carpeta que creamos en el Paso 3
-          __path__: /var/log/spring-logs/*.log
+  # Configuramos para leer el stdout del Docker log driver (en entornos Docker/Kubernetes)
+  - job_name: railway-spring-stdout
+    # El Promtail en Railway necesita ser configurado con un modo para leer el log driver.
+    # Como Promtail está en un contenedor separado, debe leer los logs del sistema
+    # de logs subyacente. Usaremos la configuración común para leer logs de Docker:
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      # 1. Obtenemos el nombre de la aplicación desde el log driver
+      - source_labels: ['__meta_docker_container_label_com_railway_service_name']
+        target_label: application
+      # 2. Obtenemos el log file path (stdout/stderr)
+      - source_labels: ['__meta_docker_log_path']
+        target_label: log_file_path
+      # 3. La clave 'job' siempre será 'railway-spring-stdout'
+      - target_label: job
+        replacement: railway-spring-stdout
+
     pipeline_stages:
-      # Esto parsea el JSON que escriben tus aplicaciones Spring
+      # Promtail recibe el stream de log (stdout) que ya es JSON (Paso 1)
       - json:
           expressions:
             traceId: traceId
             spanId: spanId
-            application: app_name
-            level: level
-      # Añade los campos extraídos como etiquetas (labels) de Loki para un filtrado rápido
+            level: level # Extraemos estos campos del JSON
+
+      # ⚠️ IMPORTANTE: El campo 'application' ya se extrae del label de Docker (paso 1)
+      # Ahora definimos las etiquetas para la búsqueda en Grafana
       - labels:
           traceId:
           spanId:

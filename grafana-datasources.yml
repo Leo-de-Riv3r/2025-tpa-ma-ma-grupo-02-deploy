@@ -16,7 +16,13 @@ datasources:
     access: proxy
     orgId: 1
     url: http://tempo.railway.internal:3200 # Puerto interno de Tempo
-
+  - name: Loki
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://loki.railway.internal:3100 # Apunta al servicio 'loki' en Docker
+    uid: loki-ds # Asigna un UID para que Tempo pueda referenciarlo
+    isDefault: false
     # Esto conecta Trazas -> Métricas
     tracesToMetrics:
       datasourceUid: 'Prometheus'
@@ -25,10 +31,3 @@ datasources:
       tags: [ 'traceId' ]        # Buscar por la etiqueta 'traceId'
       query: '{traceId="${__trace.id}"}'
         # --- Datasource de Logs (Loki) ---
-  - name: Loki
-    type: loki
-    access: proxy
-    orgId: 1
-    url: http://loki.railway.internal:3100 # Apunta al servicio 'loki' en Docker
-    uid: loki-ds # Asigna un UID para que Tempo pueda referenciarlo
-    isDefault: false
