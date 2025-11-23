@@ -52,23 +52,33 @@ async function verificarArchivoCsv(inputFile) {
   }
 }
 
+function mostrarErrorGlobal(mensaje) {
+    const contenedorError = document.getElementById("mensajeErrorGlobal");
+    contenedorError.innerText = mensaje;
+    contenedorError.style.display = "block";
+
+    // Hacemos scroll hacia el error para asegurar que el usuario lo vea
+    contenedorError.scrollIntoView({ behavior: "smooth", block: "center" });
+}
 
 async function procesarSubmit(event) {
   event.preventDefault();
 
   const form = event.target;
+  const submitButton = document.querySelector("#submit-button");
+  const contenedorError = document.getElementById("mensajeErrorGlobal");
 
-  // --- NUEVA VALIDACIÓN: BLOQUEAR SI HAY ERRORES ---
-  // Buscamos elementos que tengan la clase 'is-invalid'
+  // 1. Limpiar errores previos al intentar enviar de nuevo
+  contenedorError.style.display = "none";
+  contenedorError.innerText = "";
+
+  // --- VALIDACIÓN: BLOQUEAR SI HAY ERRORES (is-invalid) ---
   if (form.querySelector('.is-invalid')) {
-    alert("No se puede enviar el formulario. Por favor, corrija los campos marcados en rojo (archivos inválidos).");
+    mostrarErrorGlobal("No se puede enviar el formulario. Por favor, corrija los campos marcados en rojo (archivos inválidos).");
     return;
   }
-  // -------------------------------------------------
 
-  const submitButton = document.querySelector("#submit-button");
   submitButton.disabled = true;
-
   const fuentes = document.querySelectorAll('.fuente-item');
 
   try {
@@ -76,10 +86,13 @@ async function procesarSubmit(event) {
       const tipo = fuente.querySelector('select').value;
       const input = fuente.querySelector('.fuente-input');
 
-      // Solo manejar fuentes estáticas con archivo seleccionado
-      if(tipo === "PROXY_API" && input.value == "") {
-        return;
+      // Validación específica si se requiere URL en Proxy API
+      if(tipo === "PROXY_API" && input.value.trim() === "") {
+         submitButton.disabled = false; // Reactivar botón si cancelamos
+         return;
       }
+
+      // Solo manejar fuentes estáticas con archivo seleccionado
       if (tipo === "ESTATICA" && input.files?.length > 0) {
 
         // Subir archivo al módulo Fuente Estática
@@ -92,14 +105,14 @@ async function procesarSubmit(event) {
         newInput.name = input.name;
         newInput.value = `${data.id}`;
 
-        // Ocultar el input con el ID para que no moleste visualmente
+        // Ocultar el input con el ID
         newInput.hidden = true;
 
         contenedor.replaceChild(newInput, input);
       }
     }
 
-    // 1. Ocultamos el formulario (sin eliminarlo del DOM)
+    // 1. Ocultamos el formulario visualmente
     form.style.display = 'none';
 
     // 2. Creamos el spinner
@@ -110,19 +123,22 @@ async function procesarSubmit(event) {
         <h4 class="mt-3">Subiendo colección, aguarde unos instantes…</h4>
     `;
 
-    // 3. Agregamos el spinner al contenedor padre
+    // 3. Agregamos el spinner
     form.parentElement.appendChild(spinnerDiv);
 
     // 4. Enviamos el formulario
     form.submit();
 
   } catch (err) {
-    alert("Ocurrió un error procesando el archivo");
+    // REEMPLAZO DEL ALERT DEL CATCH
+    mostrarErrorGlobal("Ocurrió un error procesando el archivo: " + (err.message || "Error desconocido"));
+
     submitButton.disabled = false;
-    // Si falló, asegúrate de volver a mostrar el form
+
+    // Volver a mostrar el form para que el usuario pueda corregir y reintentar
     form.style.display = 'block';
 
-    // Opcional: remover el spinner si quedó ahí
+    // Remover el spinner si quedó ahí
     const spinner = document.querySelector('.spinner-border')?.parentElement;
     if(spinner) spinner.remove();
   }
