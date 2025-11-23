@@ -26,11 +26,12 @@
             <a sec:authorize="hasRole('ADMINISTRADOR')"
                class="btn btn-primary" th:href="@{/panel-control/hechosSubidos/{idHecho} (idHecho=${s.id})}">Ver detalles</a>
             <a th:if="${s.fecha_carga != null
-          and s.fecha_carga.plusDays(7).isAfter(#temporals.now())}"
+          and s.fecha_carga.plusDays(7).isAfter(T(java.time.LocalDateTime).now())}"
                class="btn btn-warning"
                th:href="@{/editar-hecho/{idHecho}(idHecho=${s.id})}">
                 Editar hecho
             </a>
+
 
             <a sec:authorize="hasRole('ADMINISTRADOR')"
                class="btn btn-success" th:href="@{/panel-control/hechosSubidos/{idHecho}/aceptar (idHecho=${s.id})}">Aceptar</a>
