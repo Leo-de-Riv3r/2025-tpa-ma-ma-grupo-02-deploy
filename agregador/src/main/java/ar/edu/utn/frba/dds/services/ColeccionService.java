@@ -101,7 +101,6 @@ public class ColeccionService {
           //traigo hechos y normalizo
           this.refrescarYNormalizarHechos(fuente);
           fuenteFinal = fuenteRepository.save(fuente);
-          System.out.println("FUENTE GUARDADA");
         }
         fuentes.add(fuenteFinal);
       });

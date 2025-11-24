@@ -25,7 +25,7 @@ public class FuenteDefault extends Fuente {
   public Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter, WebClient webClient) {
     try {
       Set<Hecho> hechos = webClient.get()
-          .uri(this.getUrl() + "/hechos")
+          .uri(url + "/hechos")
           .retrieve()
           .bodyToFlux(HechoDTOEntrada.class)
           .map(hecho -> hechoConverter.fromDTO(hecho, tipoFuente))

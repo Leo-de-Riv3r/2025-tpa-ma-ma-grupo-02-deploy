@@ -66,7 +66,7 @@ public abstract class Fuente {
 
   public Boolean existeHecho(Hecho hecho) {
     return this.hechos.stream()
-        .anyMatch(h -> Objects.equals(h.getTitulo(), hecho.getTitulo()) && Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion()));
+        .anyMatch(h -> h.getTitulo() == hecho.getTitulo() && h.getCategoria() ==  hecho.getCategoria() && h.getDescripcion() == hecho.getDescripcion());
   }
 
   public void addHechos(Set<Hecho> hechos) {

@@ -45,7 +45,7 @@
                             <option value="PROXY_API">Proxy api</option>
                         </select>
                         <input class="form-control fuente-input" type="text" placeholder="URL"
-                            th:field="*{fuentes[__${iterStat.index}__].url}" required>
+                            th:field="*{fuentes[__${iterStat.index}__].url}" required hidden>
                         <button type="button" class="btn btn-danger" onclick="eliminarFuente(this)">Eliminar</button>
                     </div>
                 </div>
