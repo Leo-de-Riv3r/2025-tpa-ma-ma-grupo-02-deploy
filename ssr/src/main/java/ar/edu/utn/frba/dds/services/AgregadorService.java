@@ -64,17 +64,17 @@ public class AgregadorService {
 
   public void crearColeccion(ColeccionNuevaDto coleccionNueva) {
     if (coleccionNueva.getAlgoritmo().isBlank()) coleccionNueva.setAlgoritmo(null);
-    //check if coleccionNueva has fuenteDinamica
+
     if (coleccionNueva.getFuentes() != null) {
       coleccionNueva.getFuentes().forEach(f -> {
         if (f.getTipoFuente().equals("DINAMICA")) {
           f.setUrl(fuenteDinamicaUrl);
         } else if (f.getTipoFuente().equals("ESTATICA")){
           f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
-        } else if(f.getTipoFuente().equals("PROXY_API")) {
+        } else if(f.getTipoFuente().equals("PROXY_METAMAPA")) {
           f.setUrl(fuenteProxyUrl);
         }
-        System.out.println("url de fuente enviada: " + f.getUrl());
+
     });
 
     }
@@ -94,28 +94,21 @@ public class AgregadorService {
 
   public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccion) {
 
+    if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
+
     if (coleccion.getFuentes() != null) {
       coleccion.getFuentes().forEach(f -> {
         if (f.getTipoFuente().equals("DINAMICA")) {
           f.setUrl(fuenteDinamicaUrl);
-        } else if (f.getTipoFuente().equals("ESTATICA") && (!f.getUrl().contains(fuenteEstaticaUrl))){
+        } else if (f.getTipoFuente().equals("ESTATICA")){
           f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
+        } else if(f.getTipoFuente().equals("PROXY_METAMAPA")) {
+          f.setUrl(fuenteProxyUrl);
         }
-        System.out.println("url de fuente enviada: " + f.getUrl());
       });
-
     }
 
-    System.out.println("Enviando actualizacion coleccion a " + urlBase);
-
-    /*restTemplate.exchange(
-        urlBase + "/colecciones/" + idColeccion,
-        HttpMethod.PUT,
-        new HttpEntity<>(coleccion),
-        Void.class
-    );*/
     metamapaApiService.actualizarColeccion(idColeccion, coleccion);
-    System.out.println("Coleccion actualizada");
   }
 
   public void eliminarColeccion(String idColeccion) {
