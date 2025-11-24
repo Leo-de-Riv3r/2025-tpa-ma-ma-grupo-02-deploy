@@ -36,7 +36,7 @@ public class HechoApiService {
 
   public Flux<HechoDTO> getHechos() {
     // Establecemos el límite máximo de páginas que queremos traer
-    final int MAX_PAGES = 5;
+    final int MAX_PAGES = 3;
 
     return getHechosPag(1, 100)
         .flatMapMany(firstPage -> {
