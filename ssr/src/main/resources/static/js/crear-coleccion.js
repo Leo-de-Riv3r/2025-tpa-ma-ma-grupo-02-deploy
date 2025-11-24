@@ -172,7 +172,7 @@ function agregarFuente() {
                             <option selected>Tipo de fuente</option>
                             <option value="ESTATICA">Estatica</option>
                             <option value="DINAMICA">Dinamica</option>
-                            <option value="PROXY_API">Proxy api</option>
+                            <option value="PROXY_METAMAPA">Proxy api</option>
                         </select>
                         <input class="form-control fuente-input" type="text" placeholder="URL"
                         name="fuentes[${id}].url">
@@ -259,7 +259,7 @@ function agregarFiltro() {
           <option value="">Seleccione tipo de fuente</option>
           <option value="ESTATICA">Estática</option>
           <option value="DINAMICA">Dinámica</option>
-          <option value="PROXY_API">Proxy API</option>
+          <option value="PROXY_METAMAPA">Proxy API</option>
         </select>
       `;
       break;
