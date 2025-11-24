@@ -143,7 +143,7 @@ function cambiarInput(select) {
   const oldInput = contenedor.querySelector('.fuente-input');
   let newInput = oldInput; // Aquí defines la variable que debes usar
 
-  if(select.value === "ESTATICA" || ){
+  if(select.value === "ESTATICA"){
      newInput.type = "file";
          newInput.accept = ".csv";
          newInput.onchange = () => verificarArchivoCsv(newInput);
