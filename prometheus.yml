@@ -20,7 +20,7 @@ scrape_configs:
           - 'estadisticas.railway.internal:4020' # Módulo Estadistica
           - 'fuente-estatica.railway.internal:4080' # Módulo Fuent Estatica(CSV)
           - 'fuente-dinamica.railway.internal:4040' # Módulo Fuente dinamica
-          #- 'host.docker.internal:7080' # Módulo Fuente proxy
+          - 'fuente-proxy.railway.internal:7080' # Módulo Fuente proxy
           - 'ssr.railway.internal:8080' # SSR
         # Añade aquí más módulos si tienes...
         # - 'host.docker.internal:8082'

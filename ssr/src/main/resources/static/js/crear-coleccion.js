@@ -86,12 +86,6 @@ async function procesarSubmit(event) {
       const tipo = fuente.querySelector('select').value;
       const input = fuente.querySelector('.fuente-input');
 
-      // Validación específica si se requiere URL en Proxy API
-      if(tipo === "PROXY_API" && input.value.trim() === "") {
-         submitButton.disabled = false; // Reactivar botón si cancelamos
-         return;
-      }
-
       // Solo manejar fuentes estáticas con archivo seleccionado
       if (tipo === "ESTATICA" && input.files?.length > 0) {
 
@@ -149,21 +143,17 @@ function cambiarInput(select) {
   const oldInput = contenedor.querySelector('.fuente-input');
   let newInput = oldInput; // Aquí defines la variable que debes usar
 
-  if(select.value === "DINAMICA"){
-    newInput.hidden = true;       // Esto estaba bien
-    newInput.required = false;    // <--- CORRECCIÓN: Cambiar 'input' por 'newInput'
+  if(select.value === "ESTATICA" || ){
+     newInput.type = "file";
+         newInput.accept = ".csv";
+         newInput.onchange = () => verificarArchivoCsv(newInput);
+         newInput.required = true;
+         newInput.hidden = false;
+         newInput.required = true;
   }
-  else if (select.value === "ESTATICA") {
-    newInput.type = "file";
-    newInput.accept = ".csv";
-    newInput.onchange = () => verificarArchivoCsv(newInput);
-    newInput.required = true;
-  } else {
-    newInput.type = "text";
-    newInput.placeholder = "URL";
-    // Asegúrate de que si cambian de Dinámica a otra, el input vuelva a ser visible
-    newInput.hidden = false;      // <--- RECOMENDACIÓN: Agrega esto por seguridad
-    newInput.required = true;     // <--- RECOMENDACIÓN: Agrega esto si las otras requieren URL
+  else {
+    newInput.hidden = true;       // Esto estaba bien
+    newInput.required = false;
   }
 
   contenedor.replaceChild(newInput, oldInput);

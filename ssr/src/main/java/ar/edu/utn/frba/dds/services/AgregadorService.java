@@ -38,7 +38,8 @@ public class AgregadorService {
   @Value("${fuenteEstatica.service.url}")
   private String fuenteEstaticaUrl;
 
-
+  @Value("${fuenteProxy.service.url}")
+  private String fuenteProxyUrl;
   public AgregadorService(MetamapaApiService metamapaApiService, HttpGraphQlClient gqlAgregadorClient, RestTemplate restTemplate) {
     this.metamapaApiService = metamapaApiService;
     this.gqlAgregadorClient = gqlAgregadorClient;
@@ -70,6 +71,8 @@ public class AgregadorService {
           f.setUrl(fuenteDinamicaUrl);
         } else if (f.getTipoFuente().equals("ESTATICA")){
           f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
+        } else if(f.getTipoFuente().equals("PROXY_API")) {
+          f.setUrl(fuenteProxyUrl);
         }
         System.out.println("url de fuente enviada: " + f.getUrl());
     });
