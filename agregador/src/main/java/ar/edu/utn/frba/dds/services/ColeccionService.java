@@ -216,7 +216,11 @@ public class ColeccionService {
   public void refrescoFuentes() {
     List<Fuente> fuentes = fuenteRepository.findAll();
     if (!fuentes.isEmpty()){
-      fuentes.forEach(f -> this.refrescarYNormalizarHechos(f));
+      try {
+        fuentes.forEach(f -> this.refrescarYNormalizarHechos(f));
+      } catch (Exception e ) {
+
+      }
     }
     fuenteRepository.saveAll(fuentes);
   }
@@ -226,7 +230,7 @@ public class ColeccionService {
     Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter, webClient);
     System.out.println("fuente url: " + fuente.getUrl());
     System.out.println("Cantidad de hechos encontrados: " + hechos.size());
-    //mover logica de obtencion de hechos a componente u funcion
+
     hechos.forEach(h -> {
       Optional<Hecho> hechoExistente = hechoRepository
           .findByTituloAndDescripcionAndFechaAcontecimiento(
