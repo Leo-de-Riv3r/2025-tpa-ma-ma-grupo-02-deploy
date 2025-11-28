@@ -74,7 +74,6 @@ public class AgregadorService {
         } else if(f.getTipoFuente().equals("PROXY_METAMAPA")) {
           f.setUrl(fuenteProxyUrl);
         }
-
     });
 
     }
@@ -93,21 +92,21 @@ public class AgregadorService {
   }
 
   public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccion) {
-
     if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
 
     if (coleccion.getFuentes() != null) {
       coleccion.getFuentes().forEach(f -> {
         if (f.getTipoFuente().equals("DINAMICA")) {
           f.setUrl(fuenteDinamicaUrl);
-        } else if (f.getTipoFuente().equals("ESTATICA")){
-          f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
-        } else if(f.getTipoFuente().equals("PROXY_METAMAPA")) {
+        } else if (f.getTipoFuente().equals("PROXY_METAMAPA")) {
           f.setUrl(fuenteProxyUrl);
+        } else if (f.getTipoFuente().equals("ESTATICA")){
+          if (!f.getUrl().startsWith("http")) f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
         }
+        System.out.println("url de fuente: " + f.getUrl());
       });
     }
-
+  System.out.println("filtros a enviar: " + coleccion.getCriterios());
     metamapaApiService.actualizarColeccion(idColeccion, coleccion);
   }
 

@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,7 +36,7 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
     Fuente fuente = fuenteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
     List<Hecho> hechos = fuente.getHechos();
     if (page < 1) page = 1;
-    if (per_page > 1000) per_page = 1000;
+    per_page = hechos.size();
     if (page < 1) page = 1;
     Integer total = hechos.size();
     Integer inicio = (page - 1) * per_page;
@@ -53,14 +54,6 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
     return hechosPag;
   }
 
-//  @Override
-//  public FuenteCsvDTOOutput crearNuevaFuente(MultipartFile link) {
-//    Fuente fuente = new Fuente();
-//    fuente.setHechos(extractorHechosCSV.obtenerHechosCsv(link));
-//    fuente.setUrl(link.getName());
-//    Fuente fuenteCreada = fuenteRepository.save(fuente);
-//    return new FuenteCsvDTOOutput(fuenteCreada.getId(), fuenteCreada.getUrl(), fuenteCreada.getHechos().size());
-//  }
 
   @Override
   public void eliminarFuente(Long id) {
@@ -89,9 +82,15 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
     List<Hecho> hechosCsv = this.extractorHechosCSV.obtenerHechos(link);
     fuente.setHechos(hechosCsv);
     fuente.setUrl(link.getOriginalFilename());
-    Fuente fuenteGuardado = fuenteRepository.save(fuente);
-    log.info("Nueva fuente csv de archivo {}", link.getOriginalFilename());
-    return new FuenteCsvDTOOutput(fuente.getId(), link.getOriginalFilename(), fuenteGuardado.getHechos().size());
+    List<Fuente> fuenteConarchivoExistente = fuenteRepository.findByUrl(fuente.getUrl());
+    if (fuenteConarchivoExistente.isEmpty()) {
+      Fuente fuenteGuardado = fuenteRepository.save(fuente);
+      log.info("Nueva fuente csv de archivo {}", link.getOriginalFilename());
+      return new FuenteCsvDTOOutput(fuente.getId(), link.getOriginalFilename(), fuenteGuardado.getHechos().size());
+    }
+    else {
+      return new FuenteCsvDTOOutput(fuenteConarchivoExistente.get(0).getId(), fuenteConarchivoExistente.get(0).getUrl(), fuenteConarchivoExistente.get(0).getHechos().size());
+    }
   }
 }
 

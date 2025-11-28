@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 
 @Getter
 @Entity
@@ -23,6 +24,7 @@ public class FuenteDefault extends Fuente {
 
   @Override
   public Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter, WebClient webClient) {
+
     try {
       Set<Hecho> hechos = webClient.get()
           .uri(url + "/hechos")
@@ -32,20 +34,33 @@ public class FuenteDefault extends Fuente {
           .collect(Collectors.toSet())
           .block();
 
+      // 2. Filtrar los hechos nuevos
+      Set<Hecho> hechosFiltrados = hechos.stream()
+          .filter(h -> !this.existeHecho(h))
+          .collect(Collectors.toSet());
+      System.out.println("cantidad hechos:" + hechos.size());
+      System.out.println("hechos nuevos de fuente : " + hechosFiltrados.size());
 
-      //solo agrego hechos nuevos segun titulo categoria y descripcion
-      hechos = hechos.stream().filter(h -> !this.existeHecho(h)).collect(Collectors.toSet());
+      return Flux.fromIterable(hechosFiltrados)
+          .flatMap(h -> {
 
-      hechos.forEach((h -> {
-        Ubicacion ubicacionNueva = h.getUbicacion();
-        ubicacionNueva.setLugar(hechoConverter.obtenerLugar(ubicacionNueva));
-        h.setUbicacion(ubicacionNueva);
-      }));
-      return hechos;
+            Ubicacion ub = h.getUbicacion();
+
+            return hechoConverter.obtenerLugarAsync(ub)
+                .map(lugar -> {
+                  ub.setLugar(lugar);
+                  h.setUbicacion(ub);
+                  return h;
+                });
+          })
+          .collect(Collectors.toSet())
+          .block();
+
     } catch (Exception e) {
-      throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.getUrl() + "/hechos");
+      throw new RuntimeException("Error al obtener hechos de la fuente " + this.url);
     }
   }
+
 
   @Override
   public Set<Hecho> getHechos() {

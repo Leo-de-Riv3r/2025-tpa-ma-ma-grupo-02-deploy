@@ -6,6 +6,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -42,11 +43,11 @@ public class Hecho {
   private LocalDateTime fechaAcontecimiento;
   @Column
   private LocalDateTime fechaCarga;
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JoinColumn(name="origen_id", referencedColumnName = "id")
   private Origen origen;
 
-  @OneToMany(mappedBy = "hecho", orphanRemoval = true, cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "hecho", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private List<Multimedia> multimedia = new ArrayList<>();
 
   @Override
@@ -63,7 +64,6 @@ public class Hecho {
 //  private static EntityManagerFactory emf =
 //      Persistence.createEntityManagerFactory("AMD");
 //  private static EntityManager em = emf.createEntityManager();
-
   public boolean cumpleFiltros(Set<IFiltroStrategy> filtros) {
     return filtros == null || filtros.isEmpty() || filtros.stream().allMatch(f -> f.cumpleFiltro(this));
   }

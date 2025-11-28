@@ -78,7 +78,7 @@ public class SolicitudService {
 
   public Boolean hechoEliminado(Hecho hecho) {
     List <Solicitud> solicitudes = solicitudesEliminacionRepo.findAll();
-    return solicitudes.stream().anyMatch(solicitud -> solicitud.getHecho().getId() == hecho.getId());
+    return solicitudes.stream().anyMatch(solicitud -> solicitud.getHecho().getId() == hecho.getId() && solicitud.estaAceptada());
   }
 
     public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(Integer page, Boolean pendientes, Boolean filterByCreator) {

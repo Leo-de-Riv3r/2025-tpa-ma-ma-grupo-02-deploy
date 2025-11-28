@@ -126,6 +126,7 @@ public class MetamapaApiService {
   }
 
   public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccionDto) {
+    System.out.println("filtros a enviar: " + coleccionDto.getCriterios());
     webApiCallerService.put(agregadorServiceUrl + "/colecciones/" + idColeccion, coleccionDto, Void.class);
   }
 

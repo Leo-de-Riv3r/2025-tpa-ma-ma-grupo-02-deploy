@@ -5,13 +5,21 @@ type FuenteDtoOutput{
     url: String
 }
 
+type CriterioDtoOutput {
+    tipoCriterio: String
+    valor : String
+    tipoFuente : String
+    fechaInicio : String
+    fechaFin : String
+}
+
 type ColeccionDTOSalidaGQL {
     id: ID!
     titulo: String
     descripcion: String
     cantSolicitudesSpam: Int
     fuentes: [FuenteDtoOutput]
-    criterios: [String]
+    criterios: [CriterioDtoOutput]
     algoritmoConsenso: String
     hechos : PaginacionDtoHechoDtoSalida
 }

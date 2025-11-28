@@ -3,6 +3,7 @@ package ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter @Entity
-@Table(name="filtroTitulo")
+@DiscriminatorValue(value = "FILTRO_FUENTE")
 @NoArgsConstructor
 public class FiltroFuente extends IFiltroStrategy{
   @Enumerated(EnumType.STRING)

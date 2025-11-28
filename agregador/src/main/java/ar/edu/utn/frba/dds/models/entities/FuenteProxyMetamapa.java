@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 
 @Getter
 @Entity
@@ -22,7 +23,10 @@ public class FuenteProxyMetamapa extends Fuente {
 
   @Override
   public Set<Hecho> obtenerHechosRefrescados(HechoConverter hechoConverter, WebClient webClient) {
+
     try {
+      // 1. Obtener hechos desde la API externa
+
       Set<Hecho> hechos = webClient.get()
           .uri(url + "/hechos")
           .retrieve()
@@ -31,17 +35,29 @@ public class FuenteProxyMetamapa extends Fuente {
           .collect(Collectors.toSet())
           .block();
 
-      //solo agrego hechos nuevos segun titulo categoria y descripcion
-      hechos =  hechos.stream().filter(h -> !this.existeHecho(h)).collect(Collectors.toSet());
-      hechos.forEach((h -> {
-        Ubicacion ubicacionNueva = h.getUbicacion();
-        ubicacionNueva.setLugar(hechoConverter.obtenerLugar(ubicacionNueva));
-        h.setUbicacion(ubicacionNueva);
-      }));
-      return hechos;
+      // 2. Filtrar los hechos nuevos
+      Set<Hecho> hechosFiltrados = hechos.stream()
+          .filter(h -> !this.existeHecho(h))
+          .collect(Collectors.toSet());
+
+      // 3. Procesar ubicaciones en paralelo + usando cache
+      return Flux.fromIterable(hechosFiltrados)
+          .flatMap(h -> {
+
+            Ubicacion ub = h.getUbicacion();
+
+            return hechoConverter.obtenerLugarAsync(ub)
+                .map(lugar -> {
+                  ub.setLugar(lugar);
+                  h.setUbicacion(ub);
+                  return h;
+                });
+          })
+          .collect(Collectors.toSet())
+          .block();
 
     } catch (Exception e) {
-      throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + this.id);
+      throw new RuntimeException("Error al obtener hechos de la fuente " + this.url);
     }
   }
 

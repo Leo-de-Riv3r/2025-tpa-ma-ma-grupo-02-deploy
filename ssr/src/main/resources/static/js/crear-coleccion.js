@@ -1,8 +1,8 @@
 // =============================
 // CONFIG
 // =============================
-const BASE_URL_ESTATICA = "https://fuente-estatica.up.railway.app/api/fuentes"
-
+//const BASE_URL_ESTATICA = "https://fuente-estatica.up.railway.app/api/fuentes"
+const BASE_URL_ESTATICA = "http://localhost:4080/api/fuentes"
 // =============================
 // HELPERS
 // =============================
@@ -124,12 +124,10 @@ async function procesarSubmit(event) {
     form.submit();
 
   } catch (err) {
-    // REEMPLAZO DEL ALERT DEL CATCH
     mostrarErrorGlobal("Ocurrió un error procesando el archivo: " + (err.message || "Error desconocido"));
 
     submitButton.disabled = false;
 
-    // Volver a mostrar el form para que el usuario pueda corregir y reintentar
     form.style.display = 'block';
 
     // Remover el spinner si quedó ahí
@@ -215,39 +213,39 @@ function reindexarFuentes() {
 }
 
 const filtrosUsados = new Set();
-const listaFiltros = document.getElementById("lista-filtros");
+const listaCriterios = document.getElementById("lista-filtros");
 const selectTipoFiltro = document.getElementById("tipoFiltro");
 
 function agregarFiltro() {
-  const tipoFiltro = selectTipoFiltro.value;
-  if (!tipoFiltro) return;
+  const tipoCriterio = selectTipoFiltro.value;
+  if (!tipoCriterio) return;
 
-  if (filtrosUsados.has(tipoFiltro)) {
+  if (filtrosUsados.has(tipoCriterio)) {
     alert("Ya se agregó un filtro de este tipo.");
     return;
   }
 
-  filtrosUsados.add(tipoFiltro);
-  const index = listaFiltros.children.length;
+  filtrosUsados.add(tipoCriterio);
+  const index = listaCriterios.children.length;
 
   const div = document.createElement("div");
   div.classList.add("filtro-item", "border", "p-3", "mb-3", "rounded");
-  div.dataset.tipo = tipoFiltro;
+  div.dataset.tipo = tipoCriterio;
 
   let contenido = `
-    <input type="hidden" name="filtros[${index}].tipoFiltro" id="filtros${index}.tipoFiltro" value="${tipoFiltro}">
+    <input type="hidden" name="criterios[${index}].tipoCriterio" id="criterios${index}.tipoCriterio" value="${tipoCriterio}">
   `;
 
-  switch (tipoFiltro) {
+  switch (tipoCriterio) {
     case "FILTRO_CATEGORIA":
     case "FILTRO_PROVINCIA":
     case "FILTRO_DEPARTAMENTO":
     case "FILTRO_MUNICIPIO":
       contenido += `
-        <label class="form-label">${tipoFiltro.replace("FILTRO_", "").toLowerCase()}:</label>
+        <label class="form-label">${tipoCriterio.replace("FILTRO_", "").toLowerCase()}:</label>
         <input type="text" class="form-control"
-               name="filtros[${index}].valor" id="filtros${index}.valor"
-               placeholder="Ingrese valor">
+               name="criterios[${index}].valor" id="criterios${index}.valor"
+               placeholder="Ingrese valor" required>
       `;
       break;
 
@@ -255,7 +253,7 @@ function agregarFiltro() {
       contenido += `
         <label class="form-label">Tipo de fuente:</label>
         <select class="form-select"
-                name="filtros[${index}].tipoFuente" id="filtros${index}.tipoFuente">
+                name="criterios[${index}].tipoFuente" id="criterios${index}.tipoFuente" required>
           <option value="">Seleccione tipo de fuente</option>
           <option value="ESTATICA">Estática</option>
           <option value="DINAMICA">Dinámica</option>
@@ -268,41 +266,61 @@ function agregarFiltro() {
     case "FILTRO_FECHA_REPORTE":
       contenido += `
         <label class="form-label">
-          ${tipoFiltro === "FILTRO_FECHA_ACONTECIMIENTO" ? "Fecha de acontecimiento" : "Fecha de reporte"}:
+          ${tipoCriterio === "FILTRO_FECHA_ACONTECIMIENTO" ? "Fecha de acontecimiento" : "Fecha de reporte"}:
         </label>
         <div class="d-flex gap-2 align-items-center">
           <input type="date" class="form-control"
-                 name="filtros[${index}].fechaInicio" id="filtros${index}.fechaInicio">
+                 name="criterios[${index}].fechaInicio" id="criterios${index}.fechaInicio" required>
           <span>a</span>
           <input type="date" class="form-control"
-                 name="filtros[${index}].fechaFin" id="filtros${index}.fechaFin">
+                 name="criterios[${index}].fechaFin" id="criterios${index}.fechaFin" required>
         </div>
       `;
       break;
   }
 
   contenido += `
-    <button type="button" class="btn btn-danger mt-2" onclick="eliminarFiltro(this, '${tipoFiltro}')">Eliminar</button>
+    <button type="button" class="btn btn-danger mt-2" onclick="eliminarFiltro(this, '${tipoCriterio}')">Eliminar</button>
   `;
 
   div.innerHTML = contenido;
-  listaFiltros.appendChild(div);
+  listaCriterios.appendChild(div);
   selectTipoFiltro.value = "";
 }
 
-function eliminarFiltro(btn, tipoFiltro) {
+function eliminarFiltro(btn) {
+   const tipoFiltro = btn.dataset.tipoCriterio;
+      console.log(tipoFiltro)
+  console.log("filtro recibido: " + tipoFiltro)
+
   filtrosUsados.delete(tipoFiltro);
   btn.closest(".filtro-item").remove();
 
   // Reindexar campos para mantener compatibilidad con el mapeo de Spring
-  Array.from(listaFiltros.children).forEach((div, i) => {
+  Array.from(listaCriterios.children).forEach((div, i) => {
     div.querySelectorAll("input, select").forEach(el => {
       if (el.name) {
-        el.name = el.name.replace(/filtros\[\d+\]/, `filtros[${i}]`);
+        el.name = el.name.replace(/criterios\[\d+\]/, `criterios[${i}]`);
       }
       if (el.id) {
-        el.id = el.id.replace(/filtros\d+/, `filtros${i}`);
+        el.id = el.id.replace(/criterios\d+/, `criterios${i}`);
       }
     });
   });
 }
+
+//leer criterios de fuente
+document.addEventListener("DOMContentLoaded", () => {
+    const criteriosExistentes = document.querySelectorAll("#lista-filtros .filtro-item");
+
+    criteriosExistentes.forEach(div => {
+        const tipo = div.querySelector("select")?.value
+                  || div.dataset.tipo
+                  || div.getAttribute("data-tipo-criterio");
+
+        if (tipo) {
+            filtrosUsados.add(tipo);
+            console.log("Filtro precargado:", tipo);
+        }
+    });
+});

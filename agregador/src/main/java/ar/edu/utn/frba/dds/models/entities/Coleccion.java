@@ -51,33 +51,24 @@ public class Coleccion {
 
   public Set<Hecho> getHechos() {
     Set<Hecho> hechos = new HashSet<>();
+
     fuentes.stream()
-        .forEach(fuente -> hechos.addAll(fuente.getHechos()));
+        .forEach(fuente -> {
+          hechos.addAll(fuente.getHechos());
+          System.out.println("hechos de fuente: " + fuente.getHechos().size());
+        });
+    System.out.println("hechos de fuentes: " + hechos.size());
     //filtro duplicados segun titulo categoria descripcion y fecha acontecimiento
-    Set<String> vistos = new HashSet<>();
-    Set<Hecho> resultado = new HashSet<>();
-
-    for (Hecho hecho : hechos) {
-      // Genero una "clave única" combinando los atributos relevantes
-      String clave = hecho.getTitulo() + "|"
-          + hecho.getDescripcion() + "|"
-          + hecho.getCategoria() + "|"
-          + hecho.getFechaAcontecimiento();
-
-      if (!vistos.contains(clave)) {
-        vistos.add(clave);
-        resultado.add(hecho);
-      }
-    }
-    if (!criterios.isEmpty()) {
-      return resultado.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet());
+    if (!criterios.isEmpty() || criterios != null) {
+      return hechos.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet());
     } else {
-      return resultado;
+      return hechos;
     }
   }
 
-  public void refrescarHechosCurados(EntityManager em) {
+  public void refrescarHechosCurados() {
     if (algoritmoConsenso != null) {
+
       algoritmoConsenso.actualizarHechos(this.getHechos(), fuentes);
     }
   }
@@ -122,5 +113,9 @@ public class Coleccion {
   public void setearCriterios(Set<IFiltroStrategy> filtros) {
     this.criterios.clear();
     this.criterios.addAll(filtros);
+  }
+
+  public void limpiarCriterios() {
+    this.criterios.clear();
   }
 }

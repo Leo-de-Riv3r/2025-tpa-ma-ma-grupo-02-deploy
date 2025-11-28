@@ -13,5 +13,10 @@ public class ConsensoMultiplesMenciones extends IConsensoStrategy {
   public Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes) {
     return cumpleConsensoBase(hecho, fuentes, 2);
   }
+
+  @Override
+  public Integer getCantMinima(Integer numFuentes) {
+    return 2;
+  }
 }
 

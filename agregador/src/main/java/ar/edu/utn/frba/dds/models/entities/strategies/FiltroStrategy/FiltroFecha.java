@@ -4,11 +4,13 @@ import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import java.time.LocalDate;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -16,15 +18,15 @@ import java.util.function.Function;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Entity @Table(name="filtroFecha")
+@Entity @DiscriminatorValue(value = "FILTRO_FECHA")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "tipo_filtro_fecha")
 @NoArgsConstructor(force = true)
 public abstract class FiltroFecha extends IFiltroStrategy {
   @Column
-  private LocalDateTime fechaInicio;
+  protected LocalDateTime fechaInicio;
   @Column
-  private LocalDateTime fechaFinal;
+  protected LocalDateTime fechaFinal;
   @Transient
   private final Function<Hecho, LocalDateTime> extractorFecha;
 
@@ -41,7 +43,6 @@ public abstract class FiltroFecha extends IFiltroStrategy {
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
     LocalDateTime fecha = extractorFecha.apply(hecho);
-
     if (fechaInicio != null && fechaFinal != null) {
       return !fecha.isBefore(fechaInicio) && !fecha.isAfter(fechaFinal);
     } else if (fechaInicio != null) {

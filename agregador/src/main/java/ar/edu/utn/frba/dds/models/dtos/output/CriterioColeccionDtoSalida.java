@@ -1,19 +1,14 @@
-package ar.edu.utn.frba.dds.models.dtos.input;
+package ar.edu.utn.frba.dds.models.dtos.output;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class FiltroDTOEntrada {
-  @JsonProperty("tipoCriterio")
+public class CriterioColeccionDtoSalida {
   private String tipoFiltro;
   private String valor;         // para título, categoria, provincia, municipio o departamento
   private String tipoFuente; // para filtro de fuente
-  @JsonFormat(pattern = "yyyy-MM-dd")  //formateo cadena de texto a fecha
   private LocalDate fechaInicio; // para filtros de fecha
-  @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate fechaFin;
 }

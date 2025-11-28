@@ -18,6 +18,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -65,8 +66,24 @@ public abstract class Fuente {
   public abstract Set<Hecho> getHechos();
 
   public Boolean existeHecho(Hecho hecho) {
-    return this.hechos.stream()
-        .anyMatch(h -> h.getTitulo() == hecho.getTitulo() && h.getCategoria() ==  hecho.getCategoria() && h.getDescripcion() == hecho.getDescripcion());
+//    return this.hechos.stream()
+//        .anyMatch(h -> {
+//          System.out.println("titulo hecho 1:" + h.getTitulo());
+//          System.out.println("titulo hecho 2:" + hecho.getTitulo());
+//          System.out.println("categoria hecho 1:" + h.getCategoria());
+//          System.out.println("categoria hecho 2:" + hecho.getCategoria());
+//          System.out.println("descripcion hecho 1:" + h.getDescripcion());
+//          System.out.println("descripcion hecho 2:" + hecho.getDescripcion());
+//          return (Objects.equals(h.getTitulo(),hecho.getTitulo()) &&  Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion()));
+//        }
+//        );
+    Optional<Hecho> hechoMatch = hechos.stream().filter(h -> Objects.equals(h.getTitulo(), hecho.getTitulo()) && Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion())).findFirst();
+
+    if(hechoMatch.isPresent()) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public void addHechos(Set<Hecho> hechos) {

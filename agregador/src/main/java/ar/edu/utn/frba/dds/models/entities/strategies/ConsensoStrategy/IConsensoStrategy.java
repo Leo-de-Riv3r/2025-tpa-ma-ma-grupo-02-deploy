@@ -16,6 +16,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,15 +40,17 @@ public abstract class IConsensoStrategy {
   //@Transient
   private Set<Hecho> hechosConsensuados = new HashSet<>();
 
-  protected Boolean cumpleConsensoBase(Hecho hecho, Set<Fuente> fuentes, Integer cantMin) {
-    cantidadMinimaApariciones = cantMin;
+  protected Boolean cumpleConsensoBase(Hecho hecho, Set<Fuente> fuentes, Integer numfuentes) {
+    Integer cantidadMinima = this.getCantMinima(numfuentes);
     long apariciones = fuentes.stream()
         .map(fuente -> fuente.getHechos())
         .filter(hechos -> hechos.stream()
-            .anyMatch(h -> h.getTitulo() == hecho.getTitulo() && h.getCategoria() == hecho.getCategoria() && h.getDescripcion() == hecho.getDescripcion() && h.getFechaAcontecimiento() == hecho.getFechaAcontecimiento()))
+            .anyMatch(h -> Objects.equals(h.getTitulo(), hecho.getTitulo()) && Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion())))
         .count();
-
-    return apariciones >= cantMin;
+    if (apariciones >= cantidadMinima) {
+      System.out.println("cant apariciones: " + apariciones);
+    }
+    return apariciones >= cantidadMinima;
   }
 
   public abstract Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes);
@@ -55,13 +58,14 @@ public abstract class IConsensoStrategy {
   public void actualizarHechos(Set<Hecho> hechos, Set<Fuente> fuentes) {
     this.hechosConsensuados.clear();
     Set<Hecho> hechosC = hechos.stream()
-        .filter(h -> cumpleConsensoBase(h, fuentes, cantidadMinimaApariciones))
+        .filter(h -> cumpleConsensoBase(h, fuentes, fuentes.size()))
         .collect(Collectors.toSet());
-
     this.hechosConsensuados.addAll(hechosC);
   }
 
   public Set<Hecho> getHechosCurados() {
     return this.hechosConsensuados;
   }
+
+  public abstract Integer getCantMinima(Integer numFuentes);
 }

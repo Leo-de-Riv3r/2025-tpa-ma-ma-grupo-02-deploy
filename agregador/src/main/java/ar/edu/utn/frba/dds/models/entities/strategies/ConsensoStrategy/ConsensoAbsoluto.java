@@ -13,5 +13,10 @@ public class ConsensoAbsoluto extends IConsensoStrategy {
   public Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes) {
     return cumpleConsensoBase(hecho, fuentes, fuentes.size());
   }
+  @Override
+  public Integer getCantMinima(Integer numFuentes) {
+    return numFuentes;
+  }
+
 }
 

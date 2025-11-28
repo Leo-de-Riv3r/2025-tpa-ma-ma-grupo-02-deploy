@@ -12,6 +12,7 @@ import ar.edu.utn.frba.dds.models.dtos.output.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
@@ -30,15 +31,18 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -55,8 +59,6 @@ public class ColeccionService {
   private final IFuenteRepository fuenteRepository;
   private final ISolicitudRepository solicitudRepository;
   private final WebClient webClient;
-  @PersistenceContext
-  private EntityManager em;
 
   public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository, ISolicitudRepository solicitudRepository, WebClient.Builder webClientBuilder) {
     this.coleccionRepository = coleccionRepository;
@@ -72,33 +74,24 @@ public class ColeccionService {
   }
 
   public ColeccionDTOSalida createColeccion(ColeccionDTOEntrada dto) {
-    log.info("Creando nueva coleccion");
     Coleccion coleccion = new Coleccion();
     coleccion.setTitulo(dto.getTitulo());
     coleccion.setDescripcion(dto.getDescripcion());
 
-    if (dto.getAlgoritmo() != null) {
-      try {
-        TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmo().toUpperCase());
-        IConsensoStrategy algoritmoConsenso = tipoAlgoritmo.getStrategy();
-        coleccion.setAlgoritmoConsenso(algoritmoConsenso);
-      } catch (Exception e){
-        throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmo() + " no aceptado");
-      }
-    }
     if (dto.getFuentes() != null) {
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
         Fuente fuenteFinal;
         Fuente fuente = fuenteConverter.fromDto(fuenteDTO);
-        Optional<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
-        if (fuenteExistente.isPresent()) {
-          fuenteFinal = fuenteExistente.get();
+        List<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
+        if (!fuenteExistente.isEmpty()) {
+          System.out.println("fuente nueva");
+          fuenteFinal = fuenteExistente.get(0);
           this.refrescarYNormalizarHechos(fuenteFinal);
           fuenteFinal = fuenteRepository.save(fuenteFinal);
-          System.out.println("FUENTE EXISTENTE");
         } else {
           //traigo hechos y normalizo
+          System.out.println("fuente existente, actualizo hechos");
           this.refrescarYNormalizarHechos(fuente);
           fuenteFinal = fuenteRepository.save(fuente);
         }
@@ -114,8 +107,19 @@ public class ColeccionService {
         coleccion.actualizarHechosFiltrados();
       }
     }
-    Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
 
+    if (dto.getAlgoritmo() != null) {
+      try {
+        TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmo().toUpperCase());
+        IConsensoStrategy algoritmoConsenso = tipoAlgoritmo.getStrategy();
+        coleccion.setAlgoritmoConsenso(algoritmoConsenso);
+      } catch (Exception e){
+        throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmo() + " no aceptado");
+      }
+    }
+    Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+    coleccionGuardada.refrescarHechosCurados();
+    coleccionRepository.save(coleccionGuardada);
     log.info("EVENTO_CREACIÓN - Colección creada exitosamente. ID: {}, Título: '{}'",
         coleccionGuardada.getId(),
         coleccionGuardada.getTitulo());
@@ -162,26 +166,45 @@ public class ColeccionService {
     if (dto.getDescripcion() != null) {
       coleccion.setDescripcion(dto.getDescripcion());
     }
+    System.out.println("hechos de coleccion antes de guardar fuentes: " + coleccion.getHechos().size());
+
     if (dto.getFuentes() != null) {
+      System.out.println("actualizar fuentes:");
       Set<Fuente> fuentes = new HashSet<>();
+      Set<Fuente> fuentesColeccion = coleccion.getFuentes();
+
       dto.getFuentes().forEach(fuenteDTO -> {
+        Boolean tieneFuente = fuentesColeccion.stream().anyMatch(f -> Objects.equals(f.getUrl(), fuenteDTO.getUrl()));
         Fuente fuente = fuenteConverter.fromDto(fuenteDTO);
-        Optional<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
-        if (fuenteExistente.isPresent()) {
-          fuente = fuenteExistente.get();
-          this.refrescarYNormalizarHechos(fuente);
+
+        if (!tieneFuente) {
+          List<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
+          System.out.println("fuente no perteneciente a coleccion");
+          if (!fuenteExistente.isEmpty()) {
+            System.out.println("fuente existente");
+            fuente = fuenteExistente.get(0);
+            this.refrescarYNormalizarHechos(fuente);
+          } else {
+            System.out.println("fuente nueva");
+            //traigo hechos y normalizo
+            this.refrescarYNormalizarHechos(fuente);
+            fuente = fuenteRepository.save(fuente);
+          }
+          fuentes.add(fuente);
         } else {
-          //traigo hechos y normalizo
-          this.refrescarYNormalizarHechos(fuente);
+          fuentes.add(fuentesColeccion.stream().filter(f -> Objects.equals(f.getUrl(), fuenteDTO.getUrl())).findFirst().get());
         }
-        fuentes.add(fuente);
+
       });
       coleccion.limpiarFuentes();
       coleccion.setearFuentes(fuentes);
     } else {
       coleccion.limpiarFuentes();
     }
+    System.out.println("hechos de coleccion luego de actualizar fuentes: " + coleccion.getHechos().size());
+
     if (dto.getAlgoritmo() != null && !dto.getAlgoritmo().isBlank()) {
+      System.out.println("algoritmo que llego: " + dto.getAlgoritmo());
       try {
         TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmo().toUpperCase());
         IConsensoStrategy algoritmoConsenso = tipoAlgoritmo.getStrategy();
@@ -189,19 +212,26 @@ public class ColeccionService {
       } catch (Exception e){
         throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmo() + " no aceptado");
       }
+    } else {
+      System.out.println("resetando algoritmo consenso");
+      coleccion.setAlgoritmoConsenso(null);
     }
 
+    System.out.println("filtros recibidos: " + dto.getFiltros());
+    System.out.println("hechos de coleccion antes de gaurdar coso: " + coleccion.getHechos().size());
     if(dto.getFiltros() != null) {
       Set<IFiltroStrategy> filtros = dto.getFiltros().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
 
       coleccion.setearCriterios(filtros);
-
-      if (!coleccion.getFuentes().isEmpty()) {
-        coleccion.actualizarHechosFiltrados();
-      }
+    } else {
+        coleccion.limpiarCriterios();
     }
 
     Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+
+    coleccionGuardada.refrescarHechosCurados();
+    coleccionRepository.save(coleccionGuardada);
+    System.out.println("hechos de coleccion luego de guardar con filtros: " + coleccionGuardada.getHechos().size());
     log.info("EVENTO_MODIFICACIÓN - Colección actualizada. ID: {}, Titulo: '{}'", coleccionGuardada.getId()
     , coleccionGuardada.getTitulo());
   }
@@ -211,7 +241,7 @@ public class ColeccionService {
     log.info("EVENTO_ELIMINACION - Colección eliminada. ID: {}", coleccionId);
   }
 
-  @Transactional
+
   public void refrescoFuentes() {
     List<Fuente> fuentes = fuenteRepository.findAll();
     if (!fuentes.isEmpty()){
@@ -227,30 +257,66 @@ public class ColeccionService {
   @Transactional
   public void refrescarYNormalizarHechos(Fuente fuente) {
     Set<Hecho> hechos = fuente.obtenerHechosRefrescados(hechoConverter, webClient);
-    System.out.println("fuente url: " + fuente.getUrl());
-    System.out.println("Cantidad de hechos encontrados: " + hechos.size());
 
-    hechos.forEach(h -> {
-      Optional<Hecho> hechoExistente = hechoRepository
-          .findByTituloAndDescripcionAndFechaAcontecimiento(
-              h.getTitulo(), h.getDescripcion(), h.getFechaAcontecimiento()
-          );
+    Map<Hecho, String> clavesNuevas = hechos.stream()
+        .collect(Collectors.toMap(
+            Function.identity(),
+            h -> h.getTitulo() + "|" + h.getDescripcion() + "|" + h.getFechaAcontecimiento()
+        ));
 
-      Hecho hechoFinal;
-      if (hechoExistente.isPresent()) {
-        hechoFinal = hechoExistente.get();
-      } else {
-        origenRepo.findByTipoAndAutor(
-            h.getOrigen().getTipo(), h.getOrigen().getAutor()
-        ).ifPresent(h::setOrigen);
+    Set<String> clavesSet = new HashSet<>(clavesNuevas.values());
 
-        hechoRepository.buscarCategoriaNormalizada(h.getCategoria())
-            .ifPresent(h::setCategoria);
+    List<Hecho> hechosExistentes = hechoRepository.buscarPorClaves(clavesSet);
 
-        hechoFinal = hechoRepository.save(h);
+    Map<String, Hecho> hechosExistentesMap = new HashMap<>(hechosExistentes.size());
+    hechosExistentes.forEach(h ->
+        hechosExistentesMap.put(
+            h.getTitulo() + "|" + h.getDescripcion() + "|" + h.getFechaAcontecimiento(),
+            h
+        )
+    );
+
+    // 4) traer orígenes una vez
+    List<Origen> origenes = origenRepo.findAll();
+    Map<String, Origen> origenesMap = new HashMap<>(origenes.size());
+
+    // 5) lista para inserts batch
+    List<Hecho> hechosParaGuardar = new ArrayList<>();
+
+    for (Hecho h : hechos) {
+      String key = clavesNuevas.get(h);
+
+      if (hechosExistentesMap.containsKey(key)) {
+        // ya existe → reutilizar
+        fuente.addHecho(hechosExistentesMap.get(key));
+
+        continue;
       }
-      fuente.addHecho(hechoFinal);
-    });
+
+      // normalizar origen
+      String origenKey = h.getOrigen().getTipo() + "|" + h.getOrigen().getAutor();
+      Origen origenNormalizado = origenesMap.get(origenKey);
+      if (origenNormalizado != null) {
+        h.setOrigen(origenNormalizado);
+      } else {
+        Origen nuevoOrigen =origenRepo.save(h.getOrigen());
+        origenesMap.put(origenKey, nuevoOrigen);
+        h.setOrigen(nuevoOrigen);
+      }
+
+      hechoRepository.buscarCategoriaNormalizada(h.getCategoria())
+          .ifPresent(h::setCategoria);
+
+      hechosParaGuardar.add(h);
+    }
+
+    // 6) guardar en batch todos juntos
+    System.out.println("hechos nuevos a guardar: " + hechosParaGuardar.size());
+    if (!hechosParaGuardar.isEmpty()) {
+      List<Hecho> guardados = hechoRepository.saveAll(hechosParaGuardar);
+      guardados.forEach(fuente::addHecho);
+    }
+
   }
 
 
@@ -369,7 +435,7 @@ public class ColeccionService {
   public void refrescarHechosCurados() {
     List <Coleccion> colecciones = coleccionRepository.findAll();
 
-    colecciones.forEach(coleccion ->  coleccion.refrescarHechosCurados(em));
+    colecciones.forEach(coleccion ->  coleccion.refrescarHechosCurados());
     //elimino los hechos con fuente_id nulo porque ya son obsoletos
     coleccionRepository.saveAll(colecciones);
   }

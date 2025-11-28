@@ -174,7 +174,7 @@ public class MainController {
       @RequestParam(value = "multimedia", required = false) List<MultipartFile> multimedia,
       HttpServletRequest request
       ) {
-    //hechosService.crearHecho(hechoDto, multimedia);
+
     Object username = request.getSession().getAttribute("username");
 
     if (username != null) hechoDto.setAutor(username.toString());
@@ -221,8 +221,8 @@ public class MainController {
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping("/colecciones/{idColeccion}/actualizar")
   public String actualizarColecion(@PathVariable String idColeccion, @ModelAttribute("coleccion") ColeccionNuevaDto coleccion, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+    System.out.println("filtros nuevos: " + coleccion.getCriterios());
       agregadorService.actualizarColeccion(idColeccion, coleccion);
-      System.out.println("coleccion actualizada, redirigiendo");
       return "redirect:/colecciones";
   }
 
@@ -230,10 +230,16 @@ public class MainController {
   @GetMapping("/colecciones/{idColeccion}/editar")
   public String mostrarEdicionColeccion(@PathVariable String idColeccion, Model model) {
       Coleccion coleccion = agregadorService.obtenerColeccionPorId(idColeccion);
+      System.out.println("Algoritmo consenso: " + coleccion.getAlgoritmoConsenso());
+      System.out.println("Criterios:");
+      System.out.println(coleccion.getCriterios());
+
       ColeccionNuevaDto coleccionNueva = new ColeccionNuevaDto();
       coleccionNueva.setTitulo(coleccion.getTitulo());
       coleccionNueva.setAlgoritmo(coleccion.getAlgoritmoConsenso());
       coleccionNueva.setDescripcion(coleccion.getDescripcion());
+      coleccionNueva.setCriterios(coleccion.getCriterios());
+
       if (coleccion.getFuentes() != null) {
         List<FuenteNuevaDto> fuentesColeccion = new ArrayList<>();
         coleccion.getFuentes().forEach(f -> {

@@ -14,5 +14,10 @@ public class ConsensoMayorSimple extends IConsensoStrategy {
     Integer mitad = fuentes.size() / 2;
     return cumpleConsensoBase(hecho, fuentes, mitad);
   }
+
+  @Override
+  public Integer getCantMinima(Integer numFuentes) {
+    return (numFuentes / 2) + 1;
+  }
 }
 

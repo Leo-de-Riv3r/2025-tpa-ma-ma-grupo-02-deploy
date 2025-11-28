@@ -3,6 +3,7 @@ package ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,7 +17,8 @@ import lombok.Getter;
 
 @Getter
 @Entity @Table(name="filtro")
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo")
 public abstract class IFiltroStrategy {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

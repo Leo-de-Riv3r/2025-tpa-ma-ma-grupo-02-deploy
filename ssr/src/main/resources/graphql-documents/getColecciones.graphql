@@ -4,7 +4,13 @@ query GetColecciones {
         id
         titulo
         descripcion
-        criterios
+        criterios{
+            tipoCriterio
+            valor
+            tipoFuente
+            fechaInicio
+            fechaFin
+        }
         algoritmoConsenso
     }
 }
