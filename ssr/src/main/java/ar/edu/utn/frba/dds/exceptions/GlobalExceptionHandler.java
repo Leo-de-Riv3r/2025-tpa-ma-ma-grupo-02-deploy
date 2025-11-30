@@ -44,6 +44,11 @@ public class GlobalExceptionHandler {
     return "externalApiError.html";
   }
 
+  @ExceptionHandler(BlockedIpServerException.class)
+  public String handleBlockedIpServerException(BlockedIpServerException ex) {
+    log.error("Error 5xx, msg: {}",  ex.getMessage());
+    return "error";
+  }
   @ExceptionHandler(Exception.class)
   public String handleError(HttpServletRequest req, Exception ex, Model model) {
     model.addAttribute("titulo", ex.getClass());

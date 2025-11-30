@@ -18,6 +18,13 @@
         </encoder>
     </appender>
 
+    <!-- Reducir Hibernate a ERROR -->
+    <logger name="org.hibernate" level="ERROR"/>
+    <logger name="org.hibernate.SQL" level="OFF"/>
+
+    <!-- Reducir Netty/WebClient -->
+    <logger name="reactor.netty" level="ERROR"/>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
     </root>

@@ -1,0 +1,13 @@
+<html th:replace="~{layout/baseTemplate :: html(title = 'Agregar IP')}" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="contenido">
+    <h2>Bloquear IP</h2>
+    <form th:action="@{/panel-control/controlIp/procesarBloqueoIp}" method="post" th:object="${blockIp}">
+        <input hidden type="text" class="form-control" id="ip" name="ip" th:field="*{ip}" placeholder="Ej: 192.168.1.1" required th:value="${blockIp.ip}">
+        <div class="mb-3">
+            <label for="motivo" class="form-label">Motivo</label>
+            <input type="text" class="form-control" id="motivo" name="motivo" th:field="*{motivo}" placeholder="Ej: Bloqueo por exceso de requests" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Bloqueo IP</button>
+    </form>
+</div>
+</html>

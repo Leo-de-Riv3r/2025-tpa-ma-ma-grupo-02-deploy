@@ -55,9 +55,7 @@ public class Coleccion {
     fuentes.stream()
         .forEach(fuente -> {
           hechos.addAll(fuente.getHechos());
-          System.out.println("hechos de fuente: " + fuente.getHechos().size());
         });
-    System.out.println("hechos de fuentes: " + hechos.size());
     //filtro duplicados segun titulo categoria descripcion y fecha acontecimiento
     if (!criterios.isEmpty() || criterios != null) {
       return hechos.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet());

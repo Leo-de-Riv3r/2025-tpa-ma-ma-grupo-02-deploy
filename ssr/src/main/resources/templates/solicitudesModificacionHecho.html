@@ -1,0 +1,61 @@
+<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="contenido" class="d-flex justify-content-center align-items-center min-vh-100">
+
+    <div class="border border-solid bg-light p-5">
+        <h1>Solicitudes de modificacion de hechos</h1>
+        <form method="get" class="d-flex justify-content-end mb-4">
+            <input type="hidden" name="page" th:value="${page}" /> <!-- mantiene la página actual -->
+        </form>
+
+
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <!-- Botón "Anterior" -->
+                <li class="page-item" th:classappend="${page == 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{|?page=${page - 1}|}" aria-label="Anterior">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <!-- Números de página -->
+                <li th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    th:classappend="${i == page} ? 'active'" class="page-item">
+                    <a class="page-link" th:href="@{|?page=${i}|}" th:text="${i}"></a>
+                </li>
+
+                <!-- Botón "Siguiente" -->
+                <li class="page-item" th:classappend="${page == totalPages} ? 'disabled'">
+                    <a class="page-link" th:href="@{|?page=${page + 1}|}" aria-label="Siguiente">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div th:if="${solicitudes.empty}" class="text-center py-5">
+            <h1>Sin solicitudes</h1>
+        </div>
+        <div th:unless="${solicitudes.empty}" class="grid-content">
+            <div th:each="s : ${solicitudes}" class="card custom-card bg-dark-subtle">
+                <div class="card-header">
+                    <span th:text="${s.titulo}">titulo solicitud</span>
+                </div>
+                <div class="card-body bg-light">
+                    <p class="fecha">Fecha creación: <span th:text="${s.fecha}">fecha creacion</span></p>
+                    <p class="fecha">Fecha acontecimiento: <span th:text="${s.fechaAcontecimiento}">fecha solicitud</span></p>
+                    <p>Creador: <span th:text="${s.creador}">creador</span></p>
+                </div>
+
+                <div class="d-flex flex-row justify-content-between p-2">
+                    <button class="btn btn-primary"><a>Ver detalles</a></button>
+                        <button sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-success"><a th:href="@{/panel-control/solicitudesModificacion/{idSolicitud}/aceptar (idSolicitud=${s.id})}">Aceptar</a></button>
+                        <button sec:authorize="hasRole('ADMINISTRADOR')" class="btn btn-danger"> <a th:href="@{/panel-control/solicitudesModificacion/{idSolicitud}/rechazar (idSolicitud=${s.id})}">Rechazar</a></button>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+</div>
+</html>

@@ -6,11 +6,14 @@
             <div>
                 <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Hechos subidos manualmente:</h4><button class="btn btn-secondary"><a th:href="@{/panel-control/hechosSubidos}">Ver pendientes de revision</a></button></div>
                 <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Solicutudes de eliminacion: <span th:text="${solicitudesEliminacion}">X</span></h4><a class="btn btn-secondary" th:href="@{/panel-control/solicitudesEliminacion}">Ver pendientes de revision</a></div>
+                <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Solicitudes de modificacion: <a th:href="@{/panel-control/solicitudesModificacion}" class="btn btn-secondary">Ver pendientes</a></h4></div>
                 <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Hechos totales: <span th:text="${hechosTotales}">X</span></h4></div>
                 <div class="d-flex flex-direction-row align-items-center mb-3"><h4>Fuentes totales: <span th:text="${fuentesTotales}">X</span></h4></div>
             </div>
 
             <div>
+                <h1>Control de acceso</h1>
+                <a class="btn btn-primary" th:href="@{/panel-control/controlIp}">Acceder</a>
                 <h1>Estadisticas</h1>
                 <div th:if="${estadisticas?.empty}">
                     <h4>No existen estadisticas creadas</h4>

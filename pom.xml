@@ -35,6 +35,8 @@
         <module>ssr</module>
     </modules>
 
+
+
     <dependencies>
 
         <!-- https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom -->

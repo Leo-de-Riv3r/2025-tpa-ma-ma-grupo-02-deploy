@@ -4,27 +4,37 @@ import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
+import ar.edu.utn.frba.dds.models.dtos.input.SolicitudModificacionHechoDto;
 import ar.edu.utn.frba.dds.models.dtos.output.ColeccionDTOSalidaGQL;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
 import ar.edu.utn.frba.dds.models.dtos.output.ResumenActividadDto;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudModificacionHechoDtoOutput;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudResumenDtoOutput;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Lugar;
 import ar.edu.utn.frba.dds.models.entities.Origen;
+import ar.edu.utn.frba.dds.models.entities.Solicitud;
+import ar.edu.utn.frba.dds.models.entities.SolicitudModificacionHecho;
+import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoEstado;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import ar.edu.utn.frba.dds.models.entities.utils.ColeccionConverter;
 import ar.edu.utn.frba.dds.models.entities.utils.FuenteConverter;
 import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
+import ar.edu.utn.frba.dds.models.entities.utils.SolicitudModificacionHechoConverter;
 import ar.edu.utn.frba.dds.models.repositories.IColeccionRepository;
 import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
 import ar.edu.utn.frba.dds.models.repositories.IOrigenRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudRepository;
+import ar.edu.utn.frba.dds.models.repositories.ISolicitudesModificacionRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
@@ -38,17 +48,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
 @Service
 public class ColeccionService {
+
   private final IColeccionRepository coleccionRepository;
   private final SolicitudService solicitudService;
   private final IHechoRepository hechoRepository;
@@ -58,9 +74,10 @@ public class ColeccionService {
   private final HechoConverter hechoConverter;
   private final IFuenteRepository fuenteRepository;
   private final ISolicitudRepository solicitudRepository;
+  private final ISolicitudesModificacionRepository solicitudesModificacionRepository;
   private final WebClient webClient;
-
-  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository, ISolicitudRepository solicitudRepository, WebClient.Builder webClientBuilder) {
+  private final SolicitudModificacionHechoConverter solicitudModificacionHechoConverter;
+  public ColeccionService(IColeccionRepository coleccionRepository, SolicitudService solicitudService, IHechoRepository hechoRepository, IOrigenRepository origenRepo, FuenteConverter fuenteConverter, ColeccionConverter coleccionConverter, HechoConverter hechoConverter, IFuenteRepository fuenteRepository, ISolicitudRepository solicitudRepository, ISolicitudesModificacionRepository solicitudesModificacionRepository, WebClient.Builder webClientBuilder, SolicitudModificacionHechoConverter solicitudModificacionHechoConverter) {
     this.coleccionRepository = coleccionRepository;
     this.solicitudService = solicitudService;
     this.hechoRepository = hechoRepository;
@@ -70,7 +87,9 @@ public class ColeccionService {
     this.hechoConverter = hechoConverter;
     this.fuenteRepository = fuenteRepository;
     this.solicitudRepository = solicitudRepository;
+    this.solicitudesModificacionRepository = solicitudesModificacionRepository;
     this.webClient = webClientBuilder.build();
+    this.solicitudModificacionHechoConverter = solicitudModificacionHechoConverter;
   }
 
   public ColeccionDTOSalida createColeccion(ColeccionDTOEntrada dto) {
@@ -85,13 +104,11 @@ public class ColeccionService {
         Fuente fuente = fuenteConverter.fromDto(fuenteDTO);
         List<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
         if (!fuenteExistente.isEmpty()) {
-          System.out.println("fuente nueva");
           fuenteFinal = fuenteExistente.get(0);
           this.refrescarYNormalizarHechos(fuenteFinal);
           fuenteFinal = fuenteRepository.save(fuenteFinal);
         } else {
           //traigo hechos y normalizo
-          System.out.println("fuente existente, actualizo hechos");
           this.refrescarYNormalizarHechos(fuente);
           fuenteFinal = fuenteRepository.save(fuente);
         }
@@ -166,10 +183,8 @@ public class ColeccionService {
     if (dto.getDescripcion() != null) {
       coleccion.setDescripcion(dto.getDescripcion());
     }
-    System.out.println("hechos de coleccion antes de guardar fuentes: " + coleccion.getHechos().size());
 
     if (dto.getFuentes() != null) {
-      System.out.println("actualizar fuentes:");
       Set<Fuente> fuentes = new HashSet<>();
       Set<Fuente> fuentesColeccion = coleccion.getFuentes();
 
@@ -179,13 +194,11 @@ public class ColeccionService {
 
         if (!tieneFuente) {
           List<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(fuente.getUrl(), fuente.getTipoFuente());
-          System.out.println("fuente no perteneciente a coleccion");
+
           if (!fuenteExistente.isEmpty()) {
-            System.out.println("fuente existente");
             fuente = fuenteExistente.get(0);
             this.refrescarYNormalizarHechos(fuente);
           } else {
-            System.out.println("fuente nueva");
             //traigo hechos y normalizo
             this.refrescarYNormalizarHechos(fuente);
             fuente = fuenteRepository.save(fuente);
@@ -201,10 +214,8 @@ public class ColeccionService {
     } else {
       coleccion.limpiarFuentes();
     }
-    System.out.println("hechos de coleccion luego de actualizar fuentes: " + coleccion.getHechos().size());
 
     if (dto.getAlgoritmo() != null && !dto.getAlgoritmo().isBlank()) {
-      System.out.println("algoritmo que llego: " + dto.getAlgoritmo());
       try {
         TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmo().toUpperCase());
         IConsensoStrategy algoritmoConsenso = tipoAlgoritmo.getStrategy();
@@ -213,12 +224,8 @@ public class ColeccionService {
         throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmo() + " no aceptado");
       }
     } else {
-      System.out.println("resetando algoritmo consenso");
       coleccion.setAlgoritmoConsenso(null);
     }
-
-    System.out.println("filtros recibidos: " + dto.getFiltros());
-    System.out.println("hechos de coleccion antes de gaurdar coso: " + coleccion.getHechos().size());
     if(dto.getFiltros() != null) {
       Set<IFiltroStrategy> filtros = dto.getFiltros().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
 
@@ -231,7 +238,6 @@ public class ColeccionService {
 
     coleccionGuardada.refrescarHechosCurados();
     coleccionRepository.save(coleccionGuardada);
-    System.out.println("hechos de coleccion luego de guardar con filtros: " + coleccionGuardada.getHechos().size());
     log.info("EVENTO_MODIFICACIÓN - Colección actualizada. ID: {}, Titulo: '{}'", coleccionGuardada.getId()
     , coleccionGuardada.getTitulo());
   }
@@ -243,6 +249,7 @@ public class ColeccionService {
 
 
   public void refrescoFuentes() {
+    log.info("Iniciando cronjob, refresco de fuentes");
     List<Fuente> fuentes = fuenteRepository.findAll();
     if (!fuentes.isEmpty()){
       try {
@@ -310,8 +317,6 @@ public class ColeccionService {
       hechosParaGuardar.add(h);
     }
 
-    // 6) guardar en batch todos juntos
-    System.out.println("hechos nuevos a guardar: " + hechosParaGuardar.size());
     if (!hechosParaGuardar.isEmpty()) {
       List<Hecho> guardados = hechoRepository.saveAll(hechosParaGuardar);
       guardados.forEach(fuente::addHecho);
@@ -486,6 +491,57 @@ public class ColeccionService {
     return respuesta;
   }
 
+  public void createSolicitudModificacionHecho(SolicitudModificacionHechoDto solicitudModificacionHechoDto) {
+    SolicitudModificacionHecho solicitud = solicitudModificacionHechoConverter.fromDto(solicitudModificacionHechoDto);
+    Hecho hecho = this.getHechoById(solicitudModificacionHechoDto.getIdHecho());
+    solicitud.setHecho(hecho);
+    solicitudesModificacionRepository.save(solicitud);
+  }
+
+  public PaginacionDto<SolicitudModificacionHechoDtoOutput> getSolicitudesModificacion(Integer page) {
+    int pageNumber = (page == null || page < 1) ? 0 : page - 1;
+    int pageSize = 20;
+
+    Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("fecha").descending());
+
+    Page<SolicitudModificacionHecho> pageResult = solicitudesModificacionRepository.findPendientes(pageable);
+    List<SolicitudModificacionHechoDtoOutput> solicitudesDto = pageResult.getContent()
+        .stream()
+        .map(solicitudModificacionHechoConverter::fromEntity)
+        .toList();
+
+    return new PaginacionDto<>(
+        solicitudesDto,
+        pageable.getPageNumber() + 1,
+        pageResult.getTotalPages()
+    );
+  }
+
+  @Transactional
+  public void aceptarSolicitudModificacion(Long id) {
+    SolicitudModificacionHecho solicitud = solicitudesModificacionRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Solicitud con id " + id + " no encontrada"));
+    solicitud.aceptar();
+    Hecho hecho = solicitud.getHecho();
+    hecho.setTitulo(solicitud.getTitulo());
+    hecho.setDescripcion(solicitud.getDescripcion());
+    hecho.setFechaAcontecimiento(solicitud.getFechaAcontecimiento());
+    Ubicacion ubicacion = hecho.getUbicacion();
+    ubicacion.setLatitud(solicitud.getLatitud());
+    ubicacion.setLongitud(solicitud.getLongitud());
+    Lugar lugar = hechoConverter.obtenerLugar(ubicacion);
+    ubicacion.setLugar(lugar);
+    hecho.setUbicacion(ubicacion);
+    hechoRepository.save(hecho);
+    solicitudesModificacionRepository.save(solicitud);
+  }
+
+  public void rechazarSolicitudModificacion(Long id) {
+    SolicitudModificacionHecho solicitud = solicitudesModificacionRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Solicitud con id " + id + " no encontrada"));
+    solicitud.rechazar();
+    solicitudesModificacionRepository.save(solicitud);
+  }
 //  public void actualizarHecho(Long idHecho, HechoUpdateDto hechoDto) {
 //    Hecho hecho = this.getHechoById(idHecho);
 //    if(hechoDto.getTitulo() != null) {

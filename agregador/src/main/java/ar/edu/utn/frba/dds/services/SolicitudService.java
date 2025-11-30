@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.services;
 
+import ar.edu.utn.frba.dds.ai.DetectorSpamAi;
 import ar.edu.utn.frba.dds.externalApi.SpamApi;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
@@ -35,11 +36,13 @@ import org.springframework.stereotype.Service;
 public class SolicitudService {
   private final ISolicitudRepository solicitudesEliminacionRepo;
   private final SpamApi detectorSpam;
+  private final DetectorSpamAi detectorSpamAi;
   private final IHechoRepository hechosRepository;
   private final SolicitudConverter solicitudConverter;
-  public SolicitudService(ISolicitudRepository solicitudesEliminacionRepo, SpamApi detectorSpam, IHechoRepository hechosRepository, SolicitudConverter solicitudConverter) {
+  public SolicitudService(ISolicitudRepository solicitudesEliminacionRepo, SpamApi detectorSpam, DetectorSpamAi detectorSpamAi, IHechoRepository hechosRepository, SolicitudConverter solicitudConverter) {
     this.solicitudesEliminacionRepo = solicitudesEliminacionRepo;
     this.detectorSpam = detectorSpam;
+    this.detectorSpamAi = detectorSpamAi;
     this.hechosRepository = hechosRepository;
     this.solicitudConverter = solicitudConverter;
   }
@@ -49,7 +52,9 @@ public class SolicitudService {
     Solicitud solicitud = solicitudConverter.fromDto(dtoSolicitud);
     Solicitud solicitudGuardada = solicitudesEliminacionRepo.save(solicitud);
     log.info("Nueva solicitud de eliminacion, Titulo: {}", solicitudGuardada.getTitulo());
-    if (detectorSpam.esSpam(solicitud.getTexto()) || !solicitud.estaFundado()) {
+    boolean esSpam = detectorSpamAi.esSpam(dtoSolicitud.getTexto());
+
+    if (esSpam || !solicitud.estaFundado()) {
       this.marcarComospam(solicitudGuardada.getId());
       this.rechazarSolicitud(solicitudGuardada.getId());
     }

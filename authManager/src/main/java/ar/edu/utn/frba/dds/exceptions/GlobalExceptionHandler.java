@@ -36,10 +36,16 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
   }
 
+  @ExceptionHandler(IpAlreadyBlockedException.class)
+  public ResponseEntity<String> handleIpAlreadyBlocked(IpAlreadyBlockedException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
     log.error("ERROR_5xx - {}", ex.getMessage());
     log.error(ex.getClass().toString());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error","Error inesperado"));
   }
+
 }

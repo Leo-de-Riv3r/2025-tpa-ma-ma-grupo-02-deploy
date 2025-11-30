@@ -13,6 +13,8 @@ import ar.edu.utn.frba.dds.models.PaginacionDtoHechoDtoSalida;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDto;
+import ar.edu.utn.frba.dds.models.SolicitudModificacionDto;
+import ar.edu.utn.frba.dds.models.SolicitudesModificacionPaginado;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -161,5 +163,17 @@ public class AgregadorService {
 //        .variable("filterByCreator", true)
 //        .retrieve("solicitudes")
 //        .toEntity(SolicitudesPaginasDto.class).block();
+  }
+
+  public void modificarHecho(SolicitudModificacionDto solicitud) {
+    metamapaApiService.modificarHecho(solicitud);
+  }
+
+  public SolicitudesModificacionPaginado obtenerSolicitudesModificacion(int page) {
+    return metamapaApiService.obtenerSolicitudesModificacion(page);
+  }
+
+  public void aceptarSolicitudModificacion(Long idSolicitud) {
+    metamapaApiService.aceptarSolicitudModificacion(idSolicitud);
   }
 }

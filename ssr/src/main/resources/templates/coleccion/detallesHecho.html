@@ -68,6 +68,8 @@
             </div>
             <div>
                 <a class="btn btn-danger" th:href="@{/colecciones/{idColeccion}/hechos/{idHecho}/solicitudEliminacion ( idColeccion=${idColeccion}, idHecho=${idHecho} )}">Solicitar eliminación</a>
+                <a sec:authorize="isAuthenticated()"
+                        th:href="@{/colecciones/{idColeccion}/hechos/{idHecho}/solicitudModificacion ( idColeccion=${idColeccion}, idHecho=${idHecho} )}" class="btn btn-warning">Solicitar modificacion</a>
             </div>
         </form>
     </div>

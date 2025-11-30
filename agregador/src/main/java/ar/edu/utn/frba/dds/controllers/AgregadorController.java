@@ -7,12 +7,14 @@ import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.FiltroDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDto;
+import ar.edu.utn.frba.dds.models.dtos.input.SolicitudModificacionHechoDto;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
 import ar.edu.utn.frba.dds.models.dtos.output.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudModificacionHechoDtoOutput;
 import ar.edu.utn.frba.dds.models.dtos.output.SolicitudResumenDtoOutput;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
@@ -23,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -148,12 +151,39 @@ public class AgregadorController {
     HechoDetallesDtoSalida respuesta = coleccionService.getHechoDto(idHecho);
     return ResponseEntity.ok(respuesta);
   }
-//  @PutMapping("/hechos/{idHecho}")
-//  public ResponseEntity<String> actualizarHecho (
-//      @PathVariable Long idHecho, @RequestBody HechoUpdateDto hechoDto) {
-//    coleccionService.actualizarHecho(idHecho, hechoDto);
-//    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Hecho actualizado");
-//  }
+
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
+  @PostMapping("/hechos/{idHecho}/solicitar-modificacion")
+  public ResponseEntity<String> solicitarModificacionHecho (
+      @PathVariable Long idHecho, @RequestBody SolicitudModificacionHechoDto solicitudModificacionHechoDto) {
+    coleccionService.createSolicitudModificacionHecho(solicitudModificacionHechoDto);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Solicitud cargada");
+  }
+
+  @GetMapping("/hechos/solicitudesModificacion")
+  public PaginacionDto<SolicitudModificacionHechoDtoOutput> getSolicitudesModificacion(
+      @RequestParam(required = false) Integer page
+  ) {
+    return coleccionService.getSolicitudesModificacion(page);
+  }
+
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR')")
+  @PutMapping("/hechos/solicitudesModificacion/{id}/aceptar")
+  public ResponseEntity<String> aceptarSolicitudModificacion(
+      @PathVariable Long id
+  ) {
+    coleccionService.aceptarSolicitudModificacion(id);
+    return ResponseEntity.noContent().build();
+  }
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR')")
+  @PutMapping("/hechos/solicitudesModificacion/{id}/rechazar")
+  public ResponseEntity<String> rechazarSolicitudModificacion(
+      @PathVariable Long id
+  ) {
+    coleccionService.rechazarSolicitudModificacion(id);
+    return ResponseEntity.noContent().build();
+  }
+
 
   //SOLICITUDES
   @PostMapping("/solicitudes")

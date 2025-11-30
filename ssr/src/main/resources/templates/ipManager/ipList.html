@@ -1,0 +1,64 @@
+<html th:replace="~{layout/baseTemplate :: html}" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="contenido">
+
+    <div class="d-flex flex-direcion-row">
+        <h1>Lista de ip</h1>
+        <a class="btn btn-primary" th:href="@{/panel-control/controlIp/agregar}">Agregar ip</a>
+    </div>
+
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <!-- Botón "Anterior" -->
+            <li class="page-item" th:classappend="${page == 1} ? 'disabled'">
+                <a class="page-link" th:href="@{|?page=${page - 1}|}" aria-label="Anterior">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <!-- Números de página -->
+            <li th:each="i : ${#numbers.sequence(1, totalPages)}"
+                th:classappend="${i == page} ? 'active'" class="page-item">
+                <a class="page-link" th:href="@{|?page=${i}|}" th:text="${i}"></a>
+            </li>
+
+            <!-- Botón "Siguiente" -->
+            <li class="page-item" th:classappend="${page == totalPages} ? 'disabled'">
+                <a class="page-link" th:href="@{|?page=${page + 1}|}" aria-label="Siguiente">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div th:if="${lista.empty}" class="text-center py-5">
+        <h1>No hay Ip existentes</h1>
+    </div>
+    <div th:unless="${lista.empty}">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Dirección IP</th>
+                    <th>Fecha modificacion</th>
+                    <th>Motivo</th>
+                    <th>Accion</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="ip : ${lista}">
+                    <td th:text="${ip.ip}"></td>
+                    <td th:text="${ip.fechaModificacion}"></td>
+                    <td th:text="${ip.motivo}"></td>
+                    <td th:if="${ip.estado == 'UNLOCKED'}">
+                        <a class="btn btn-primary" th:href="@{/panel-control/controlIp/{ip}/bloquear (ip=${ip.ip})}">Bloquear</a>
+                    </td>
+                    <td th:if="${ip.estado == 'BLOCKED'}">
+                        <a class="btn btn-danger" th:href="@{/panel-control/controlIp/{ip}/desbloquear (ip=${ip.ip})}">Desbloquear</a>
+                    </td>
+
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</html>

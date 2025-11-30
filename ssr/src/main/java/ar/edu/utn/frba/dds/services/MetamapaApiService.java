@@ -12,6 +12,8 @@ import ar.edu.utn.frba.dds.models.RolesPermisosDTO;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
 import ar.edu.utn.frba.dds.models.SolicitudHechoDto;
 import ar.edu.utn.frba.dds.models.SolicitudHechoInputDto;
+import ar.edu.utn.frba.dds.models.SolicitudModificacionDto;
+import ar.edu.utn.frba.dds.models.SolicitudesModificacionPaginado;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -205,5 +207,17 @@ public class MetamapaApiService {
 
   public List<SolicitudHechoDto> obtenerHechosPorCreador() {
     return this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos/pendientes_por_creador", SolicitudHechoDto.class);
+  }
+
+  public void modificarHecho(SolicitudModificacionDto solicitud) {
+    this.webApiCallerService.post(agregadorServiceUrl + "/hechos/" + solicitud.getIdHecho() + "/solicitar-modificacion", solicitud, Void.class);
+  }
+
+  public SolicitudesModificacionPaginado obtenerSolicitudesModificacion(int page) {
+    return webApiCallerService.get(agregadorServiceUrl + "/hechos/solicitudesModificacion?page=" + page, SolicitudesModificacionPaginado.class);
+  }
+
+  public void aceptarSolicitudModificacion(Long idSolicitud) {
+    this.webApiCallerService.put(agregadorServiceUrl + "/hechos/solicitudesModificacion/" + idSolicitud + "/aceptar", Void.class, Void.class);
   }
 }

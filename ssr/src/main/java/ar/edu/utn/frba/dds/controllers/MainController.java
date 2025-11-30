@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.dds.controllers;
 
+import ar.edu.utn.frba.dds.models.BlockIpDto;
+import ar.edu.utn.frba.dds.models.BlockedIpResDto;
 import ar.edu.utn.frba.dds.models.Coleccion;
 import ar.edu.utn.frba.dds.models.ColeccionDetallesDto;
 import ar.edu.utn.frba.dds.models.ColeccionHechosDto;
@@ -13,6 +15,7 @@ import ar.edu.utn.frba.dds.models.HechoManualDTO;
 import ar.edu.utn.frba.dds.models.HechoPaginacionDto;
 import ar.edu.utn.frba.dds.models.HechoUpdateDTO;
 import ar.edu.utn.frba.dds.models.NuevaEstadisticaDto;
+import ar.edu.utn.frba.dds.models.PaginacionDtoBlockedIp;
 import ar.edu.utn.frba.dds.models.PaginacionDtoHechoDtoSalida;
 import ar.edu.utn.frba.dds.models.ResumenActividadDto;
 import ar.edu.utn.frba.dds.models.RevisionHechoDto;
@@ -20,14 +23,18 @@ import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
 import ar.edu.utn.frba.dds.models.SolicitudEliminacionDto;
 import ar.edu.utn.frba.dds.models.SolicitudHechoDto;
 import ar.edu.utn.frba.dds.models.SolicitudHechoInputDto;
+import ar.edu.utn.frba.dds.models.SolicitudModificacionDto;
+import ar.edu.utn.frba.dds.models.SolicitudesModificacionPaginado;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
 import ar.edu.utn.frba.dds.services.AgregadorService;
+import ar.edu.utn.frba.dds.services.BlockedIpService;
 import ar.edu.utn.frba.dds.services.EstadisticaService;
 import ar.edu.utn.frba.dds.services.FuenteDinamicaService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,6 +46,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -47,6 +55,7 @@ public class MainController {
   private final AgregadorService agregadorService;
   private final EstadisticaService estadisticaService;
   private final FuenteDinamicaService fuenteDinamicaService;
+  private final BlockedIpService blockedIpService;
   @Value("${agregador.service.url}")
   private String agregadorUrl;
 
@@ -56,15 +65,75 @@ public class MainController {
   @Value("${auth.service.url}")
   private String authServiceUrl;
 
-  public MainController(AgregadorService agregadorService, EstadisticaService estadisticaService, FuenteDinamicaService fuenteDinamicaService) {
+  public MainController(AgregadorService agregadorService, EstadisticaService estadisticaService, FuenteDinamicaService fuenteDinamicaService, BlockedIpService blockedIpService) {
     this.agregadorService = agregadorService;
     this.estadisticaService = estadisticaService;
     this.fuenteDinamicaService = fuenteDinamicaService;
+    this.blockedIpService = blockedIpService;
   }
 
   @GetMapping("/")
   public String home() {
     return "home";
+  }
+
+  @PostMapping("/panel-control/controlIp/procesarDesbloqueoIp")
+  public String procesarDesbloqueoIp(@ModelAttribute BlockIpDto blockIp, RedirectAttributes redirectAttributes) {
+    blockedIpService.unblockIp(blockIp);
+    return "redirect:/panel-control/controlIp";
+  }
+
+  @PostMapping("/panel-control/controlIp/procesarBloqueoIp")
+  public String procesarBloqueoIp(@ModelAttribute BlockIpDto blockIp, RedirectAttributes redirectAttributes) {
+    blockedIpService.blockIp(blockIp);
+    return "redirect:/panel-control/controlIp";
+  }
+
+  @GetMapping("/panel-control/controlIp/{ip}/desbloquear")
+  public String mostrarFormularioDesbloqueoIp(Model model, @PathVariable String ip) {
+    BlockIpDto blockIpDto = new BlockIpDto();
+    blockIpDto.setIp(ip);
+    model.addAttribute("blockIp", blockIpDto);
+    return "ipManager/desbloquearIp";
+  }
+
+  @GetMapping("/panel-control/controlIp/{ip}/bloquear")
+  public String mostrarFormularioBloqueoIp(Model model, @PathVariable String ip) {
+    BlockIpDto blockIpDto = new BlockIpDto();
+    blockIpDto.setIp(ip);
+    model.addAttribute("blockIp", blockIpDto);
+    return "ipManager/bloquearIp";
+  }
+
+  @PostMapping("/panel-control/controlIp/procesarSubmitIp")
+  public String procesarSubmitIp(@ModelAttribute BlockIpDto blockIp, RedirectAttributes redirectAttributes) {
+    try {
+      blockedIpService.blockIp(blockIp);
+      return "redirect:/panel-control/controlIp";
+    } catch (Exception e) {
+      if (e instanceof HttpClientErrorException && ((HttpClientErrorException) e).getStatusCode() == HttpStatus.CONFLICT){
+        return "redirect:/panel-control/controlIp/agregar?conflict";
+      }
+    }
+    return "redirect:/panel-control/controlIp";
+  }
+  @GetMapping("/panel-control/controlIp/agregar")
+  public String formularioAgregarIp(Model model) {
+    model.addAttribute("blockIp", new BlockIpDto());
+    return "ipManager/agregarIp";
+  }
+
+//  @GetMapping("/panel-control/controlIp/")
+
+  @GetMapping("/panel-control/controlIp")
+  public String mostrarListaIps(Model model, @RequestParam(name = "page", required = false, defaultValue = "1") int page,
+                                @RequestParam(name = "perPage", required = false, defaultValue = "10") int perPage
+                                ) {
+    PaginacionDtoBlockedIp paginacionDtoBlockedIp = blockedIpService.getList(page, perPage);
+    model.addAttribute("lista", paginacionDtoBlockedIp.getData());
+    model.addAttribute("page", paginacionDtoBlockedIp.getCurrentPage());
+    model.addAttribute("totalPages", paginacionDtoBlockedIp.getTotalPages());
+    return "ipManager/ipList";
   }
 
   @GetMapping("/editar-hecho/{id}")
@@ -109,7 +178,6 @@ public class MainController {
   @GetMapping("/panel-control/hechosSubidos")
   public String mostrarHechosSubidos(Model model) {
     List<SolicitudHechoDto> solicitudesHecho = fuenteDinamicaService.obtenerSolicitudesHecho();
-    System.out.println("hechos traidos de service: " + solicitudesHecho.size());
     model.addAttribute("solicitudesHechos", solicitudesHecho);
     return "hechosSubidos";
   }
@@ -132,6 +200,7 @@ public class MainController {
     fuenteDinamicaService.aceptarSolicitud(idHecho, revisionHechoDto);
     return "redirect:/panel-control/hechosSubidos";
   }
+
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping("/panel-control/hechosSubidos/{idHecho}/aceptarConSugerencia")
@@ -203,6 +272,35 @@ public class MainController {
     return "coleccion/solicitudEliminacion";
   }
 
+  //authorize with role ADMINISTRADOR or CONTRIBUYENTE
+
+  @PostMapping("/procesarModificacionHecho")
+  public String procesarModificacionHecho(@ModelAttribute("solicitud") SolicitudModificacionDto solicitud, BindingResult bindingResult, Model model, HttpServletRequest request) {
+    solicitud.setCreador(request.getSession().getAttribute("username").toString());
+    agregadorService.modificarHecho(solicitud);
+    return "redirect:/colecciones";
+  }
+
+  @GetMapping("/colecciones/{idColeccion}/hechos/{idHecho}/solicitudModificacion")
+  public String mostrarFormularioModificacion(@PathVariable String idColeccion, @PathVariable Long idHecho, Model model, HttpServletRequest request) {
+    HechoDetallesDto hechoDetallesDto = agregadorService.getDetallesHecho(idHecho);
+    SolicitudModificacionDto solicitud = new SolicitudModificacionDto();
+    solicitud.setIdHecho(idHecho);
+    solicitud.setCategoria(hechoDetallesDto.getCategoria());
+    solicitud.setDescripcion(hechoDetallesDto.getDescripcion());
+    solicitud.setFechaAcontecimiento(hechoDetallesDto.getFechaAcontecimiento());
+    solicitud.setLatitud(hechoDetallesDto.getLatitud());
+    solicitud.setLongitud(hechoDetallesDto.getLongitud());
+    solicitud.setTitulo(hechoDetallesDto.getTitulo());
+
+    model.addAttribute("solicitud", solicitud);
+    model.addAttribute("hechoId", idHecho);
+    model.addAttribute("idColeccion", idColeccion);
+    return "subirHechos/solicitudModificacion";
+  }
+
+
+
   @GetMapping("/colecciones/{idColeccion}/hechos/{idHecho}")
   public String getDetallesHecho(@PathVariable Long idHecho, @PathVariable String idColeccion, Model model) {
     HechoDetallesDto hechoDetallesDto = agregadorService.getDetallesHecho(idHecho);
@@ -221,7 +319,6 @@ public class MainController {
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping("/colecciones/{idColeccion}/actualizar")
   public String actualizarColecion(@PathVariable String idColeccion, @ModelAttribute("coleccion") ColeccionNuevaDto coleccion, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-    System.out.println("filtros nuevos: " + coleccion.getCriterios());
       agregadorService.actualizarColeccion(idColeccion, coleccion);
       return "redirect:/colecciones";
   }
@@ -230,9 +327,6 @@ public class MainController {
   @GetMapping("/colecciones/{idColeccion}/editar")
   public String mostrarEdicionColeccion(@PathVariable String idColeccion, Model model) {
       Coleccion coleccion = agregadorService.obtenerColeccionPorId(idColeccion);
-      System.out.println("Algoritmo consenso: " + coleccion.getAlgoritmoConsenso());
-      System.out.println("Criterios:");
-      System.out.println(coleccion.getCriterios());
 
       ColeccionNuevaDto coleccionNueva = new ColeccionNuevaDto();
       coleccionNueva.setTitulo(coleccion.getTitulo());
@@ -344,6 +438,22 @@ public class MainController {
     model.addAttribute("solicitud", solicitudEliminacionDetallesDto);
     model.addAttribute("pendiente", solicitudEliminacionDetallesDto.getEstadoActual() == "PENDIENTE");
     return "solicitudes/solicitudEliminacionDetalles";
+  }
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @GetMapping("/panel-control/solicitudesModificacion/{idSolicitud}/aceptar")
+  public String procesarAceptacionSolicitudModificacion(@PathVariable Long idSolicitud) {
+    agregadorService.aceptarSolicitudModificacion(idSolicitud);
+    return "redirect:/panel-control/solicitudesModificacion";
+  }
+
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @GetMapping("/panel-control/solicitudesModificacion")
+  public String verSolicitudes(Model model, @RequestParam(defaultValue = "1") int page) {
+    SolicitudesModificacionPaginado solicitudesPaginadoDto = agregadorService.obtenerSolicitudesModificacion(page);
+    model.addAttribute("page", solicitudesPaginadoDto.getCurrentPage());
+    model.addAttribute("totalPages", solicitudesPaginadoDto.getTotalPages());
+    model.addAttribute("solicitudes", solicitudesPaginadoDto.getData());
+    return "solicitudesModificacionHecho";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
