@@ -86,7 +86,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 //      return xForwardedFor.split(",")[0].trim();
 //    }
 //    return request.getRemoteAddr();
-
+    System.out.println("header: " + request.getHeaderNames());
     String realIp = request.getHeader("Fly-Client-IP");
     if (realIp == null) {
       realIp = request.getHeader("X-Forwarded-For");
