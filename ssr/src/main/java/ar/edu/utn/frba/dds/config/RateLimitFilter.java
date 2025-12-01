@@ -79,12 +79,22 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
   // Método auxiliar para extraer la IP correctamente detrás de un Proxy
   private String getClientIp(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-      // En Railway/Cloudflare, el formato es "IP_CLIENTE, PROXY1, PROXY2"
-      // Tomamos la primera, que es la del cliente real.
-      return xForwardedFor.split(",")[0].trim();
+//    String xForwardedFor = request.getHeader("X-Forwarded-For");
+//    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+//      // En Railway/Cloudflare, el formato es "IP_CLIENTE, PROXY1, PROXY2"
+//      // Tomamos la primera, que es la del cliente real.
+//      return xForwardedFor.split(",")[0].trim();
+//    }
+//    return request.getRemoteAddr();
+
+    String realIp = request.getHeader("Fly-Client-IP");
+    if (realIp == null) {
+      realIp = request.getHeader("X-Forwarded-For");
     }
-    return request.getRemoteAddr();
+    if (realIp == null) {
+      realIp = request.getRemoteAddr();
+    }
+
+    return realIp;
   }
 }
