@@ -58,12 +58,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     // 2. CHEQUEO DE BLOQUEO MANUAL (Prioridad Alta)
-    if (ipBlockService.isBlocked(clientIp)) {
-      response.setStatus(403); // Forbidden
-      response.setContentType("text/plain");
-      response.getWriter().write("ACCESO DENEGADO: Tu IP ha sido bloqueada manualmente por un administrador.");
-      return; // Cortamos aquí
-    }
+//    if (ipBlockService.isBlocked(clientIp)) {
+//      response.setStatus(403); // Forbidden
+//      response.setContentType("text/plain");
+//      response.getWriter().write("ACCESO DENEGADO: Tu IP ha sido bloqueada manualmente por un administrador.");
+//      return; // Cortamos aquí
+//    }
 
     // 3. CHEQUEO DE RATE LIMITING (Prioridad Media)
     Bucket bucket = resolveBucket(clientIp);
