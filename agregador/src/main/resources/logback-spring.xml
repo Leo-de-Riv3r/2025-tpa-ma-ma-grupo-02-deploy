@@ -1,31 +1,31 @@
-<configuration>
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+<!--<configuration>-->
+<!--    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>-->
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"app_name": "${spring.application.name}"}</customFields>
+<!--    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">-->
+<!--        <encoder class="net.logstash.logback.encoder.LogstashEncoder">-->
+<!--            <customFields>{"app_name": "${spring.application.name}"}</customFields>-->
 
-            <includeMdcKeyName>traceId</includeMdcKeyName>
-            <includeMdcKeyName>spanId</includeMdcKeyName>
+<!--            <includeMdcKeyName>traceId</includeMdcKeyName>-->
+<!--            <includeMdcKeyName>spanId</includeMdcKeyName>-->
 
-            <writeVersion>false</writeVersion>
-            <fieldNames>
-                <timestamp>timestamp</timestamp>
-                <message>message</message>
-                <threadName>thread</threadName>
-                <level>level</level>
-            </fieldNames>
-        </encoder>
-    </appender>
+<!--            <writeVersion>false</writeVersion>-->
+<!--            <fieldNames>-->
+<!--                <timestamp>timestamp</timestamp>-->
+<!--                <message>message</message>-->
+<!--                <threadName>thread</threadName>-->
+<!--                <level>level</level>-->
+<!--            </fieldNames>-->
+<!--        </encoder>-->
+<!--    </appender>-->
 
-    <!-- Reducir Hibernate a ERROR -->
-    <logger name="org.hibernate" level="ERROR"/>
-    <logger name="org.hibernate.SQL" level="OFF"/>
+<!--    &lt;!&ndash; Reducir Hibernate a ERROR &ndash;&gt;-->
+<!--    <logger name="org.hibernate" level="ERROR"/>-->
+<!--    <logger name="org.hibernate.SQL" level="OFF"/>-->
 
-    <!-- Reducir Netty/WebClient -->
-    <logger name="reactor.netty" level="ERROR"/>
+<!--    &lt;!&ndash; Reducir Netty/WebClient &ndash;&gt;-->
+<!--    <logger name="reactor.netty" level="ERROR"/>-->
 
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-    </root>
-</configuration>
+<!--    <root level="INFO">-->
+<!--        <appender-ref ref="CONSOLE" />-->
+<!--    </root>-->
+<!--</configuration>-->
