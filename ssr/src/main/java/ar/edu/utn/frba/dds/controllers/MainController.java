@@ -470,12 +470,14 @@ public class MainController {
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @GetMapping("/panel-control")
   public String mostrarPanelControl(Model model) {
+      System.out.println("obteniendo resumen actividad: ");
       ResumenActividadDto resumenActividadDto = agregadorService.obtenerResumenActividad();
       //aca irian las estadisticas
       model.addAttribute("hechosTotales", resumenActividadDto.getHechostotales());
       model.addAttribute("fuentesTotales", resumenActividadDto.getFuentesTotales());
       model.addAttribute("solicitudesEliminacion", resumenActividadDto.getSolicitudesEliminacion());
 
+      System.out.println("Ahora obtengo estadisticas");
       List<EstadisticaDto> estadisticas = estadisticaService.obtenerEstadisticas();
       model.addAttribute("estadisticas", estadisticas);
     return "panelControl";
