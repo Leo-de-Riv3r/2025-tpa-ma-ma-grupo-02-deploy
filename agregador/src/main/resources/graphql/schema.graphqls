@@ -39,7 +39,6 @@ type HechoDtoSalida {
     multimedia: MultimediaDtoOutput
 }
 
-# Basado en PaginacionDto<HechoDtoSalida>
 type PaginacionDtoHechoDtoSalida {
     data: [HechoDtoSalida]
     currentPage: Int
