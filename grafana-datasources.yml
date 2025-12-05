@@ -19,15 +19,13 @@ datasources:
   - name: Loki
     type: loki
     access: proxy
-    orgId: 1
-    url: http://loki.railway.internal:3100 # Apunta al servicio 'loki' en Docker
-    uid: loki-ds # Asigna un UID para que Tempo pueda referenciarlo
+    rgId: 1
+    url: http://loki.railway.internal:3100
+    uid: loki-ds
     isDefault: false
-    # Esto conecta Trazas -> Métricas
-    tracesToMetrics:
-      datasourceUid: 'Prometheus'
-    tracesToLogs:
-      datasourceUid: 'loki-ds' # UID que acabamos de asignar a Loki
-      tags: [ 'traceId' ]        # Buscar por la etiqueta 'traceId'
-      query: '{traceId="${__trace.id}"}'
-        # --- Datasource de Logs (Loki) ---
+    jsonData: # <--- Agrega esto para mejorar la vinculación
+      derivedFields:
+        - datasourceUid: Tempo
+          matcherRegex: "traceId=(\\w+)"
+          name: TraceID
+          url: "$${__value.raw}"
