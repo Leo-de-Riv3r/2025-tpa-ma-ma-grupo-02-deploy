@@ -15,7 +15,7 @@
         </http>
         <format>
             <label>
-                <pattern>application=${spring.application.name},level=%level,traceId=%X{traceId:-NONE}</pattern>
+                <pattern>application=fuente_proxy,level=%level,traceId=%X{traceId:-NONE}</pattern>
             </label>
             <message>
                 <pattern>l=%level c=%logger{20} t=%thread | %msg %ex</pattern>
