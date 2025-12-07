@@ -4,28 +4,32 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <customFields>{"app_name": "${spring.application.name}"}</customFields>
-
             <includeMdcKeyName>traceId</includeMdcKeyName>
             <includeMdcKeyName>spanId</includeMdcKeyName>
-
-            <writeVersion>false</writeVersion>
-            <fieldNames>
-                <timestamp>timestamp</timestamp>
-                <message>message</message>
-                <threadName>thread</threadName>
-                <level>level</level>
-            </fieldNames>
         </encoder>
     </appender>
 
-    <!-- Reducir Hibernate a ERROR -->
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>${LOKI_URL:-http://loki.railway.internal:3100/loki/api/v1/push}</url>
+        </http>
+        <format>
+            <label>
+                <pattern>application=agregador,level=%level,traceId=%X{traceId:-NONE}</pattern>
+            </label>
+            <message>
+                <pattern>l=%level c=%logger{20} t=%thread | %msg %ex</pattern>
+            </message>
+            <sortByTime>true</sortByTime>
+        </format>
+    </appender>
+
     <logger name="org.hibernate" level="ERROR"/>
     <logger name="org.hibernate.SQL" level="OFF"/>
-
-    <!-- Reducir Netty/WebClient -->
     <logger name="reactor.netty" level="ERROR"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="LOKI" />
     </root>
 </configuration>
