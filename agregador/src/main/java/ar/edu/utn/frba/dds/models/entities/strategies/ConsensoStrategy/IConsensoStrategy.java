@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy;
 
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -68,4 +69,6 @@ public abstract class IConsensoStrategy {
   }
 
   public abstract Integer getCantMinima(Integer numFuentes);
+
+  public abstract TipoAlgoritmo getTipo();
 }

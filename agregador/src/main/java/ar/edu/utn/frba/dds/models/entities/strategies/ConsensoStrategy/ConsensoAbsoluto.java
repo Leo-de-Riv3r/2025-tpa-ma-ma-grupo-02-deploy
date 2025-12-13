@@ -3,6 +3,7 @@ package ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import jakarta.persistence.DiscriminatorValue;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
 import jakarta.persistence.Entity;
 import java.util.Set;
 
@@ -18,5 +19,9 @@ public class ConsensoAbsoluto extends IConsensoStrategy {
     return numFuentes;
   }
 
+  @Override
+  public TipoAlgoritmo getTipo() {
+    return TipoAlgoritmo.ABSOLUTO;
+  }
 }
 

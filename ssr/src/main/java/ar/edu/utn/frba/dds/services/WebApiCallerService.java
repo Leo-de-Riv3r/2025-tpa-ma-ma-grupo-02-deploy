@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.ExternalApiException;
+import ar.edu.utn.frba.dds.exceptions.TokenExpiradoException;
 import ar.edu.utn.frba.dds.models.AuthResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +50,7 @@ public class WebApiCallerService {
           // Segundo intento con el nuevo token
           return apiCall.execute(newTokens.getAccessToken());
         } catch (Exception refreshError) {
-          throw new RuntimeException("Error al refrescar token y reintentar: " + refreshError.getMessage(), refreshError);
+          throw new TokenExpiradoException("La sesión ha caducado.");
         }
       }
       if (e.getStatusCode() == HttpStatus.NOT_FOUND) {

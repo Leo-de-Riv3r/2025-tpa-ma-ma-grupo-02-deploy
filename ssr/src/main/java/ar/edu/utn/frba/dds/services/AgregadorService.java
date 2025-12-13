@@ -16,8 +16,10 @@ import ar.edu.utn.frba.dds.models.SolicitudEliminacionDto;
 import ar.edu.utn.frba.dds.models.SolicitudModificacionDto;
 import ar.edu.utn.frba.dds.models.SolicitudesModificacionPaginado;
 import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -65,7 +67,7 @@ public class AgregadorService {
   }
 
   public void crearColeccion(ColeccionNuevaDto coleccionNueva) {
-    if (coleccionNueva.getAlgoritmo().isBlank()) coleccionNueva.setAlgoritmo(null);
+    if (coleccionNueva.getAlgoritmoConsenso().isBlank()) coleccionNueva.setAlgoritmoConsenso(null);
 
     if (coleccionNueva.getFuentes() != null) {
       coleccionNueva.getFuentes().forEach(f -> {
@@ -94,7 +96,7 @@ public class AgregadorService {
   }
 
   public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccion) {
-    if (coleccion.getAlgoritmo().isBlank()) coleccion.setAlgoritmo(null);
+    if (coleccion.getAlgoritmoConsenso() == null) coleccion.setAlgoritmoConsenso(null);
 
     if (coleccion.getFuentes() != null) {
       coleccion.getFuentes().forEach(f -> {
@@ -105,10 +107,8 @@ public class AgregadorService {
         } else if (f.getTipoFuente().equals("ESTATICA")){
           if (!f.getUrl().startsWith("http")) f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
         }
-        System.out.println("url de fuente: " + f.getUrl());
       });
     }
-  System.out.println("filtros a enviar: " + coleccion.getCriterios());
     metamapaApiService.actualizarColeccion(idColeccion, coleccion);
   }
 
@@ -175,5 +175,42 @@ public class AgregadorService {
 
   public void aceptarSolicitudModificacion(Long idSolicitud) {
     metamapaApiService.aceptarSolicitudModificacion(idSolicitud);
+  }
+
+
+  public List<String> obtenerProvincias() {
+    try {
+      ResponseEntity<List<String>> response = restTemplate.exchange(
+          urlBase + "/ubicaciones/provincias",
+          HttpMethod.GET,
+          null,
+          new ParameterizedTypeReference<List<String>>() {
+          });
+      return response.getBody();
+    } catch (Exception e) {
+      return new ArrayList<>();
+    }
+  }
+
+  public List<String> obtenerMunicipios() {
+    try {
+      return restTemplate.exchange(
+          urlBase + "/ubicaciones/municipios",
+          HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
+          }).getBody();
+    } catch (Exception e) {
+      return new ArrayList<>();
+    }
+  }
+
+  public List<String> obtenerDepartamentos() {
+    try {
+      return restTemplate.exchange(
+          urlBase + "/ubicaciones/departamentos",
+          HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
+          }).getBody();
+    } catch (Exception e) {
+      return new ArrayList<>();
+    }
   }
 }

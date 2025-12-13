@@ -1,17 +1,17 @@
 # src/main/resources/graphql/client/getColecciones.graphql
-query GetColecciones {
+query getColecciones {
     colecciones {
         id
         titulo
         descripcion
+        algoritmoConsenso
         criterios{
-            tipoCriterio
+            tipoFiltro
             valor
             tipoFuente
             fechaInicio
             fechaFin
         }
-        algoritmoConsenso
     }
 }
 

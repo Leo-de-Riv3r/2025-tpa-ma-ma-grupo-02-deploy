@@ -1,3 +1,11 @@
+type FiltroDTOSalida {
+    tipoFiltro: String
+    valor: String
+    tipoFuente: String
+    fechaInicio: String
+    fechaFin: String
+}
+
 type FuenteDtoOutput{
     id: ID!
     tipoFuente : String
@@ -18,7 +26,7 @@ type ColeccionDTOSalidaGQL {
     descripcion: String
     cantSolicitudesSpam: Int
     fuentes: [FuenteDtoOutput]
-    criterios: [CriterioDtoOutput]
+    criterios: [FiltroDTOSalida]
     algoritmoConsenso: String
     hechos : PaginacionDtoHechoDtoSalida
 }

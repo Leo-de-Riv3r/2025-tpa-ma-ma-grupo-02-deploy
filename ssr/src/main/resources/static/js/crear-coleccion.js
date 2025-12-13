@@ -1,8 +1,8 @@
 // =============================
 // CONFIG
 // =============================
-const BASE_URL_ESTATICA = "https://fuente-estatica.up.railway.app/api/fuentes"
-//const BASE_URL_ESTATICA = "http://localhost:4080/api/fuentes"
+//const BASE_URL_ESTATICA = "https://fuente-estatica.up.railway.app/api/fuentes"
+const BASE_URL_ESTATICA = "http://localhost:4080/api/fuentes"
 // =============================
 // HELPERS
 // =============================
@@ -37,8 +37,8 @@ async function verificarArchivoCsv(inputFile) {
   try {
     const result = await postFile(`${BASE_URL_ESTATICA}/validar-csv`, inputFile.files[0]);
 
-    if (!result.esCsv) {
-      errorMsg.innerText = "El archivo no es un CSV válido.";
+    if (!result.esCsv || result.registros < 10000) {
+      errorMsg.innerText = "El archivo no es un CSV válido. Sube uno valido y con 10000 registros o mas";
       errorMsg.style.display = "inline";
       inputFile.classList.add("is-invalid");
     } else {

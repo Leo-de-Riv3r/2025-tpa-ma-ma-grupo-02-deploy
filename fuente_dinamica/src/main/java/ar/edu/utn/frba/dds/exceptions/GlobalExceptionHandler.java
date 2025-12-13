@@ -26,4 +26,10 @@ public class GlobalExceptionHandler {
     log.error("ERROR_5xx - {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado");
   }
+
+  @ExceptionHandler(RecursoNoEncontradoException.class)
+  public ResponseEntity<String> handleNotFound(RecursoNoEncontradoException ex) {
+    log.error("ERROR_404 - {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+  }
 }

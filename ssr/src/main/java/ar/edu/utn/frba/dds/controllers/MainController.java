@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.controllers;
 
+import ar.edu.utn.frba.dds.exceptions.TokenExpiradoException;
 import ar.edu.utn.frba.dds.models.BlockIpDto;
 import ar.edu.utn.frba.dds.models.BlockedIpResDto;
 import ar.edu.utn.frba.dds.models.Coleccion;
@@ -14,6 +15,7 @@ import ar.edu.utn.frba.dds.models.HechoDto;
 import ar.edu.utn.frba.dds.models.HechoManualDTO;
 import ar.edu.utn.frba.dds.models.HechoPaginacionDto;
 import ar.edu.utn.frba.dds.models.HechoUpdateDTO;
+import ar.edu.utn.frba.dds.models.MultimediaDto;
 import ar.edu.utn.frba.dds.models.NuevaEstadisticaDto;
 import ar.edu.utn.frba.dds.models.PaginacionDtoBlockedIp;
 import ar.edu.utn.frba.dds.models.PaginacionDtoHechoDtoSalida;
@@ -72,8 +74,29 @@ public class MainController {
     this.blockedIpService = blockedIpService;
   }
 
-  @GetMapping("/")
-  public String home() {
+  @GetMapping({"/", "home"})
+  public String home(Model model) {
+    try {
+      List<Coleccion> colecciones = agregadorService.obtenerColecciones();
+
+      if (colecciones != null && !colecciones.isEmpty()) {
+        String idColeccion = colecciones.get(0).getId();
+        ColeccionHechosDto resultado = agregadorService.getHechosColeccion(
+            idColeccion,
+            new FiltrosDto(),
+            1);
+
+        if (resultado != null && resultado.getHechos() != null) {
+          List<HechoPaginacionDto> listaHechos = resultado.getHechos().getData();
+          int limite = Math.min(listaHechos.size(), 6);
+
+          model.addAttribute("hechos", listaHechos.subList(0, limite));
+          model.addAttribute("idColeccion", idColeccion);
+        }
+      }
+    } catch (Exception e) {
+      System.err.println("Warning: " + e.getMessage());
+    }
     return "home";
   }
 
@@ -137,11 +160,20 @@ public class MainController {
   }
 
   @GetMapping("/editar-hecho/{id}")
-  public String procesarEdicionDeHecho(@PathVariable Long id, Model model) {
-    var hecho = fuenteDinamicaService.obtenerHechoEdicion(id);
+  public String mostrarFormularioEditar(@PathVariable Long id, Model model) {
+    HechoUpdateDTO hechoExistente = fuenteDinamicaService.obtenerHechoEdicion(id);
+    HechoManualDTO hechoForm = new HechoManualDTO();
+    hechoForm.setTitulo(hechoExistente.getTitulo());
+    hechoForm.setDescripcion(hechoExistente.getDescripcion());
+    hechoForm.setCategoria(hechoExistente.getCategoria());
+    hechoForm.setLatitud(hechoExistente.getLatitud());
+    hechoForm.setLongitud(hechoExistente.getLongitud());
+    hechoForm.setFechaAcontecimiento(hechoExistente.getFechaHecho());
+    model.addAttribute("hechoDto", hechoForm);
+    model.addAttribute("esEdicion", true);
     model.addAttribute("idHecho", id);
-    model.addAttribute("hecho", hecho);
-    return "subirHechos/formularioEdicionHecho.html";
+    model.addAttribute("tituloPagina", "Editar Hecho Existente");
+    return "subirHechos/formularioHecho";
   }
 
   @PostMapping("/editar-hecho/{id}")
@@ -153,7 +185,7 @@ public class MainController {
   ) {
     try {
       fuenteDinamicaService.editarHecho(id, hechoDto, multimediaFiles);
-      return "redirect:/colecciones";
+      return "redirect:/hechos-usuario";
     } catch (Exception e) {
       redirectAttributes.addFlashAttribute("error", "Error al intentar editar el hecho: " + e.getMessage());
       return "redirect:/editar-hecho/" + id;
@@ -164,53 +196,80 @@ public class MainController {
   public String visualizarHechosCreadorPor(Model model) {
     List<SolicitudHechoDto> solicitudHechoDtos = fuenteDinamicaService.obtenerHechosPorCreador();
     model.addAttribute("solicitudesHechos", solicitudHechoDtos);
-    return "subirHechos/hechosSubidosPorUsuario";
+    return "subirHechos/hechosUsuario";
   }
 
   @GetMapping("/crear-hecho")
-  public String subirHecho(
-      Model model){
+  public String mostrarFormularioCrear(Model model) {
     model.addAttribute("hechoDto", new HechoManualDTO());
+    model.addAttribute("esEdicion", false);
+    model.addAttribute("tituloPagina", "Reportar un Nuevo Hecho");
     return "subirHechos/formularioHecho";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  @GetMapping("/panel-control/hechosSubidos")
-  public String mostrarHechosSubidos(Model model) {
+  @GetMapping("/panel-control/revisionHechos")
+  public String mostrarRevisionHechos(Model model) {
     List<SolicitudHechoDto> solicitudesHecho = fuenteDinamicaService.obtenerSolicitudesHecho();
     model.addAttribute("solicitudesHechos", solicitudesHecho);
-    return "hechosSubidos";
+    return "revisionHechos";
   }
 
-  @GetMapping("/panel-control/hechosSubidos/{idHecho}")
+  @GetMapping("/panel-control/revisionHechos/{idHecho}")
   public String mostrarDetallesSolicitudHecho(@PathVariable Long idHecho, Model model) {
     SolicitudHechoInputDto solicitud = fuenteDinamicaService.obtenerSolicitudById(idHecho);
-    model.addAttribute("hechoId", idHecho);
-    model.addAttribute("solicitud", solicitud);
-    return "detallesSolicitudHecho";
+    HechoDetallesDto hechoDto = new HechoDetallesDto();
+    hechoDto.setId(idHecho);
+    hechoDto.setTitulo(solicitud.getTitulo());
+    hechoDto.setDescripcion(solicitud.getDescripcion());
+    hechoDto.setCategoria(solicitud.getCategoria());
+    hechoDto.setLatitud(solicitud.getLatitud());
+    hechoDto.setLongitud(solicitud.getLongitud());
+    hechoDto.setNombreAutor(solicitud.getAutor());
+
+    if (solicitud.getFechaHecho() != null) {
+      hechoDto.setFechaAcontecimiento(solicitud.getFechaHecho().toString());
+    }
+
+    if (solicitud.getMultimedia() != null) {
+      List<MultimediaDto> mediaList = new ArrayList<>();
+      solicitud.getMultimedia().forEach(m -> {
+        MultimediaDto md = new MultimediaDto();
+        md.setNombre(m.getNombre());
+        md.setRuta(m.getRuta());
+        md.setFormato(m.getFormato());
+        mediaList.add(md);
+      });
+      hechoDto.setMultimedia(mediaList);
+    }
+    model.addAttribute("hecho", hechoDto);
+    model.addAttribute("idColeccion", "revision-carga"); // Dummy ID
+    model.addAttribute("modoValidacion", true);
+    model.addAttribute("hechoId", idHecho); // Necesario para los links de los botones
+    return "coleccion/detallesHecho";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  @GetMapping("/panel-control/hechosSubidos/{idHecho}/aceptar")
+  @GetMapping("/panel-control/revisionHechos/{idHecho}/aceptar")
   public String aceptarSolicitudHecho(@PathVariable Long idHecho, Model model, HttpServletRequest request) {
     RevisionHechoDto revisionHechoDto = new RevisionHechoDto();
     revisionHechoDto.setSupervisor(request.getSession().getAttribute("username").toString());
     revisionHechoDto.setComentario("");
 
     fuenteDinamicaService.aceptarSolicitud(idHecho, revisionHechoDto);
-    return "redirect:/panel-control/hechosSubidos";
+    return "redirect:/panel-control/revisionHechos";
   }
 
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  @PostMapping("/panel-control/hechosSubidos/{idHecho}/aceptarConSugerencia")
+  @PostMapping("/panel-control/revisionHechos/{idHecho}/aceptarConSugerencia")
   public String aceptarSolicitudHecho(@PathVariable Long idHecho, @ModelAttribute RevisionHechoDto revisionHechoDto) {
     fuenteDinamicaService.aceptarConSugerencias(idHecho, revisionHechoDto);
-    return "redirect:/panel-control/hechosSubidos";
+    return "redirect:/panel-control/revisionHechos";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  @GetMapping("/panel-control/hechosSubidos/{idHecho}/rechazoConSugerencias")
+  @GetMapping("/panel-control/revisionHechos/{idHecho}/rechazoConSugerencias")
   public String mostrarFormularioSugerenciasRechazo(@PathVariable Long idHecho, Model model, HttpServletRequest request) {
     RevisionHechoDto revisionHechoDto = new RevisionHechoDto();
     revisionHechoDto.setSupervisor(request.getSession().getAttribute("username").toString());
@@ -221,7 +280,7 @@ public class MainController {
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  @GetMapping("/panel-control/hechosSubidos/{idHecho}/aceptarConSugerencias")
+  @GetMapping("/panel-control/revisionHechos/{idHecho}/aceptarConSugerencias")
   public String mostrarFormularioSugerenciasAceptacion(@PathVariable Long idHecho, Model model, HttpServletRequest request) {
     RevisionHechoDto revisionHechoDto = new RevisionHechoDto();
     revisionHechoDto.setSupervisor(request.getSession().getAttribute("username").toString());
@@ -231,10 +290,10 @@ public class MainController {
     return "subirComentariosSolicitud";
   }
 
-  @PostMapping("/panel-control/hechosSubidos/{idHecho}/rechazar")
+  @PostMapping("/panel-control/revisionHechos/{idHecho}/rechazar")
   public String rechazarSolicitudHecho(@PathVariable Long idHecho, @ModelAttribute RevisionHechoDto revisionHechoDto) {
     fuenteDinamicaService.rechazarSolicitud(idHecho, revisionHechoDto);
-    return "redirect:/panel-control/hechosSubidos";
+    return "redirect:/panel-control/revisionHechos";
   }
 
   @PostMapping("/subir-hecho") // Asegúrate que esta URL coincida con el th:action
@@ -249,7 +308,7 @@ public class MainController {
     if (username != null) hechoDto.setAutor(username.toString());
 
     fuenteDinamicaService.crearHecho(hechoDto, multimedia);
-    return "redirect:/colecciones";
+    return "redirect:/";
   }
 
   @PostMapping("/solicitarEliminacion")
@@ -269,6 +328,7 @@ public class MainController {
     solicitud.setIdHecho(idHecho);
     model.addAttribute("solicitudEliminacion", solicitud);
     model.addAttribute("hechoId", idHecho);
+    model.addAttribute("idColeccion", idColeccion);
     return "coleccion/solicitudEliminacion";
   }
 
@@ -317,63 +377,77 @@ public class MainController {
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  @PostMapping("/colecciones/{idColeccion}/actualizar")
-  public String actualizarColecion(@PathVariable String idColeccion, @ModelAttribute("coleccion") ColeccionNuevaDto coleccion, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-      agregadorService.actualizarColeccion(idColeccion, coleccion);
-      return "redirect:/colecciones";
+  @GetMapping("/colecciones/{idColeccion}/editar")
+  public String mostrarFormularioEdicion(@PathVariable String idColeccion, Model model) {
+    Coleccion coleccionExistente = agregadorService.obtenerColeccionPorId(idColeccion);
+    ColeccionNuevaDto form = mapearAFormulario(coleccionExistente);
+
+    model.addAttribute("coleccionForm", form);
+    model.addAttribute("esEdicion", true);
+    model.addAttribute("accion", "/colecciones/" + idColeccion + "/actualizar");
+    return "coleccion/formColeccion";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  @GetMapping("/colecciones/{idColeccion}/editar")
-  public String mostrarEdicionColeccion(@PathVariable String idColeccion, Model model) {
-      Coleccion coleccion = agregadorService.obtenerColeccionPorId(idColeccion);
+  @PostMapping("/colecciones/{idColeccion}/actualizar")
+  public String actualizarColeccion(@PathVariable String idColeccion,
+                                    @ModelAttribute("coleccionForm") ColeccionNuevaDto coleccion,
+                                    BindingResult bindingResult,
+                                    Model model,
+                                    RedirectAttributes redirectAttributes) {
 
-      ColeccionNuevaDto coleccionNueva = new ColeccionNuevaDto();
-      coleccionNueva.setTitulo(coleccion.getTitulo());
-      coleccionNueva.setAlgoritmo(coleccion.getAlgoritmoConsenso());
-      coleccionNueva.setDescripcion(coleccion.getDescripcion());
-      coleccionNueva.setCriterios(coleccion.getCriterios());
+    if (coleccion.getAlgoritmoConsenso() != null && coleccion.getAlgoritmoConsenso().isBlank()) {
+      coleccion.setAlgoritmoConsenso(null);
+    }
 
-      if (coleccion.getFuentes() != null) {
-        List<FuenteNuevaDto> fuentesColeccion = new ArrayList<>();
-        coleccion.getFuentes().forEach(f -> {
-          FuenteNuevaDto fuenteNuevaDto = new FuenteNuevaDto();
-          fuenteNuevaDto.setTipoFuente(f.getTipoFuente());
-          fuenteNuevaDto.setUrl(f.getUrl());
-          fuentesColeccion.add(fuenteNuevaDto);
-        });
-        coleccionNueva.setFuentes(fuentesColeccion);
-      }
-      model.addAttribute("coleccionId", coleccion.getId());
-      model.addAttribute("coleccion", coleccionNueva);
-      return "coleccion/editar";
+    try {
+      agregadorService.actualizarColeccion(idColeccion, coleccion);
+      redirectAttributes.addFlashAttribute("success", "Colección actualizada correctamente.");
+    } catch (TokenExpiradoException ex) {
+      throw ex;
+    }
+    catch (Exception e) {
+      redirectAttributes.addFlashAttribute("error", "Error al actualizar: " + e.getMessage());
+      return "redirect:/colecciones/" + idColeccion + "/editar";
+    }
+
+    return "redirect:/colecciones";
   }
+
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping("/colecciones/crear")
   public String crearColeccion(@ModelAttribute("coleccion") ColeccionNuevaDto coleccionNueva, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+    try {
       agregadorService.crearColeccion(coleccionNueva);
+      redirectAttributes.addFlashAttribute("success", "Colección creada correctamente.");
       return "redirect:/colecciones";
+    }
+     catch (Exception e) {
+       redirectAttributes.addFlashAttribute("error", "Error al crear: " + e.getMessage());
+       return "redirect:/colecciones/nuevaColeccion";
+     }
   }
 
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
-  @GetMapping("/colecciones/nuevaColeccion")
-  public String mostrarFormularioColeccion(Model model) {
-    model.addAttribute("coleccion", new ColeccionNuevaDto());
-    return "coleccion/crear";
-  }
+
+
 
 
   @GetMapping("/colecciones/{idColeccion}/hechos")
   public String getHechosDeColeccion(@PathVariable String idColeccion, Model model, @ModelAttribute("filtros") FiltrosDto filtros, @RequestParam(name = "page", required = false, defaultValue = "1") int page) {
       ColeccionHechosDto coleccionHechosDto = agregadorService.getHechosColeccion(idColeccion, filtros, page);
       List<HechoPaginacionDto> hechos = coleccionHechosDto.getHechos().getData();
+      Coleccion coleccion = agregadorService.obtenerColeccionPorId(idColeccion);
+      String tituloAMostrar = (coleccion != null) ? coleccion.getTitulo() : "Colección no encontrada";
       model.addAttribute("paginaActual", coleccionHechosDto.getHechos().getCurrentPage());
       model.addAttribute("paginasTotales", coleccionHechosDto.getHechos().getTotalPages());
       model.addAttribute("hechos", hechos);
       model.addAttribute("idColeccion", idColeccion);
-      model.addAttribute("titulo", "Hechos de coleccion " + idColeccion);
+      model.addAttribute("titulo", tituloAMostrar);
       model.addAttribute("filtros", filtros);
+      model.addAttribute("listaProvincias", agregadorService.obtenerProvincias());
+      model.addAttribute("listaMunicipios", agregadorService.obtenerMunicipios());
+      model.addAttribute("listaDepartamentos", agregadorService.obtenerDepartamentos());
       return "coleccion/hechosColeccion";
   }
 
@@ -415,7 +489,9 @@ public class MainController {
     HechoDetallesDto hecho = agregadorService.getDetallesHecho(solicitudEliminacionDetallesDto.getIdHecho());
     model.addAttribute("idSolicitud", solicitudEliminacionDetallesDto.getId());
     model.addAttribute("hecho", hecho);
-    return "solicitudes/detallesHechoSolicitudEliminacion";
+    model.addAttribute("esRevision", true);
+    model.addAttribute("idColeccion", "admin-view");
+    return "coleccion/detallesHecho";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
@@ -460,6 +536,8 @@ public class MainController {
   @GetMapping("/panel-control/solicitudesEliminacion")
   public String mostrarSolicitudesEliminacion(Model model, @RequestParam(defaultValue = "1") int page, @RequestParam(required = false, defaultValue = "true") Boolean pendientes) {
     SolicitudesPaginasDto solicitudesPaginadoDto = agregadorService.obtenerSolicitudes(page, pendientes);
+    model.addAttribute("subtitulo", "Gestiona los reportes de hechos realizados por usuarios.");
+    model.addAttribute("noSolicitudesMensaje", "Buen trabajo! Todo está al día.");
     model.addAttribute("page", solicitudesPaginadoDto.getCurrentPage());
     model.addAttribute("totalPages", solicitudesPaginadoDto.getTotalPages());
     model.addAttribute("solicitudes", solicitudesPaginadoDto.getData());
@@ -479,7 +557,6 @@ public class MainController {
 
       List<EstadisticaDto> estadisticas = estadisticaService.obtenerEstadisticas();
       model.addAttribute("estadisticas", estadisticas);
-      System.out.println("estadisticas obtenidas");
     return "panelControl";
   }
 
@@ -489,6 +566,8 @@ public class MainController {
     Object username = request.getSession().getAttribute("username");
     if (username != null) {
         SolicitudesPaginasDto solicitudesPaginadoDto = agregadorService.obtenerSolicitudesCreadasPor(page, pendientes);
+        model.addAttribute("subtitulo", "Gestiona los reportes de hechos que has realizado.");
+        model.addAttribute("noSolicitudesMensaje", "No has realizado ninguna solicitud de eliminación aún.");
         model.addAttribute("page", solicitudesPaginadoDto.getCurrentPage());
         model.addAttribute("totalPages", solicitudesPaginadoDto.getTotalPages());
         model.addAttribute("solicitudes", solicitudesPaginadoDto.getData());
@@ -499,8 +578,39 @@ public class MainController {
     return "solicitudes/solicitudesEliminacion";
   }
 
-  @GetMapping("/home")
-  public String getLandingPage() {
-    return "home";
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @GetMapping("/colecciones/nuevaColeccion")
+  public String mostrarFormularioCreacion(Model model) {
+    model.addAttribute("coleccionForm", new ColeccionNuevaDto());
+    model.addAttribute("esEdicion", false);
+    model.addAttribute("accion", "/colecciones/crear");
+    return "coleccion/formColeccion";
   }
+
+  private ColeccionNuevaDto mapearAFormulario(Coleccion coleccion) {
+    ColeccionNuevaDto form = new ColeccionNuevaDto();
+
+    form.setTitulo(coleccion.getTitulo());
+    form.setDescripcion(coleccion.getDescripcion());
+    form.setAlgoritmoConsenso(coleccion.getAlgoritmoConsenso());
+    if (coleccion.getFuentes() != null) {
+      List<FuenteNuevaDto> fuentesDto = new ArrayList<>();
+      coleccion.getFuentes().forEach(f -> {
+        FuenteNuevaDto fd = new FuenteNuevaDto();
+        fd.setTipoFuente(f.getTipoFuente());
+        fd.setUrl(f.getUrl());
+        fuentesDto.add(fd);
+      });
+      form.setFuentes(fuentesDto);
+    }
+
+    if (coleccion.getCriterios() != null) {
+      form.setCriterios(coleccion.getCriterios());
+    } else {
+      form.setCriterios(new ArrayList<>());
+    }
+
+    return form;
+  }
+
 }

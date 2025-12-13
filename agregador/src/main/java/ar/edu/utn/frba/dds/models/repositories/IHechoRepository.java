@@ -29,4 +29,13 @@ public interface IHechoRepository extends JpaRepository<Hecho, Long> {
         WHERE CONCAT(h.titulo, '|', h.descripcion, '|', h.fechaAcontecimiento) IN :claves
     """)
   List<Hecho> buscarPorClaves(@Param("claves") Set<String> claves);
+
+  @Query("SELECT DISTINCT h.ubicacion.lugar.provincia FROM Hecho h WHERE h.ubicacion.lugar.provincia IS NOT NULL AND h.ubicacion.lugar.provincia != '' ORDER BY h.ubicacion.lugar.provincia ASC")
+  List<String> findProvinciasDisponibles();
+
+  @Query("SELECT DISTINCT h.ubicacion.lugar.municipio FROM Hecho h WHERE h.ubicacion.lugar.municipio IS NOT NULL AND h.ubicacion.lugar.municipio != '' ORDER BY h.ubicacion.lugar.municipio ASC")
+  List<String> findMunicipiosDisponibles();
+
+  @Query("SELECT DISTINCT h.ubicacion.lugar.departamento FROM Hecho h WHERE h.ubicacion.lugar.departamento IS NOT NULL AND h.ubicacion.lugar.departamento != '' ORDER BY h.ubicacion.lugar.departamento ASC")
+  List<String> findDepartamentosDisponibles();
 }

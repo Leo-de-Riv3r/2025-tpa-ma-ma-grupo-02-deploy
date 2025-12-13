@@ -131,3 +131,30 @@ footer .copyrights {
   grid-template-columns: repeat(3, 1fr);
   height: min-content;
 }
+
+
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    transition: all 0.3s ease;
+}
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+.object-fit-cover {
+    object-fit: cover;
+}
+
+h1, h2, h3, h4, h5 {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.btn {
+    font-weight: 500;
+}
+
+.navbar {
+  height: 75px;
+}

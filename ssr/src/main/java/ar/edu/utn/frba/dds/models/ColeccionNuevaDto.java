@@ -8,6 +8,6 @@ public class ColeccionNuevaDto {
   private String titulo;
   private String descripcion;
   private List<FuenteNuevaDto> fuentes;
-  private List<CriterioDtoEntrada> criterios;
-  private String algoritmo;
+  private String algoritmoConsenso = " ";
+  private List<FiltroDTOSalida> criterios;
 }

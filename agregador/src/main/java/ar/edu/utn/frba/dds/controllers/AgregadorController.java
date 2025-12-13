@@ -227,4 +227,19 @@ public class AgregadorController {
     solicitudService.rechazarSolicitud(id);
     return ResponseEntity.noContent().build();
   }
+
+  @GetMapping("/ubicaciones/provincias")
+  public ResponseEntity<List<String>> getProvincias() {
+    return ResponseEntity.ok(coleccionService.obtenerProvinciasDisponibles());
+  }
+
+  @GetMapping("/ubicaciones/municipios")
+  public ResponseEntity<List<String>> getMunicipios() {
+    return ResponseEntity.ok(coleccionService.obtenerMunicipiosDisponibles());
+  }
+
+  @GetMapping("/ubicaciones/departamentos")
+  public ResponseEntity<List<String>> getDepartamentos() {
+    return ResponseEntity.ok(coleccionService.obtenerDepartamentosDisponibles());
+  }
 }

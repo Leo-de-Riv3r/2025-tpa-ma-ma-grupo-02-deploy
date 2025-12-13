@@ -1,8 +1,7 @@
 package ar.edu.utn.frba.dds.models.entities.utils;
 
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
-import ar.edu.utn.frba.dds.models.dtos.output.CriterioColeccionDtoSalida;
-import ar.edu.utn.frba.dds.models.dtos.output.CriterioDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.FiltroDtoSalida;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroCategoria;
@@ -11,7 +10,7 @@ import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFecha
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFuente;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroMunicipio;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroProvincia;
-import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,41 +34,41 @@ public class ColeccionConverter {
 
     if(!coleccion.getCriterios().isEmpty()) {
 
-      List<CriterioDtoSalida> criterioDtoList = new ArrayList<>();
+      List<FiltroDtoSalida> criterioDtoList = new ArrayList<>();
       //List<CriterioColeccionDtoSalida> criterios = new ArrayList<>();
       coleccion.getCriterios().forEach(criterio -> {
-        CriterioDtoSalida criterioDto = new CriterioDtoSalida();
-        criterioDto.setTipoCriterio(criterio.getTipoFiltro().toString());
-        if (criterio instanceof FiltroCategoria) {
-          criterioDto.setValor(((FiltroCategoria) criterio).getNombreCategoria());
-        }
-        if (criterio instanceof FiltroProvincia) {
-          criterioDto.setValor(((FiltroProvincia) criterio).getProvincia());
-        }
-
-        if (criterio instanceof FiltroDepartamento) {
-          criterioDto.setValor(((FiltroDepartamento) criterio).getDepartamento());
-        }
-
-        if (criterio instanceof FiltroMunicipio) {
-          criterioDto.setValor(((FiltroMunicipio) criterio).getMunicipio());
-        }
-
-        if (criterio instanceof FiltroFuente) {
-          criterioDto.setTipoFuente(((FiltroFuente) criterio).getTipoFuente().toString());
-        }
-
-        if (criterio instanceof FiltroFecha) {
-          criterioDto.setFechaInicio(LocalDate.from(((FiltroFecha) criterio).getFechaInicio()));
-          criterioDto.setFechaFin(LocalDate.from(((FiltroFecha) criterio).getFechaFinal()));
-        }
-        criterioDtoList.add(criterioDto);
+        criterioDtoList.add(mapStrategyToDto(criterio));
       });
       respuesta.setCriterios(criterioDtoList);
     }
     if(coleccion.getAlgoritmoConsenso() != null) {
-      respuesta.setAlgoritmoConsenso(coleccion.getAlgoritmoConsenso().getClass().getSimpleName());
+      respuesta.setAlgoritmoConsenso(coleccion.getAlgoritmoConsenso().getTipo().name());
     }
     return respuesta;
+  }
+
+  private FiltroDtoSalida mapStrategyToDto(IFiltroStrategy strategy) {
+    FiltroDtoSalida dto = new FiltroDtoSalida();
+    dto.setTipoFiltro(strategy.getTipoFiltro().toString());
+
+    if (strategy instanceof FiltroCategoria f)
+      dto.setValor(f.getNombreCategoria());
+    else if (strategy instanceof FiltroProvincia f)
+      dto.setValor(f.getProvincia());
+    else if (strategy instanceof FiltroMunicipio f)
+      dto.setValor(f.getMunicipio());
+    else if (strategy instanceof FiltroDepartamento f)
+      dto.setValor(f.getDepartamento());
+    else if (strategy instanceof FiltroFuente f) {
+      if (f.getTipoFuente() != null)
+        dto.setTipoFuente(f.getTipoFuente().toString());
+    } else if (strategy instanceof FiltroFecha f) {
+      if (f.getFechaInicio() != null)
+        dto.setFechaInicio(f.getFechaInicio().toLocalDate());
+      if (f.getFechaFinal() != null)
+        dto.setFechaFin(f.getFechaFinal().toLocalDate());
+    }
+
+    return dto;
   }
 }

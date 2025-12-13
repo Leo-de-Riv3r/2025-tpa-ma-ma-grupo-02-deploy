@@ -13,9 +13,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class FiltroStrategyFactory {
   public static IFiltroStrategy fromDTO(FiltroDTOEntrada dto) {
+    System.out.println("dto recibido: " + dto);
   try {
     TipoFiltro tipoFiltro = TipoFiltro.valueOf(dto.getTipoFiltro());
     return switch (tipoFiltro) {

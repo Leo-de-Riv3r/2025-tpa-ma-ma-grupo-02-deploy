@@ -11,7 +11,7 @@ public class ColeccionDTOSalidaGQL {
   private String descripcion;
   private List<FuenteDTOOutput> fuentes;
   private Integer cantSolicitudesSpam;
-  private List<CriterioDtoSalida> criterios = List.of();
+  private List<FiltroDtoSalida> criterios = List.of();
   private String algoritmoConsenso;
   private PaginacionDto<HechoDtoSalida> hechos;
   public ColeccionDTOSalidaGQL(ColeccionDTOSalida dto){

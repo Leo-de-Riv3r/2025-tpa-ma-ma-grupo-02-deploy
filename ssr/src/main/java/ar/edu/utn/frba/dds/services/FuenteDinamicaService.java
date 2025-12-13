@@ -98,7 +98,7 @@ public class FuenteDinamicaService {
           Void.class
       );
     } catch (Exception e) {
-      throw new RuntimeException("ERROR durante PUT Multipart a la API de Hechos: " + e.getMessage(), e);
+      throw new RuntimeException("Error al procesar archivo para la API", e);
     }
   }
 
@@ -162,7 +162,6 @@ public class FuenteDinamicaService {
 
   public List<SolicitudHechoDto> obtenerSolicitudesHecho() {
     List<SolicitudHechoDto> hechosPendientes = metamapaApiService.obtenerSolicitudesHecho();
-    System.out.println("hechos pendientes fuente dinaica : " + hechosPendientes.size());
     return hechosPendientes;
   }
 

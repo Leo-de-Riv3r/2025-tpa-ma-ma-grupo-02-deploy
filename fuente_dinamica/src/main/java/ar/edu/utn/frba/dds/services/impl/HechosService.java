@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.services.impl;
 
+import ar.edu.utn.frba.dds.exceptions.RecursoNoEncontradoException;
 import ar.edu.utn.frba.dds.mappers.HechoMapper;
 
 import ar.edu.utn.frba.dds.models.dtos.input.HechoInputDTO;
@@ -66,7 +67,7 @@ public class HechosService implements IHechosService {
   public HechoOutputDTO getHechoById(Long id) {
     Hecho hecho = hechosRepository
             .findById(id)
-            .orElseThrow(() -> new RuntimeException("Hecho no encontrado con id: " + id));
+            .orElseThrow(() -> new RecursoNoEncontradoException("Hecho no encontrado con id: " + id));
 
     return HechoMapper.toHechoOutputDTO(hecho);
   }

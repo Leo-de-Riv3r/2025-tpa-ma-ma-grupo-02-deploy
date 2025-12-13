@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy;
 
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import java.util.Set;
@@ -18,6 +19,11 @@ public class ConsensoMayorSimple extends IConsensoStrategy {
   @Override
   public Integer getCantMinima(Integer numFuentes) {
     return (numFuentes / 2) + 1;
+  }
+
+  @Override
+  public TipoAlgoritmo getTipo() {
+    return TipoAlgoritmo.MAYORIA_SIMPLE;
   }
 }
 

@@ -117,21 +117,21 @@ public class ColeccionService {
       coleccion.setFuentes(fuentes);
     }
 
-    if(dto.getFiltros() != null) {
-      Set<IFiltroStrategy> filtros = dto.getFiltros().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
+    if(dto.getCriterios() != null) {
+      Set<IFiltroStrategy> filtros = dto.getCriterios().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
       filtros.forEach(f -> coleccion.addCriterio(f));
       if (!coleccion.getFuentes().isEmpty()) {
         coleccion.actualizarHechosFiltrados();
       }
     }
 
-    if (dto.getAlgoritmo() != null) {
+    if (dto.getAlgoritmoConsenso() != null) {
       try {
-        TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmo().toUpperCase());
+        TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmoConsenso().toUpperCase());
         IConsensoStrategy algoritmoConsenso = tipoAlgoritmo.getStrategy();
         coleccion.setAlgoritmoConsenso(algoritmoConsenso);
       } catch (Exception e){
-        throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmo() + " no aceptado");
+        throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmoConsenso() + " no aceptado");
       }
     }
     Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
@@ -215,19 +215,19 @@ public class ColeccionService {
       coleccion.limpiarFuentes();
     }
 
-    if (dto.getAlgoritmo() != null && !dto.getAlgoritmo().isBlank()) {
+    if (dto.getAlgoritmoConsenso() != null && !dto.getAlgoritmoConsenso().isBlank()) {
       try {
-        TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmo().toUpperCase());
+        TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmoConsenso().toUpperCase());
         IConsensoStrategy algoritmoConsenso = tipoAlgoritmo.getStrategy();
         coleccion.setAlgoritmoConsenso(algoritmoConsenso);
       } catch (Exception e){
-        throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmo() + " no aceptado");
+        throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmoConsenso() + " no aceptado");
       }
     } else {
       coleccion.setAlgoritmoConsenso(null);
     }
-    if(dto.getFiltros() != null) {
-      Set<IFiltroStrategy> filtros = dto.getFiltros().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
+    if(dto.getCriterios() != null) {
+      Set<IFiltroStrategy> filtros = dto.getCriterios().stream().map(dtoFiltro -> FiltroStrategyFactory.fromDTO(dtoFiltro)).collect(Collectors.toSet());
 
       coleccion.setearCriterios(filtros);
     } else {
@@ -431,7 +431,7 @@ public class ColeccionService {
 
   public void updateAlgoritmoConsenso(String coleccionId, CambioAlgoritmoDTO algoritmoDTO) {
     ColeccionDTOEntrada dto = new ColeccionDTOEntrada();
-    dto.setAlgoritmo(algoritmoDTO.getTipoAlgoritmo());
+    dto.setAlgoritmoConsenso(algoritmoDTO.getTipoAlgoritmo());
     updateColeccion(coleccionId, dto);
   }
 
@@ -542,6 +542,19 @@ public class ColeccionService {
     solicitud.rechazar();
     solicitudesModificacionRepository.save(solicitud);
   }
+
+  public List<String> obtenerProvinciasDisponibles() {
+    return hechoRepository.findProvinciasDisponibles();
+  }
+
+  public List<String> obtenerMunicipiosDisponibles() {
+    return hechoRepository.findMunicipiosDisponibles();
+  }
+
+  public List<String> obtenerDepartamentosDisponibles() {
+    return hechoRepository.findDepartamentosDisponibles();
+  }
+
 //  public void actualizarHecho(Long idHecho, HechoUpdateDto hechoDto) {
 //    Hecho hecho = this.getHechoById(idHecho);
 //    if(hechoDto.getTitulo() != null) {

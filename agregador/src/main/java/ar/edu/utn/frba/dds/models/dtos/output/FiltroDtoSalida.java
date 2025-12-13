@@ -1,17 +1,22 @@
-package ar.edu.utn.frba.dds.models;
+package ar.edu.utn.frba.dds.models.dtos.output;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.NoArgsConstructor;
 
 @Data
-public class FiltroDTOSalida {
+@AllArgsConstructor
+@NoArgsConstructor
+public class FiltroDtoSalida {
   private String tipoFiltro;
   private String valor;
   private String tipoFuente;
-  @JsonFormat(pattern = "yyyy-MM-dd")//formateo cadena de texto a fecha
-  private LocalDate fechaInicio; // para filtros de fecha
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  private LocalDate fechaInicio;
+
   @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate fechaFin;
 }

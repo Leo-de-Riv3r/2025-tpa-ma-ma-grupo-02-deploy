@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.exceptions;
 
 import ar.edu.utn.frba.dds.ExternalApiException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.ui.Model;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
@@ -55,6 +57,17 @@ public class GlobalExceptionHandler {
     model.addAttribute("descripcion", ex.getMessage());
     log.error("Error 5xx, tipo: {}, msg: {}", ex.getClass().toString(), ex.getMessage());
     return "error";
+  }
+
+  @ExceptionHandler(TokenExpiradoException.class)
+  public String handleTokenExpirado(TokenExpiradoException ex, HttpServletRequest request,
+                                    RedirectAttributes redirectAttributes) {
+    log.warn("Sesión expirada: {}", ex.getMessage());
+    HttpSession session = request.getSession(false);
+    if (session != null) {
+      session.invalidate();
+    }
+    return "redirect:/login";
   }
 
 }

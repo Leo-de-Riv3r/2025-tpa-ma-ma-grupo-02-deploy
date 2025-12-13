@@ -8,7 +8,6 @@ import lombok.Data;
 
 @Data
 public class FiltroDTOEntrada {
-  @JsonProperty("tipoCriterio")
   private String tipoFiltro;
   private String valor;         // para título, categoria, provincia, municipio o departamento
   private String tipoFuente; // para filtro de fuente

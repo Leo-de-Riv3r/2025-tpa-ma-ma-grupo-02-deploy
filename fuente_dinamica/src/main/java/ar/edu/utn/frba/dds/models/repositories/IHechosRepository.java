@@ -24,4 +24,7 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
 
   @Query(value = "SELECT * FROM hechos WHERE estado IN ('PENDIENTE', 'ACEPTADO_CON_SUGERENCIAS') AND nombre_autor = ?1", nativeQuery = true)
   List<Hecho> findHechosPendientesByCreator(String username);
+
+  @Query(value = "SELECT * FROM hechos WHERE nombre_autor = ?1 ORDER BY fecha_carga DESC", nativeQuery = true)
+  List<Hecho> findHechosByCreator(String username);
 }

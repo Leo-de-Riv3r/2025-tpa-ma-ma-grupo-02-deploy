@@ -1,0 +1,491 @@
+<html th:replace="~{layout/baseTemplate :: html( ~{::js-extra} )}" xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="contenido">
+
+    <div class="container py-5">
+
+        <div class="mb-4 border-bottom pb-3">
+            <h2 class="fw-bold mb-1" th:text="${esEdicion ? 'Editar Colección' : 'Nueva Colección'}">Título</h2>
+            <p class="text-muted mb-0">
+                <span th:if="${esEdicion}">Modifica los parámetros y criterios existentes.</span>
+                <span th:unless="${esEdicion}">Define los parámetros para el nuevo conjunto de datos.</span>
+            </p>
+        </div>
+
+        <form id="formColeccion" class="needs-validation"
+            th:action="@{${accion}}"
+            th:object="${coleccionForm}"
+            method="post"
+            enctype="multipart/form-data" onSubmit="procesarSubmit(event)"
+        >
+
+            <div class="row g-4">
+
+                <div class="col-lg-7">
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3 border-bottom-0">
+                            <h5 class="fw-bold mb-0 text-primary"><i class="uil uil-info-circle"></i> Detalles Generales</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="titulo" placeholder="Título" th:field="*{titulo}" required>
+                                <label for="titulo">Título de la Colección</label>
+                            </div>
+                            <div class="form-floating">
+                                <textarea class="form-control" placeholder="Descripción" id="descripcion" style="height: 120px" th:field="*{descripcion}" required></textarea>
+                                <label for="descripcion">Descripción</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0 text-secondary"><i class="uil uil-filter"></i> Criterios de Pertenencia</h5>
+                        </div>
+                        <div class="card-body bg-light">
+
+                            <div id="criterios-container" class="vstack gap-2 mb-3">
+                                <div class="criterio-item card border-0 shadow-sm" th:each="criterio, stat : *{criterios}">
+                                    <div class="card-body p-2 d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center gap-2 w-100">
+
+                                            <strong class="text-primary small text-uppercase flex-shrink-0"
+                                                th:text="${#strings.replace(criterio.tipoFiltro, 'FILTRO_', '')}">TIPO</strong>
+                
+                                            <input type="hidden" th:field="*{criterios[__${stat.index}__].tipoFiltro}">
+
+                                            <div class="flex-grow-1">
+                                                <div th:if="${criterio.tipoFiltro == 'FILTRO_FUENTE'}">
+                                                    <select class="form-select form-select-sm py-1" th:field="*{criterios[__${stat.index}__].tipoFuente}">
+                                                        <option value="ESTATICA">Estática</option>
+                                                        <option value="DINAMICA">Dinámica</option>
+                                                        <option value="PROXY_METAMAPA">Proxy API</option>
+                                                    </select>
+                                                </div>
+
+                                                <div th:if="${#strings.contains(criterio.tipoFiltro, 'FECHA')}">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="date" class="form-control py-1" th:field="*{criterios[__${stat.index}__].fechaInicio}">
+                                                        <span class="input-group-text py-1">-</span>
+                                                        <input type="date" class="form-control py-1" th:field="*{criterios[__${stat.index}__].fechaFin}">
+                                                    </div>
+                                                </div>
+
+                                                <div th:unless="${criterio.tipoFiltro == 'FILTRO_FUENTE' or #strings.contains(criterio.tipoFiltro, 'FECHA')}">
+                                                    <input type="text" class="form-control form-control-sm py-1" th:field="*{criterios[__${stat.index}__].valor}">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button type="button" class="btn btn-link text-danger p-0 ms-2" onclick="eliminarItem(this, '.criterio-item')">
+                                            <i class="uil uil-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <select id="tipoCriterioSelect" class="form-select form-select-sm bg-white">
+                                    <option value="">Seleccionar criterio...</option>
+                                    <option value="FILTRO_CATEGORIA">Categoría</option>
+                                    <option value="FILTRO_FECHA_ACONTECIMIENTO">Fecha Acontecimiento</option>
+                                    <option value="FILTRO_FECHA_REPORTE">Fecha Reporte</option>
+                                    <option value="FILTRO_PROVINCIA">Provincia</option>
+                                    <option value="FILTRO_MUNICIPIO">Municipio</option>
+                                    <option value="FILTRO_FUENTE">Tipo de Fuente</option>
+                                </select>
+                                <button type="button" class="btn btn-sm btn-dark px-3" onclick="agregarCriterio()">
+                                    <i class="uil uil-plus"></i> Agregar
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3 border-bottom-0">
+                            <h5 class="fw-bold mb-0 text-success"><i class="uil uil-shield-check"></i> Reglas de Consenso</h5>
+                        </div>
+                        <div class="card-body bg-light">
+                            <select th:field="*{algoritmoConsenso}" class="form-select form-select-sm bg-white mb-2">
+                                <option value="" class="text-muted">Sin algoritmo (Irrestricto)</option>
+                                <option value="ABSOLUTO">Consenso Absoluto (100% coincidencia)</option>
+                                <option value="MAYORIA_SIMPLE">Mayoría Simple (>50% coincidencia)</option>
+                                <option value="MULTIPLES_MENCIONES">Múltiples Menciones (Al menos 2 fuentes)</option>
+                            </select>
+
+                            <div class="d-flex align-items-center text-muted small">
+                                <i class="uil uil-info-circle me-1"></i>
+                                <span>Define cuándo un hecho se considera validado para la navegación curada.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0 text-warning"><i class="uil uil-server-network"></i> Fuentes de Datos</h5>
+                            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold" onclick="agregarFuente()">
+                                <i class="uil uil-plus"></i> Agregar
+                            </button>
+                        </div>
+                        
+                        <div class="card-body bg-light">
+                            <div id="fuentes-container" class="vstack gap-3">
+                                <div class="fuente-item card border-0 shadow-sm" th:each="fuente, iterStat : *{fuentes}">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge bg-dark rounded-pill count-badge">Fuente #<span th:text="${iterStat.count}">1</span></span>
+                                            <button type="button" class="btn btn-link text-danger p-0 btn-sm" onclick="eliminarItem(this, '.fuente-item')">
+                                                <i class="uil uil-trash-alt"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="row g-2">
+                                            <div class="col-12">
+                                                <select class="form-select form-select-sm" 
+                                                        th:name="|fuentes[${iterStat.index}].tipoFuente|"
+                                                        th:value="${fuente.tipoFuente}"
+                                                        onchange="cambiarInputFuente(this)">
+                                                    <option value="ESTATICA" th:selected="${fuente.tipoFuente == 'ESTATICA'}">Estática (CSV)</option>
+                                                    <option value="DINAMICA" th:selected="${fuente.tipoFuente == 'DINAMICA'}">Dinámica</option>
+                                                    <option value="PROXY_METAMAPA" th:selected="${fuente.tipoFuente == 'PROXY_METAMAPA'}">Proxy API</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-12 input-container">
+                                                <input th:if="${fuente.tipoFuente != 'ESTATICA'}" 
+                                                       type="text" class="form-control form-control-sm fuente-input" 
+                                                       th:name="|fuentes[${iterStat.index}].url|" th:value="${fuente.url}" 
+                                                       placeholder="https://..." required>
+
+                                                <div th:if="${fuente.tipoFuente == 'ESTATICA'}" class="input-group input-group-sm">
+                                                    <span class="input-group-text bg-secondary bg-opacity-10 text-dark fw-bold border-end-0">
+                                                        <i class="uil uil-file-alt me-1"></i> CSV
+                                                    </span>
+                                                    <input type="text" class="form-control fuente-input border-start-0 bg-light text-muted" 
+                                                           th:name="|fuentes[${iterStat.index}].url|" 
+                                                           th:value="${fuente.url}" 
+                                                           readonly 
+                                                           title="Archivo cargado previamente">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div th:if="${#lists.isEmpty(coleccionForm.fuentes)}" id="empty-state-fuentes" class="text-center py-4 text-muted">
+                                <p class="small mt-2">No hay fuentes configuradas.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="mensajeErrorGlobal" class="alert alert-danger mt-4" role="alert" style="display: none;">
+            </div>
+
+            <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+                <a th:href="@{/colecciones}" class="btn btn-light border px-4">Cancelar</a>
+                
+                <button type="submit" id="submit-button" class="btn btn-dark px-5 fw-bold shadow-sm">
+                    <i class="uil" th:classappend="${esEdicion ? 'uil-save' : 'uil-plus-circle'}"></i>
+                    <span th:text="${esEdicion ? 'Guardar Cambios' : 'Crear Colección'}">Acción</span>
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<th:block th:fragment="js-extra">
+    <script>
+        function mostrarErrorGlobal(mensaje) {
+    const contenedorError = document.getElementById("mensajeErrorGlobal");
+    contenedorError.innerText = mensaje;
+    contenedorError.style.display = "block";
+
+    // Hacemos scroll hacia el error para asegurar que el usuario lo vea
+    contenedorError.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function procesarSubmit(event) {
+  event.preventDefault();
+
+  const form = event.target;
+  const submitButton = document.querySelector("#submit-button");
+  const contenedorError = document.getElementById("mensajeErrorGlobal");
+
+  // 1. Limpiar errores previos al intentar enviar de nuevo
+  contenedorError.style.display = "none";
+  contenedorError.innerText = "";
+
+  // --- VALIDACIÓN: BLOQUEAR SI HAY ERRORES (is-invalid) ---
+  if (form.querySelector('.is-invalid')) {
+    mostrarErrorGlobal("No se puede enviar el formulario. Por favor, corrija los campos marcados en rojo (archivos inválidos).");
+    return;
+  }
+
+  submitButton.disabled = true;
+  const fuentes = document.querySelectorAll('.fuente-item');
+
+  try {
+    for (const fuente of fuentes) {
+      const tipo = fuente.querySelector('select').value;
+      const input = fuente.querySelector('.fuente-input');
+
+      // Solo manejar fuentes estáticas con archivo seleccionado
+      if (tipo === "ESTATICA" && input.files?.length > 0) {
+
+        // Subir archivo al módulo Fuente Estática
+        const data = await postFile(BASE_URL_ESTATICA, input.files[0]);
+
+        // Reemplazar input file por input text con el ID
+        const contenedor = input.parentElement;
+        const newInput = document.createElement('input');
+        newInput.type = "text";
+        newInput.name = input.name;
+        newInput.value = `${data.id}`;
+
+        // Ocultar el input con el ID
+        newInput.hidden = true;
+
+        contenedor.replaceChild(newInput, input);
+      }
+    }
+
+    // 1. Ocultamos el formulario visualmente
+    form.style.display = 'none';
+
+    // 2. Creamos el spinner
+    const spinnerDiv = document.createElement('div');
+    spinnerDiv.className = 'd-flex flex-column align-items-center justify-content-center mt-5';
+    spinnerDiv.innerHTML = `
+        <div class='spinner-border' role='status'><span class='visually-hidden'>Loading...</span></div>
+        <h4 class="mt-3">Subiendo colección, aguarde unos instantes…</h4>
+    `;
+
+    // 3. Agregamos el spinner
+    form.parentElement.appendChild(spinnerDiv);
+
+    // 4. Enviamos el formulario
+    form.submit();
+
+  } catch (err) {
+    mostrarErrorGlobal("Ocurrió un error procesando el archivo: " + (err.message || "Error desconocido"));
+
+    submitButton.disabled = false;
+
+    form.style.display = 'block';
+
+    // Remover el spinner si quedó ahí
+    const spinner = document.querySelector('.spinner-border')?.parentElement;
+    if(spinner) spinner.remove();
+  }
+}
+
+
+        function agregarCriterio() {
+            const select = document.getElementById('tipoCriterioSelect');
+            const tipo = select.value;
+            if(!tipo) return;
+
+            const container = document.getElementById('criterios-container');
+            const index = container.querySelectorAll('.criterio-item').length;
+            
+            const div = document.createElement('div');
+            div.className = 'criterio-item card border-0 shadow-sm mb-2 fade-in-up';
+            
+            let inputHtml = '';
+            
+            if (tipo.includes('FUENTE')) {
+                inputHtml = `
+                    <select class="form-select form-select-sm" name="criterios[${index}].tipoFuente">
+                        <option value="ESTATICA">Estática</option>
+                        <option value="DINAMICA">Dinámica</option>
+                        <option value="PROXY_METAMAPA">Proxy API</option>
+                    </select>`;
+            } else if (tipo.includes('FECHA')) {
+                inputHtml = `
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Desde</span>
+                        <input type="date" class="form-control" name="criterios[${index}].fechaInicio">
+                        <span class="input-group-text">Hasta</span>
+                        <input type="date" class="form-control" name="criterios[${index}].fechaFin">
+                    </div>`;
+            } else {
+                inputHtml = `<input type="text" class="form-control form-control-sm" name="criterios[${index}].valor" placeholder="Valor...">`;
+            }
+
+            div.innerHTML = `
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <strong class="text-primary small text-uppercase">${tipo.replace('FILTRO_', '')}</strong>
+                        <button type="button" class="btn btn-link text-danger p-0 btn-sm" onclick="eliminarItem(this, '.criterio-item')">
+                            <i class="uil uil-times"></i>
+                        </button>
+                    </div>
+                    <input type="hidden" name="criterios[${index}].tipoFiltro" value="${tipo}">
+                    ${inputHtml}
+                </div>
+            `;
+            
+            container.appendChild(div);
+            select.value = ""; // Resetear selector
+        }
+
+async function postFile(url, file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const resp = await fetch(url, { method: "POST", body: formData });
+
+  if (!resp.ok) {
+    throw new Error("Error en respuesta del servidor (" + resp.status + ")");
+  }
+  const data = await resp.json();
+  return data;
+}
+
+//const BASE_URL_ESTATICA = "https://fuente-estatica.up.railway.app/api/fuentes"
+const BASE_URL_ESTATICA = "http://localhost:4080/api/fuentes"
+  async function verificarArchivoCsv(inputFile) {
+  const errorMsg = document.getElementById("errorMsg");
+
+  // reset
+  errorMsg.style.display = "none";
+  inputFile.classList.remove("is-invalid", "is-valid");
+
+  if (inputFile.files.length === 0) return;
+
+  try {
+    const result = await postFile(`${BASE_URL_ESTATICA}/validar-csv`, inputFile.files[0]);
+
+    console.log(result)
+
+    if (!result.esCsv || result.registros < 10000) {
+      errorMsg.innerText = "El archivo no es un CSV válido. Sube uno valido y con por lo menos 10000 registros";
+      errorMsg.style.display = "inline";
+      inputFile.classList.add("is-invalid");
+    } else {
+      inputFile.classList.add("is-valid");
+    }
+
+  } catch (e) {
+    errorMsg.innerText = "Error consultando API de validación.";
+    errorMsg.style.display = "inline";
+    inputFile.classList.add("is-invalid");
+  }
+}
+
+        function cambiarInputFuente(select) {
+            const container = select.closest('.card-body').querySelector('.input-container');
+            const tipo = select.value;
+            const match = select.name.match(/\[(\d+)\]/);
+            const index = match ? match[1] : 0; 
+
+            let htmlInput = '';
+
+            if (tipo === "ESTATICA") {
+                htmlInput = `
+                    <div class="input-group input-group-sm">
+                        <input type="file" class="form-control fuente-input" 
+                               name="fuentes[${index}].url" accept=".csv" onchange="verificarArchivoCsv(this)" required>
+                    </div>
+                    <div class="form-text small text-muted">Sube un archivo .csv válido.</div>
+                    <div id="errorMsg" class="invalid-feedback" style="display: none;"></div>
+                `;
+            } else if (tipo === "DINAMICA" || tipo == "PROXY_METAMAPA") {
+                htmlInput = `
+                    <input type="hidden" class="fuente-input" name="fuentes[${index}].url" value="INTERNAL_DINAMICA">
+                    <div class="alert alert-info py-1 px-2 mb-0 small">
+                        <i class="uil uil-info-circle"></i> Se usará la fuente interna.
+                    </div>
+                `;
+            } else {
+                htmlInput = `
+                    <input type="text" class="form-control form-control-sm fuente-input" 
+                           placeholder="https://api.externa.com..." 
+                           name="fuentes[${index}].url" required>
+                `;
+            }
+            container.innerHTML = htmlInput;
+        }
+
+        function agregarFuente() {
+            const container = document.getElementById('fuentes-container');
+            const emptyState = document.getElementById('empty-state-fuentes');
+            if(emptyState) emptyState.style.display = 'none';
+
+            const index = container.querySelectorAll('.fuente-item').length;
+
+            const div = document.createElement('div');
+            div.className = 'fuente-item card border-0 shadow-sm fade-in-up';
+            
+            div.innerHTML = `
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-secondary rounded-pill count-badge">Nueva</span>
+                        <button type="button" class="btn btn-link text-danger p-0 btn-sm" onclick="eliminarItem(this, '.fuente-item')">
+                            <i class="uil uil-trash-alt"></i>
+                        </button>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <select class="form-select form-select-sm mb-2" 
+                                    name="fuentes[${index}].tipoFuente" 
+                                    onchange="cambiarInputFuente(this)">
+                                <option value="" selected disabled>Seleccionar tipo...</option>
+                                <option value="ESTATICA">Estática (CSV)</option>
+                                <option value="DINAMICA">Dinámica</option>
+                                <option value="PROXY_METAMAPA">Proxy API</option>
+                            </select>
+                        </div>
+                        <div class="col-12 input-container">
+                            <input type="text" class="form-control form-control-sm" disabled placeholder="Seleccione tipo primero">
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function eliminarItem(btn, itemClass) {
+            const item = btn.closest(itemClass);
+            item.remove();
+            reindexar(itemClass);
+        }
+
+        function reindexar(itemClass) {
+            const items = document.querySelectorAll(itemClass);
+            const parentName = itemClass === '.fuente-item' ? 'fuentes' : 'criterios';
+            const emptyState = document.getElementById('empty-state-fuentes');
+
+            if (itemClass === '.fuente-item' && items.length === 0 && emptyState) {
+                emptyState.style.display = 'block';
+            }
+            
+            items.forEach((item, i) => {
+                if(itemClass === '.fuente-item') {
+                    const badge = item.querySelector('.count-badge');
+                    if(badge) badge.innerText = `Fuente #${i + 1}`;
+                }
+
+                item.querySelectorAll('input, select, textarea').forEach(el => {
+                    if (el.name) {
+                        el.name = el.name.replace(/\[\d+\]/, `[${i}]`);
+                    }
+                });
+            });
+        }
+    </script>
+    
+    <style>
+        .fade-in-up { animation: fadeInUp 0.3s ease-in-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</th:block>
+</html>

@@ -11,7 +11,7 @@ public class ColeccionDTOEntrada {
   private String titulo;
   private String descripcion;
   private Set<FuenteDTO> fuentes;
-  private String algoritmo;
+  private String algoritmoConsenso;
   @JsonProperty("criterios")
-  private Set<FiltroDTOEntrada> filtros;
+  private Set<FiltroDTOEntrada> criterios;
 }
