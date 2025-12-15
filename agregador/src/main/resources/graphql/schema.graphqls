@@ -29,6 +29,7 @@ type ColeccionDTOSalidaGQL {
     criterios: [FiltroDTOSalida]
     algoritmoConsenso: String
     hechos : PaginacionDtoHechoDtoSalida
+    estado : String
 }
 
 type HechoDtoSalida {

@@ -1,3 +1,6 @@
+<head>
+    <meta http-equiv="refresh" content="60">
+</head>
 <html th:replace="~{layout/baseTemplate :: html( ~{::js-extra} )}" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="contenido">
 
@@ -126,11 +129,28 @@
                         </div>
                     </div>
 
-                    <div class="card-footer bg-white border-top-0 pt-0 pb-4">
-                        <a th:href="@{/colecciones/{idColeccion}/hechos (idColeccion=${c.id})}" class="btn btn-outline-primary w-100 rounded-pill fw-medium">
-                            <i class="uil uil-map-marker me-1"></i> Explorar Mapa
-                        </a>
-                    </div>
+                    <div class="card-body d-flex flex-column">
+
+                        <div th:if="${c.estado == 'PROCESANDO'}"
+                             class="alert alert-info border-0 bg-info bg-opacity-10 d-flex align-items-center p-2 mb-3">
+                            <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+                            <small class="fw-bold text-info">Procesando archivo...</small>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 pt-0 pb-4">
+
+                            <a th:if="${c.estado != 'PROCESANDO'}"
+                               th:href="@{/colecciones/{idColeccion}/hechos (idColeccion=${c.id})}"
+                               class="btn btn-outline-primary w-100 rounded-pill fw-medium">
+                                <i class="uil uil-map-marker me-1"></i> Explorar Mapa
+                            </a>
+
+                            <button th:if="${c.estado == 'PROCESANDO'}"
+                                    class="btn btn-light w-100 rounded-pill fw-medium text-muted" disabled>
+                                <i class="uil uil-sync me-1"></i> Cargando datos...
+                            </button>
+
+                        </div>
                 </div>
             </div>
         </div>

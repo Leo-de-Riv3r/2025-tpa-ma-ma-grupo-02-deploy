@@ -20,6 +20,7 @@ import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import ar.edu.utn.frba.dds.services.ColeccionService;
+import ar.edu.utn.frba.dds.services.GeoToolsProcessorService;
 import ar.edu.utn.frba.dds.services.SolicitudService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,10 +43,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AgregadorController {
   private final SolicitudService solicitudService;
   private final ColeccionService coleccionService;
+  private final GeoToolsProcessorService geoService;
 
-  public AgregadorController(SolicitudService solicitudService, ColeccionService coleccionService) {
+  public AgregadorController(SolicitudService solicitudService, ColeccionService coleccionService, GeoToolsProcessorService geoService) {
     this.solicitudService = solicitudService;
     this.coleccionService = coleccionService;
+    this.geoService = geoService;
   }
 
   //Panel control
@@ -229,17 +232,12 @@ public class AgregadorController {
   }
 
   @GetMapping("/ubicaciones/provincias")
-  public ResponseEntity<List<String>> getProvincias() {
-    return ResponseEntity.ok(coleccionService.obtenerProvinciasDisponibles());
+  public ResponseEntity<List<String>> obtenerProvincias() {
+    return ResponseEntity.ok(geoService.getNombresProvincias());
   }
 
-  @GetMapping("/ubicaciones/municipios")
-  public ResponseEntity<List<String>> getMunicipios() {
-    return ResponseEntity.ok(coleccionService.obtenerMunicipiosDisponibles());
-  }
-
-  @GetMapping("/ubicaciones/departamentos")
-  public ResponseEntity<List<String>> getDepartamentos() {
-    return ResponseEntity.ok(coleccionService.obtenerDepartamentosDisponibles());
+  @GetMapping({ "/ubicaciones/departamentos", "/ubicaciones/municipios" })
+  public ResponseEntity<List<String>> obtenerDepartamentos() {
+    return ResponseEntity.ok(geoService.getNombresDepartamentos());
   }
 }

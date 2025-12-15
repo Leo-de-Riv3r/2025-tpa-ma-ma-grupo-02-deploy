@@ -11,6 +11,7 @@ import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoEstado;
 import ar.edu.utn.frba.dds.models.entities.utils.SolicitudConverter;
+import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,6 +31,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
 @Service
@@ -39,12 +41,17 @@ public class SolicitudService {
   private final DetectorSpamAi detectorSpamAi;
   private final IHechoRepository hechosRepository;
   private final SolicitudConverter solicitudConverter;
-  public SolicitudService(ISolicitudRepository solicitudesEliminacionRepo, SpamApi detectorSpam, DetectorSpamAi detectorSpamAi, IHechoRepository hechosRepository, SolicitudConverter solicitudConverter) {
+  private final IFuenteRepository fuenteRepository;
+  private final WebClient webClient;
+
+  public SolicitudService(ISolicitudRepository solicitudesEliminacionRepo, SpamApi detectorSpam, DetectorSpamAi detectorSpamAi, IHechoRepository hechosRepository, SolicitudConverter solicitudConverter, IFuenteRepository fuenteRepository, WebClient.Builder webClient) {
     this.solicitudesEliminacionRepo = solicitudesEliminacionRepo;
     this.detectorSpam = detectorSpam;
     this.detectorSpamAi = detectorSpamAi;
     this.hechosRepository = hechosRepository;
     this.solicitudConverter = solicitudConverter;
+    this.fuenteRepository = fuenteRepository;
+    this.webClient = webClient.build();
   }
 
   @Transactional

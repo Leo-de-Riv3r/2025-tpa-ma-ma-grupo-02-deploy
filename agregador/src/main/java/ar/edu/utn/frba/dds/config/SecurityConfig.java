@@ -23,10 +23,10 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             //modificar esto
             // Permitir GET libremente
-            .requestMatchers(HttpMethod.GET, "/colecciones/**", "/actuator/**", "/graphql/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/colecciones/**", "/actuator/**", "/graphql/**", "/ubicaciones/**").permitAll()
             //new config
             .requestMatchers(HttpMethod.GET, "/hechos/**").permitAll()
-            .requestMatchers(HttpMethod.POST, "/solicitudes", "/graphql/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/solicitudes", "/graphql/**", "/fuentes/refrescar-dinamica/**").permitAll()
             // Requerir autenticación para POST y PUT
             .requestMatchers(HttpMethod.POST, "/colecciones/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/colecciones/**").authenticated()

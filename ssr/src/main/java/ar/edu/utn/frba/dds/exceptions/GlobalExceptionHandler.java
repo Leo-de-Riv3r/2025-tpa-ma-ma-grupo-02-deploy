@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
     if (session != null) {
       session.invalidate();
     }
-    return "redirect:/login";
+    return "redirect:/login?expired";
   }
 
 }

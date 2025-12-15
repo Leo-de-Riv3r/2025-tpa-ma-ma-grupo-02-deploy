@@ -6,22 +6,27 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ColeccionScheduler {
-  private ColeccionService coleccionesService;
-  public ColeccionScheduler(ColeccionService coleccionesService) {
-    this.coleccionesService = coleccionesService;
+  private final ColeccionService coleccionService;
+
+  public ColeccionScheduler(ColeccionService coleccionService) {
+    this.coleccionService = coleccionService;
   }
 
-  //refresco fuentes directamente porque pueden repetirse entre colecciones
-  @Scheduled(fixedDelay = 3600000, initialDelay = 3600000)
+  @Scheduled(fixedDelay = 3600000)
   public void refrescarColecciones() {
-    coleccionesService.refrescoFuentes();
-    coleccionesService.refrescarHechosFiltrados();
+    coleccionService.refrescoFuentes();
+    coleccionService.refrescarHechosFiltrados();
   }
 
-  @Scheduled(fixedRate = 86400000) // 24 horas
+  @Scheduled(cron = "${scheduler.cron.curaduria}", zone = "America/Argentina/Buenos_Aires")
   public void refrescarHechosCurados() {
-    coleccionesService.refrescarHechosCurados();
+    System.out.println("CRON_NOCTURNO: Iniciando cálculo de consenso y curaduría...");
+    coleccionService.refrescarHechosCurados();
+    System.out.println("CRON_NOCTURNO: Finalizado.");
   }
 
-  //agregar cronjob para actualizar hechos filtrados
+  @Scheduled(fixedRate = 300000)
+  public void tareaDeRescateColecciones() {
+    coleccionService.procesarColeccionesPendientes();
+  }
 }

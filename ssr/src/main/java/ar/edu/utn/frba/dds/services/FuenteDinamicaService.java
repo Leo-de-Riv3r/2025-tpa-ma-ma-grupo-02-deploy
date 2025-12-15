@@ -1,10 +1,7 @@
 package ar.edu.utn.frba.dds.services;
 
-import ar.edu.utn.frba.dds.models.HechoManualDTO;
-import ar.edu.utn.frba.dds.models.HechoUpdateDTO;
-import ar.edu.utn.frba.dds.models.RevisionHechoDto;
-import ar.edu.utn.frba.dds.models.SolicitudHechoDto;
-import ar.edu.utn.frba.dds.models.SolicitudHechoInputDto;
+import ar.edu.utn.frba.dds.models.*;
+
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -18,6 +15,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class FuenteDinamicaService {
@@ -25,9 +24,13 @@ public class FuenteDinamicaService {
   private final RestTemplate restTemplate;
   private final String fuenteDinamicaServiceUrl;
   private final WebApiCallerService webApiCallerService;
+  @Value("${modification.allowance-days}")
+  private long diasPermitidosEdicion;
+
   public FuenteDinamicaService(
-      MetamapaApiService metamapaApiService, RestTemplate restTemplate, @Value("${fuenteDinamica.service.url}")
-     String fuenteDinamicaServiceUrl, WebApiCallerService webApiCallerService) {
+      MetamapaApiService metamapaApiService, RestTemplate restTemplate,
+      @Value("${fuenteDinamica.service.url}") String fuenteDinamicaServiceUrl,
+      WebApiCallerService webApiCallerService) {
     this.metamapaApiService = metamapaApiService;
     this.restTemplate = restTemplate;
     this.fuenteDinamicaServiceUrl = fuenteDinamicaServiceUrl;
@@ -36,73 +39,36 @@ public class FuenteDinamicaService {
 
   public HechoUpdateDTO obtenerHechoEdicion(Long id) {
     Class<HechoUpdateDTO> responseType = HechoUpdateDTO.class;
-
     String url = fuenteDinamicaServiceUrl + "/hechos/" + id;
 
     try {
       var response = restTemplate.getForEntity(url, responseType);
 
       if (response.getStatusCode().is2xxSuccessful()) {
-        return response.getBody();
-      } else {
-        throw new RuntimeException("API devolvió código de estado " + response.getStatusCode() +
-            " al intentar obtener Hecho con ID " + id);
-      }
-    } catch (HttpClientErrorException e) {
-      throw new RuntimeException("Error del cliente HTTP al acceder a " + url + ": " + e.getStatusCode(), e);
-    } catch (Exception e) {
-      throw new RuntimeException("Error genérico al procesar la solicitud a la API para ID " + id, e);
-    }
-  }
+        HechoUpdateDTO hecho = response.getBody();
+        if (hecho != null && hecho.getCreatedAt() != null) {
+          long diasDiferencia = ChronoUnit.DAYS.between(hecho.getCreatedAt(), LocalDateTime.now());
 
-  public void editarHecho(Long id, HechoUpdateDTO hechoDto, List<MultipartFile> multimedia) {
-    if (hechoDto.getTitulo() == null || hechoDto.getTitulo().isBlank()) {
-      throw new IllegalArgumentException("DEBUG: El título del DTO es nulo o vacío después del post.");
-    }
-    if (hechoDto.getLatitud() == null || hechoDto.getLongitud() == null) {
-      throw new IllegalArgumentException("DEBUG: Latitud o Longitud son nulas. Revise el JS y los IDs del HTML.");
-    }
-
-    String targetUrl = fuenteDinamicaServiceUrl + "/hechos/" + id;
-    System.out.println("DEBUG URL de Edición: " + targetUrl);
-
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-
-    HttpHeaders jsonHeaders = new HttpHeaders();
-    jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
-    HttpEntity<HechoUpdateDTO> jsonPart = new HttpEntity<>(hechoDto, jsonHeaders);
-    body.add("hecho", jsonPart);
-
-    if (multimedia != null && !multimedia.isEmpty()) {
-      for (MultipartFile file : multimedia) {
-        if (file.isEmpty()) continue;
-
-        try {
-          ByteArrayResource fileResource = new ByteArrayResource(file.getBytes()) {
-            @Override
-            public String getFilename() {
-              return file.getOriginalFilename();
-            }
-          };
-          body.add("multimedia", fileResource);
-        } catch (Exception e) {
-          throw new RuntimeException("Error al procesar archivo para la API", e);
+          if (diasDiferencia > diasPermitidosEdicion) {
+            throw new IllegalArgumentException(
+                "El periodo de edición de " + diasPermitidosEdicion + " días ha expirado.");
+          }
         }
-      }
-    }
 
-    try {
-      webApiCallerService.put(
-          targetUrl,
-          body,
-          Void.class
-      );
+        return hecho;
+      } else {
+        throw new RuntimeException("API devolvió código " + response.getStatusCode());
+      }
+    } catch (IllegalArgumentException e) {
+      throw e;
+    } catch (HttpClientErrorException e) {
+      throw new RuntimeException("Error cliente HTTP: " + e.getStatusCode(), e);
     } catch (Exception e) {
-      throw new RuntimeException("Error al procesar archivo para la API", e);
+      throw new RuntimeException("Error al procesar solicitud API", e);
     }
   }
 
-  public void  crearHecho(HechoManualDTO hechoDto, List<MultipartFile> multimedia) {
+  public void crearHecho(HechoManualDTO hechoDto, List<MultipartFile> multimedia) {
     // --- 1. Crear el cuerpo de la petición Multipart ---
     // Esto contendrá las diferentes "partes" (el JSON y los archivos)
     MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -121,7 +87,8 @@ public class FuenteDinamicaService {
     // --- 3. Añadir la parte "multimedia" (los archivos) ---
     if (multimedia != null && !multimedia.isEmpty()) {
       for (MultipartFile file : multimedia) {
-        if (file.isEmpty()) continue;
+        if (file.isEmpty())
+          continue;
 
         try {
           // Creamos un recurso desde los bytes del archivo
@@ -151,8 +118,7 @@ public class FuenteDinamicaService {
       ResponseEntity<Void> response = restTemplate.postForEntity(
           fuenteDinamicaServiceUrl + "/hechos",
           requestEntity,
-          Void.class
-      );
+          Void.class);
 
     } catch (Exception e) {
       // Manejo básico de errores (la API está caída, devuelve 500, etc.)
@@ -160,9 +126,54 @@ public class FuenteDinamicaService {
     }
   }
 
+  public void editarHecho(Long id, HechoUpdateDTO hechoDto, List<MultipartFile> multimedia) {
+    if (hechoDto.getTitulo() == null || hechoDto.getTitulo().isBlank()) {
+      throw new IllegalArgumentException("DEBUG: El título del DTO es nulo o vacío después del post.");
+    }
+    if (hechoDto.getLatitud() == null || hechoDto.getLongitud() == null) {
+      throw new IllegalArgumentException("DEBUG: Latitud o Longitud son nulas. Revise el JS y los IDs del HTML.");
+    }
+
+    String targetUrl = fuenteDinamicaServiceUrl + "/hechos/" + id;
+
+    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+    HttpHeaders jsonHeaders = new HttpHeaders();
+    jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
+    HttpEntity<HechoUpdateDTO> jsonPart = new HttpEntity<>(hechoDto, jsonHeaders);
+    body.add("hecho", jsonPart);
+
+    if (multimedia != null && !multimedia.isEmpty()) {
+      for (MultipartFile file : multimedia) {
+        if (file.isEmpty())
+          continue;
+
+        try {
+          ByteArrayResource fileResource = new ByteArrayResource(file.getBytes()) {
+            @Override
+            public String getFilename() {
+              return file.getOriginalFilename();
+            }
+          };
+          body.add("multimedia", fileResource);
+        } catch (Exception e) {
+          throw new RuntimeException("Error al procesar archivo para la API", e);
+        }
+      }
+    }
+
+    try {
+      webApiCallerService.put(
+          targetUrl,
+          body,
+          Void.class);
+    } catch (Exception e) {
+      throw new RuntimeException("ERROR durante PUT Multipart a la API de Hechos: " + e.getMessage(), e);
+    }
+  }
+
   public List<SolicitudHechoDto> obtenerSolicitudesHecho() {
-    List<SolicitudHechoDto> hechosPendientes = metamapaApiService.obtenerSolicitudesHecho();
-    return hechosPendientes;
+    return metamapaApiService.obtenerSolicitudesHecho();
   }
 
   public SolicitudHechoInputDto obtenerSolicitudById(Long idHecho) {

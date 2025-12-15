@@ -48,9 +48,7 @@ public abstract class IConsensoStrategy {
         .filter(hechos -> hechos.stream()
             .anyMatch(h -> Objects.equals(h.getTitulo(), hecho.getTitulo()) && Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion())))
         .count();
-    if (apariciones >= cantidadMinima) {
-      System.out.println("cant apariciones: " + apariciones);
-    }
+
     return apariciones >= cantidadMinima;
   }
 

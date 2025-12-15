@@ -1,17 +1,22 @@
 package ar.edu.utn.frba.dds.controllers;
 
+import ar.edu.utn.frba.dds.services.ColeccionService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class FuenteController {
-//  private final FuenteService fuenteService;
-//
-//  public FuenteController (FuenteService fuenteService){
-//    this.fuenteService = fuenteService;
-//  }
-//
-//  @GetMapping("/fuentes")
-//  public List<FuenteDTOOutput> getFuentes() {
-//    return fuenteService.getFuentes();
-//  }
+
+  private final ColeccionService coleccionService;
+
+  public FuenteController(ColeccionService coleccionService) {
+    this.coleccionService = coleccionService;
+  }
+
+  @PostMapping("/fuentes/refrescar-dinamica")
+  public ResponseEntity<String> forzarRefresco() {
+    coleccionService.refrescarFuenteDinamica();
+    return ResponseEntity.ok("Refresco solicitado");
+  }
 }

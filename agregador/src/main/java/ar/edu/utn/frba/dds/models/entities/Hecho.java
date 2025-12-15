@@ -27,7 +27,6 @@ import lombok.*;
 @Getter
 @Setter
 @Entity @Table(name = "hecho")
-
 public class Hecho {
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;

@@ -16,6 +16,7 @@ public class ColeccionDTOSalida {
   private Integer cantSolicitudesSpam;
   private List<FiltroDtoSalida> criterios;
   private String algoritmoConsenso;
+  private String estado;
   public ColeccionDTOSalida() {
     this.cantSolicitudesSpam = 0;
   }

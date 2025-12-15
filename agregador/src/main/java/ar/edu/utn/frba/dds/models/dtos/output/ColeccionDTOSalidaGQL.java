@@ -14,6 +14,7 @@ public class ColeccionDTOSalidaGQL {
   private List<FiltroDtoSalida> criterios = List.of();
   private String algoritmoConsenso;
   private PaginacionDto<HechoDtoSalida> hechos;
+  private String estado;
   public ColeccionDTOSalidaGQL(ColeccionDTOSalida dto){
     this.id = dto.getId();
     this.titulo = dto.getTitulo();
@@ -22,5 +23,6 @@ public class ColeccionDTOSalidaGQL {
     this.criterios = dto.getCriterios();
     this.algoritmoConsenso = dto.getAlgoritmoConsenso();
     this.cantSolicitudesSpam = dto.getCantSolicitudesSpam();
+    this.estado = dto.getEstado();
   }
 }

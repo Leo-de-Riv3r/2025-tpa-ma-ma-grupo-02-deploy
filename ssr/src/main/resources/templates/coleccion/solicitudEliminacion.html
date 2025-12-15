@@ -40,7 +40,7 @@
               <div class="mb-4 position-relative">
                 <div class="form-floating">
                   <textarea class="form-control" placeholder="Escribe tu justificación aquí" id="texto" style="height: 200px"
-                    th:field="*{texto}" minlength="500" required oninput="actualizarContador(this)"></textarea>
+                    th:field="*{texto}" minlength="500" required oninput="actualizarContador(this)" maxlength="1600"></textarea>
                   <label for="texto">Motivo detallado</label>
                 </div>
                 <div class="progress mt-1" style="height: 4px;">

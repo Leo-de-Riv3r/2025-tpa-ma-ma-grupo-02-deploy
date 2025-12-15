@@ -12,6 +12,7 @@ import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.Formato;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
+import ar.edu.utn.frba.dds.services.GeoToolsProcessorService;
 import io.micrometer.core.instrument.config.MeterFilter;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,12 @@ import reactor.core.publisher.Mono;
 public class HechoConverter {
   String url = "https://apis.datos.gob.ar/georef/api/v2.0/ubicacion";
   private WebClient webClient = WebClient.builder().baseUrl(url).build();
+  private final GeoToolsProcessorService geoToolsProcessorService;
+
+  public HechoConverter(GeoToolsProcessorService geoToolsProcessorService) {
+    this.geoToolsProcessorService = geoToolsProcessorService;
+  }
+
   public Hecho fromDTO(HechoDTOEntrada dto, TipoFuente tipoFuente) {
     Ubicacion ubicacion = new Ubicacion();
     ubicacion.setLatitud(dto.getLatitud());
@@ -66,35 +73,19 @@ public class HechoConverter {
   }
 
   public Lugar obtenerLugar(Ubicacion ubicacion) {
-
-    try {
-
-      LugarDTO ubi = webClient.get()
-          .uri(uriBuilder -> uriBuilder
-              .queryParam("lat", ubicacion.getLatitud())
-              .queryParam("lon", ubicacion.getLongitud())
-              .build())
-          .retrieve()
-          .bodyToMono(LugarDTO.class)
-          .block();
-
-      Lugar lugar = new Lugar();
-      assert ubi != null;
-      lugar.setDepartamento(ubi.getUbicacion().getDepartamento().getNombre());
-      lugar.setProvincia(ubi.getUbicacion().getProvincia().getNombre());
-      lugar.setMunicipio(ubi.getUbicacion().getMunicipio().getNombre());
-      return lugar;
-    } catch (Exception e) {
-      Lugar lugar = new Lugar();
-      return lugar;
+    if (ubicacion.getLatitud() == null || ubicacion.getLongitud() == null) return null;
+    Lugar lugarLocal = geoToolsProcessorService.buscarPorPoligono(ubicacion.getLatitud(), ubicacion.getLongitud());
+    if (lugarLocal != null) {
+      return lugarLocal;
     }
+    return null;
   }
 
   public HechoDtoSalida fromEntity(Hecho hecho) {
     HechoDtoSalida hechoDtoSalida = new HechoDtoSalida();
     hechoDtoSalida.setId(hecho.getId());
     hechoDtoSalida.setTitulo(hecho.getTitulo());
-    if (hecho.getUbicacion().getLugar()!=null) {
+    if (hecho.getUbicacion() != null && hecho.getUbicacion().getLugar() != null) {
       if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
         hechoDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
       }
@@ -106,8 +97,10 @@ public class HechoConverter {
       }
     }
     hechoDtoSalida.setCategoria(hecho.getCategoria());
-    hechoDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
-    hechoDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
+    if (hecho.getUbicacion() != null) {
+      hechoDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
+      hechoDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
+    }
     hechoDtoSalida.setTipoFuente(hecho.getOrigen().getTipo().toString());
     hechoDtoSalida.setNombreAutor(hecho.getOrigen().getAutor());
     hechoDtoSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
@@ -150,27 +143,6 @@ public class HechoConverter {
       hechoDetallesDtoSalida.setMultimedia(listaMultimedia);
     }
     return hechoDetallesDtoSalida;
-  }
-
-  public Mono<Lugar> obtenerLugarAsync(Ubicacion ubicacion) {
-
-    String key = ubicacion.getLatitud() + "_" + ubicacion.getLongitud();
-
-    return webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .queryParam("lat", ubicacion.getLatitud())
-            .queryParam("lon", ubicacion.getLongitud())
-            .build())
-        .retrieve()
-        .bodyToMono(LugarDTO.class)
-        .map(dto -> {
-          Lugar lugar = new Lugar();
-          lugar.setDepartamento(dto.getUbicacion().getDepartamento().getNombre());
-          lugar.setProvincia(dto.getUbicacion().getProvincia().getNombre());
-          lugar.setMunicipio(dto.getUbicacion().getMunicipio().getNombre());
-          return lugar;
-        })
-        .onErrorReturn(new Lugar()); // en caso de error, devolver un objeto vacío
   }
 
 }

@@ -1,11 +1,13 @@
 package ar.edu.utn.frba.dds.models.repositories;
 
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -22,7 +24,7 @@ public interface IHechoRepository extends JpaRepository<Hecho, Long> {
     , nativeQuery = true)
   Optional<String> buscarCategoriaNormalizada(@Param("categoria") String categoria);
 
-  Optional<Hecho> findByTituloAndDescripcionAndFechaAcontecimiento(String titulo, String descripcion, LocalDateTime fechaAcontecimiento);
+  List<Hecho> findByTituloAndDescripcionAndFechaAcontecimiento(String titulo, String descripcion, LocalDateTime fechaAcontecimiento);
 
   @Query("""
         SELECT h FROM Hecho h
@@ -38,4 +40,10 @@ public interface IHechoRepository extends JpaRepository<Hecho, Long> {
 
   @Query("SELECT DISTINCT h.ubicacion.lugar.departamento FROM Hecho h WHERE h.ubicacion.lugar.departamento IS NOT NULL AND h.ubicacion.lugar.departamento != '' ORDER BY h.ubicacion.lugar.departamento ASC")
   List<String> findDepartamentosDisponibles();
+
+  Hecho findFirstByUbicacion_LatitudAndUbicacion_LongitudAndUbicacion_Lugar_ProvinciaIsNotNull(
+      Double latitud, Double longitud);
+
+  @Query("SELECT h FROM Hecho h JOIN h.origen o WHERE o.autor = :autor AND h.fechaAcontecimiento = :fecha")
+  List<Hecho> findPosiblesDuplicados(@Param("autor") String autor, @Param("fecha") LocalDateTime fecha);
 }

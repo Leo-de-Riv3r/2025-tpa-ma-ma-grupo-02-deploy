@@ -44,6 +44,13 @@ public class ColeccionConverter {
     if(coleccion.getAlgoritmoConsenso() != null) {
       respuesta.setAlgoritmoConsenso(coleccion.getAlgoritmoConsenso().getTipo().name());
     }
+
+    if (coleccion.getEstado() != null) {
+      respuesta.setEstado(coleccion.getEstado().toString());
+    } else {
+      respuesta.setEstado("DISPONIBLE");
+    }
+
     return respuesta;
   }
 

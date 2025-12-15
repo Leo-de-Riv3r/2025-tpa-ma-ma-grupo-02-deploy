@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.models.entities;
 
+import ar.edu.utn.frba.dds.models.entities.enums.EstadoColeccion;
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import java.util.HashSet;
@@ -22,6 +23,10 @@ public class Coleccion {
   private String titulo;
   @Column
   private String descripcion;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "estado")
+  private EstadoColeccion estado;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
@@ -47,6 +52,7 @@ public class Coleccion {
   public Coleccion() {
     this.id = UUID.randomUUID().toString();
     this.fuentes = new HashSet<>();
+    this.estado = EstadoColeccion.PROCESANDO;
   }
 
   public Set<Hecho> getHechos() {

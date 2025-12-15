@@ -15,6 +15,7 @@ public class Coleccion {
   private int cantSolicitudesSpam;
   private List<FiltroDTOSalida> criterios;
   private String algoritmoConsenso;
+  private String estado;
 
   public List<String> getCriterioLabels() {
     List<String> etiquetas = new ArrayList<>();

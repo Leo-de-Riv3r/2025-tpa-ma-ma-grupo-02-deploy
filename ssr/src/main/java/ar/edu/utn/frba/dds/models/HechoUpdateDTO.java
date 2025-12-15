@@ -15,5 +15,7 @@ public class HechoUpdateDTO {
   private Double longitud;
   @JsonProperty("fecha_hecho")
   private LocalDateTime fechaHecho;
+  @JsonProperty("created_at")
+  private LocalDateTime createdAt;
 }
 

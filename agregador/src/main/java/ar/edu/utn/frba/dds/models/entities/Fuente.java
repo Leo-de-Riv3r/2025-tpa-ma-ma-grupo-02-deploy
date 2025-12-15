@@ -91,4 +91,7 @@ public abstract class Fuente {
   }
 
   public void addHecho(Hecho hecho) {this.hechos.add(hecho);}
+  public void removeHecho(Hecho hecho) {
+    this.hechos.remove(hecho);
+  }
 }

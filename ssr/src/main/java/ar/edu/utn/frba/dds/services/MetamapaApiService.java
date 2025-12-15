@@ -112,7 +112,6 @@ public class MetamapaApiService {
         )),
         Void.class
     );
-    System.out.println(response.getStatusCode());
     if (response.getStatusCode() == HttpStatus.OK) {
       return true;
     } else if (response.getStatusCode() == CONFLICT) {
@@ -184,7 +183,6 @@ public class MetamapaApiService {
 
   public List<SolicitudHechoDto> obtenerSolicitudesHecho() {
     List<SolicitudHechoDto> hechosPendientes = this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos/pendientes", SolicitudHechoDto.class);
-    System.out.println("hechos pendientes: " + hechosPendientes.size());
     return hechosPendientes;
   }
 

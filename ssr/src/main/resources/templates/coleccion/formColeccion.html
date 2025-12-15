@@ -18,6 +18,15 @@
             method="post"
             enctype="multipart/form-data" onSubmit="procesarSubmit(event)"
         >
+            <datalist id="list-provincias">
+                <option th:each="item : ${listaProvincias}" th:value="${item}"></option>
+            </datalist>
+            <datalist id="list-municipios">
+                <option th:each="item : ${listaMunicipios}" th:value="${item}"></option>
+            </datalist>
+            <datalist id="list-departamentos">
+                <option th:each="item : ${listaDepartamentos}" th:value="${item}"></option>
+            </datalist>
 
             <div class="row g-4">
 
@@ -73,7 +82,12 @@
                                                 </div>
 
                                                 <div th:unless="${criterio.tipoFiltro == 'FILTRO_FUENTE' or #strings.contains(criterio.tipoFiltro, 'FECHA')}">
-                                                    <input type="text" class="form-control form-control-sm py-1" th:field="*{criterios[__${stat.index}__].valor}">
+                                                    <input type="text" class="form-control form-control-sm py-1"
+                                                           th:field="*{criterios[__${stat.index}__].valor}"
+                                                           th:attr="list=${criterio.tipoFiltro == 'FILTRO_PROVINCIA' ? 'list-provincias' :
+                                                                       (criterio.tipoFiltro == 'FILTRO_MUNICIPIO' ? 'list-municipios' :
+                                                                       (criterio.tipoFiltro == 'FILTRO_DEPARTAMENTO' ? 'list-departamentos' : null))}">
+                                                    >
                                                 </div>
                                             </div>
                                         </div>
@@ -93,6 +107,7 @@
                                     <option value="FILTRO_FECHA_REPORTE">Fecha Reporte</option>
                                     <option value="FILTRO_PROVINCIA">Provincia</option>
                                     <option value="FILTRO_MUNICIPIO">Municipio</option>
+                                    <option value="FILTRO_DEPARTAMENTO">Departamento</option>
                                     <option value="FILTRO_FUENTE">Tipo de Fuente</option>
                                 </select>
                                 <button type="button" class="btn btn-sm btn-dark px-3" onclick="agregarCriterio()">
@@ -317,7 +332,21 @@ async function procesarSubmit(event) {
                         <input type="date" class="form-control" name="criterios[${index}].fechaFin">
                     </div>`;
             } else {
-                inputHtml = `<input type="text" class="form-control form-control-sm" name="criterios[${index}].valor" placeholder="Valor...">`;
+                let listAttr = "";
+                let placeholder = "Valor...";
+
+                if (tipo === 'FILTRO_PROVINCIA') {
+                    listAttr = 'list="list-provincias"';
+                    placeholder = "Seleccione Provincia...";
+                } else if (tipo === 'FILTRO_MUNICIPIO') {
+                    listAttr = 'list="list-municipios"';
+                    placeholder = "Seleccione Municipio...";
+                } else if (tipo === 'FILTRO_DEPARTAMENTO') {
+                    listAttr = 'list="list-departamentos"';
+                    placeholder = "Seleccione Departamento...";
+                }
+
+                inputHtml = `<input type="text" class="form-control form-control-sm" name="criterios[${index}].valor" placeholder="${placeholder}" ${listAttr}>`;
             }
 
             div.innerHTML = `

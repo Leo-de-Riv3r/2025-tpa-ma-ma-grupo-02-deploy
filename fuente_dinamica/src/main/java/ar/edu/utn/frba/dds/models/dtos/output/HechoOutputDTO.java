@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HechoOutputDTO {
+  private Long id;
   private String titulo;
   private String descripcion;
   private String categoria;

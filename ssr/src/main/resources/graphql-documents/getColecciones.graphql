@@ -5,6 +5,7 @@ query getColecciones {
         titulo
         descripcion
         algoritmoConsenso
+        estado
         criterios{
             tipoFiltro
             valor

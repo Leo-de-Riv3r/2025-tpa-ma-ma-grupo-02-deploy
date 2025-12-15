@@ -403,10 +403,13 @@ public class MainController {
     try {
       agregadorService.actualizarColeccion(idColeccion, coleccion);
       redirectAttributes.addFlashAttribute("success", "Colección actualizada correctamente.");
-    } catch (TokenExpiradoException ex) {
-      throw ex;
+    } catch (TokenExpiradoException e) {
+      throw e;
     }
     catch (Exception e) {
+      if (e instanceof TokenExpiradoException) {
+        throw e;
+      }
       redirectAttributes.addFlashAttribute("error", "Error al actualizar: " + e.getMessage());
       return "redirect:/colecciones/" + idColeccion + "/editar";
     }
@@ -422,6 +425,9 @@ public class MainController {
       agregadorService.crearColeccion(coleccionNueva);
       redirectAttributes.addFlashAttribute("success", "Colección creada correctamente.");
       return "redirect:/colecciones";
+    }
+    catch (TokenExpiradoException e) {
+      throw e;
     }
      catch (Exception e) {
        redirectAttributes.addFlashAttribute("error", "Error al crear: " + e.getMessage());
