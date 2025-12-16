@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +48,7 @@ public class ProcesadorFuentesService {
 
   @Async
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void procesarFuenteAsync(String fuenteId, String coleccionId) {
+  public CompletableFuture<Void> procesarFuenteAsync(String fuenteId, String coleccionId) {
     try {
       Fuente fuente = fuenteRepository.findById(fuenteId).orElseThrow();
       log.info("ASYNC: Sincronizando fuente: {}", fuente.getUrl());
@@ -105,17 +106,12 @@ public class ProcesadorFuentesService {
       fuente.setHechos(listaFinal);
       fuenteRepository.save(fuente);
 
-      if (coleccionId != null) {
-        Coleccion coleccion = coleccionRepository.findById(coleccionId).orElseThrow();
-        coleccion.setEstado(EstadoColeccion.DISPONIBLE);
-        coleccion.refrescarHechosCurados();
-        coleccionRepository.save(coleccion);
-        log.info("ASYNC: Colección {} marcada como DISPONIBLE", coleccionId);
-      }
       log.info("ASYNC: Procesamiento de fuente {} completado.", fuenteId);
+      return CompletableFuture.completedFuture(null);
 
     } catch (Exception e) {
       log.error("ASYNC ERROR: Falló procesamiento de fuente {}", fuenteId, e);
+      return CompletableFuture.completedFuture(null);
     }
   }
 
