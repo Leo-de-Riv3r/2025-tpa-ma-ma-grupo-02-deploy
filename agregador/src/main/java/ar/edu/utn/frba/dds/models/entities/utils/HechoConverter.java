@@ -1,9 +1,8 @@
 package ar.edu.utn.frba.dds.models.entities.utils;
 
 import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
-import ar.edu.utn.frba.dds.models.dtos.LugarDTO;
-import ar.edu.utn.frba.dds.models.dtos.output.HechoDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDTOSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.output.MultimediaDTOSalida;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Lugar;
@@ -12,19 +11,14 @@ import ar.edu.utn.frba.dds.models.entities.Origen;
 import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.Formato;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
-import ar.edu.utn.frba.dds.services.GeoToolsProcessorService;
-import io.micrometer.core.instrument.config.MeterFilter;
 import java.util.ArrayList;
 import java.util.List;
-import org.hibernate.dialect.SybaseSqlAstTranslator;
+
+import ar.edu.utn.frba.dds.services.GeoToolsProcessorService;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 @Component
 public class HechoConverter {
-  String url = "https://apis.datos.gob.ar/georef/api/v2.0/ubicacion";
-  private WebClient webClient = WebClient.builder().baseUrl(url).build();
   private final GeoToolsProcessorService geoToolsProcessorService;
 
   public HechoConverter(GeoToolsProcessorService geoToolsProcessorService) {
@@ -35,6 +29,7 @@ public class HechoConverter {
     Ubicacion ubicacion = new Ubicacion();
     ubicacion.setLatitud(dto.getLatitud());
     ubicacion.setLongitud(dto.getLongitud());
+    ubicacion.setLugar(obtenerLugar(ubicacion));
     Origen origenExistente = new Origen();
     origenExistente.setTipo(tipoFuente);
     if (dto.getAutor() != null) {
@@ -44,6 +39,7 @@ public class HechoConverter {
     }
 
     Hecho hecho = new Hecho();
+    hecho.setIdExterno(dto.getId());
     hecho.setTitulo(dto.getTitulo());
     hecho.setDescripcion(dto.getDescripcion());
     hecho.setCategoria(dto.getCategoria());
@@ -53,16 +49,16 @@ public class HechoConverter {
     hecho.setOrigen(origenExistente);
     if (dto.getMultimedia() != null) {
       List<Multimedia> listaMultimedia = new ArrayList<>();
-      dto.getMultimedia().forEach(multimediaDtoInput -> {
+      dto.getMultimedia().forEach(multimediaDTOInput -> {
         Multimedia multimedia = new Multimedia();
         multimedia.setHecho(hecho);
-        multimedia.setNombre(multimediaDtoInput.getNombre());
-        multimedia.setRuta(multimediaDtoInput.getRuta());
+        multimedia.setNombre(multimediaDTOInput.getNombre());
+        multimedia.setRuta(multimediaDTOInput.getRuta());
         try {
-          Formato formato = Formato.valueOf(multimediaDtoInput.getFormato().toUpperCase());
+          Formato formato = Formato.valueOf(multimediaDTOInput.getFormato().toUpperCase());
           multimedia.setFormato(formato);
-        } catch (Exception e){
-          throw new IllegalArgumentException("Tipo de formato " + multimediaDtoInput + " no soportado");
+        } catch (Exception e) {
+          throw new IllegalArgumentException("Tipo de formato " + multimediaDTOInput + " no soportado");
         }
         listaMultimedia.add(multimedia);
       });
@@ -73,7 +69,6 @@ public class HechoConverter {
   }
 
   public Lugar obtenerLugar(Ubicacion ubicacion) {
-    if (ubicacion.getLatitud() == null || ubicacion.getLongitud() == null) return null;
     Lugar lugarLocal = geoToolsProcessorService.buscarPorPoligono(ubicacion.getLatitud(), ubicacion.getLongitud());
     if (lugarLocal != null) {
       return lugarLocal;
@@ -82,67 +77,63 @@ public class HechoConverter {
   }
 
   public HechoDTOSalida fromEntity(Hecho hecho) {
-    HechoDTOSalida hechoDtoSalida = new HechoDTOSalida();
-    hechoDtoSalida.setId(hecho.getId());
-    hechoDtoSalida.setTitulo(hecho.getTitulo());
-    if (hecho.getUbicacion() != null && hecho.getUbicacion().getLugar() != null) {
+    HechoDTOSalida hechoDTOSalida = new HechoDTOSalida();
+    hechoDTOSalida.setId(hecho.getId());
+    hechoDTOSalida.setTitulo(hecho.getTitulo());
+    if (hecho.getUbicacion().getLugar() != null) {
       if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
-        hechoDtoSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
+        hechoDTOSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
       }
       if (hecho.getUbicacion().getLugar().getMunicipio() != null) {
-        hechoDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
+        hechoDTOSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
       }
       if (hecho.getUbicacion().getLugar().getProvincia() != null) {
-        hechoDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+        hechoDTOSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
       }
     }
-    hechoDtoSalida.setCategoria(hecho.getCategoria());
-    if (hecho.getUbicacion() != null) {
-      hechoDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
-      hechoDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
-    }
-    hechoDtoSalida.setTipoFuente(hecho.getOrigen().getTipo().toString());
-    hechoDtoSalida.setNombreAutor(hecho.getOrigen().getAutor());
-    hechoDtoSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
-    return hechoDtoSalida;
+    hechoDTOSalida.setCategoria(hecho.getCategoria());
+    hechoDTOSalida.setLatitud(hecho.getUbicacion().getLatitud());
+    hechoDTOSalida.setLongitud(hecho.getUbicacion().getLongitud());
+    hechoDTOSalida.setTipoFuente(hecho.getOrigen().getTipo().toString());
+    hechoDTOSalida.setNombreAutor(hecho.getOrigen().getAutor());
+    hechoDTOSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
+    return hechoDTOSalida;
   }
 
   public HechoDetallesDTOSalida fromEntityDetails(Hecho hecho) {
-    //
-    HechoDetallesDTOSalida hechoDetallesDtoSalida = new HechoDetallesDTOSalida();
-    hechoDetallesDtoSalida.setId(hecho.getId());
-    if(hecho.getUbicacion().getLugar() != null) {
+    HechoDetallesDTOSalida hechoDetallesDTOSalida = new HechoDetallesDTOSalida();
+    hechoDetallesDTOSalida.setId(hecho.getId());
+    if (hecho.getUbicacion().getLugar() != null) {
       if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
-        hechoDetallesDtoSalida.setDescripcion(hecho.getUbicacion().getLugar().getDepartamento());
+        hechoDetallesDTOSalida.setDescripcion(hecho.getUbicacion().getLugar().getDepartamento());
       }
       if (hecho.getUbicacion().getLugar().getMunicipio() != null) {
-        hechoDetallesDtoSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
+        hechoDetallesDTOSalida.setMunicipio(hecho.getUbicacion().getLugar().getMunicipio());
       }
       if (hecho.getUbicacion().getLugar().getProvincia() != null) {
-        hechoDetallesDtoSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
+        hechoDetallesDTOSalida.setProvincia(hecho.getUbicacion().getLugar().getProvincia());
       }
     }
-    hechoDetallesDtoSalida.setLatitud(hecho.getUbicacion().getLatitud());
-    hechoDetallesDtoSalida.setLongitud(hecho.getUbicacion().getLongitud());
-    hechoDetallesDtoSalida.setCategoria(hecho.getCategoria());
-    hechoDetallesDtoSalida.setFechaCarga(hecho.getFechaCarga());
-    hechoDetallesDtoSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
-    hechoDetallesDtoSalida.setDescripcion(hecho.getDescripcion());
-    hechoDetallesDtoSalida.setTitulo(hecho.getTitulo());
-    hechoDetallesDtoSalida.setTipoOrigen(hecho.getOrigen().getTipo());
-    hechoDetallesDtoSalida.setNombreAutor(hecho.getOrigen().getAutor());
+    hechoDetallesDTOSalida.setLatitud(hecho.getUbicacion().getLatitud());
+    hechoDetallesDTOSalida.setLongitud(hecho.getUbicacion().getLongitud());
+    hechoDetallesDTOSalida.setCategoria(hecho.getCategoria());
+    hechoDetallesDTOSalida.setFechaCarga(hecho.getFechaCarga());
+    hechoDetallesDTOSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
+    hechoDetallesDTOSalida.setDescripcion(hecho.getDescripcion());
+    hechoDetallesDTOSalida.setTitulo(hecho.getTitulo());
+    hechoDetallesDTOSalida.setTipoOrigen(hecho.getOrigen().getTipo());
+    hechoDetallesDTOSalida.setNombreAutor(hecho.getOrigen().getAutor());
     if (hecho.getMultimedia() != null) {
       List<MultimediaDTOSalida> listaMultimedia = new ArrayList<>();
       hecho.getMultimedia().forEach(multimedia -> {
-        MultimediaDTOSalida multimediaDtoOutput = new MultimediaDTOSalida();
-        multimediaDtoOutput.setNombre(multimedia.getNombre());
-        multimediaDtoOutput.setRuta(multimedia.getRuta());
-        multimediaDtoOutput.setFormato(multimedia.getFormato().toString());
-        listaMultimedia.add(multimediaDtoOutput);
+        MultimediaDTOSalida multimediaDTOOutput = new MultimediaDTOSalida();
+        multimediaDTOOutput.setNombre(multimedia.getNombre());
+        multimediaDTOOutput.setRuta(multimedia.getRuta());
+        multimediaDTOOutput.setFormato(multimedia.getFormato().toString());
+        listaMultimedia.add(multimediaDTOOutput);
       });
-      hechoDetallesDtoSalida.setMultimedia(listaMultimedia);
+      hechoDetallesDTOSalida.setMultimedia(listaMultimedia);
     }
-    return hechoDetallesDtoSalida;
+    return hechoDetallesDTOSalida;
   }
-
 }
