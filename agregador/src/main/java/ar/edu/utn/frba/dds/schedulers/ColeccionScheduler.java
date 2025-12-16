@@ -12,7 +12,7 @@ public class ColeccionScheduler {
     this.coleccionService = coleccionService;
   }
 
-  @Scheduled(fixedDelay = 3600000, initialDelay = 3600000)
+  @Scheduled(fixedDelay = 3600000)
   public void refrescarColecciones() {
     coleccionService.refrescoFuentes();
   }

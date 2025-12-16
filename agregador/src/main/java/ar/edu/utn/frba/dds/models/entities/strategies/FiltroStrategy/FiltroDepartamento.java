@@ -28,6 +28,9 @@ public class FiltroDepartamento extends IFiltroStrategy {
 
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
+    if (hecho.getUbicacion() == null)
+      return false;
+
     String departamentoHecho = hecho.getUbicacion().getLugar() != null ? hecho.getUbicacion().getLugar().getDepartamento()
         : null;
     if (departamentoHecho != null)

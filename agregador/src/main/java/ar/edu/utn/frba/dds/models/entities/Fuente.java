@@ -76,7 +76,12 @@ public class Fuente {
     this.hechos.addAll(hechos);
   }
 
+
   public void addHecho(Hecho hecho) {
     this.hechos.add(hecho);
+  }
+
+  public void removeHecho(Hecho h) {
+    this.hechos.remove(h);
   }
 }

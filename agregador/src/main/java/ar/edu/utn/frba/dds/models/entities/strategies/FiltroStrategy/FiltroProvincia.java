@@ -26,6 +26,9 @@ public class FiltroProvincia extends IFiltroStrategy {
 
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
+    if (hecho.getUbicacion() == null)
+      return false;
+
     String provinciaHecho = hecho.getUbicacion().getLugar() != null ? hecho.getUbicacion().getLugar().getProvincia()
         : null;
     if (provinciaHecho != null)
