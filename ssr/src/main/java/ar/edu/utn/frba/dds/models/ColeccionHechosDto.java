@@ -3,7 +3,7 @@ package ar.edu.utn.frba.dds.models;
 import lombok.Data;
 
 @Data
-public class ColeccionHechosDto {
+public class ColeccionHechosDTO {
   private String id;
-  private PaginacionDtoHechoDtoSalida hechos;
+  private HechoPaginadoDTOSalida hechos;
 }

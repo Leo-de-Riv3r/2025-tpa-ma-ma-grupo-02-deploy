@@ -4,10 +4,10 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ColeccionNuevaDto {
+public class ColeccionNuevaDTO {
   private String titulo;
   private String descripcion;
-  private List<FuenteNuevaDto> fuentes;
-  private String algoritmoConsenso = " ";
+  private List<FuenteNuevaDTO> fuentes;
+  private String algoritmoConsenso;
   private List<FiltroDTOSalida> criterios;
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class SolicitudHechoInputDto {
+public class SolicitudHechoInputDTO {
   private String titulo;
   private String descripcion;
   private String categoria;

@@ -3,7 +3,6 @@ package ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -13,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@DiscriminatorValue(value = "FILTRO_CATEGORIA")
+@Table(name = "filtroCategoria")
 @NoArgsConstructor
 public class FiltroCategoria extends IFiltroStrategy {
   @Column

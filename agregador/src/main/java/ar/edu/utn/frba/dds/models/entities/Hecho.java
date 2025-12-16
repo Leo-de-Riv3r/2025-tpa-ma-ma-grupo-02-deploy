@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.dds.models.entities;
 
-
+import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -11,11 +11,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -26,10 +26,15 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-@Entity @Table(name = "hecho")
+@Entity
+@Table(name = "hecho")
+
 public class Hecho {
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+  @Column(name = "id_externo")
+  private Long idExterno;
   @Column
   private String titulo;
   @Column(length = 3000)
@@ -42,12 +47,18 @@ public class Hecho {
   private LocalDateTime fechaAcontecimiento;
   @Column
   private LocalDateTime fechaCarga;
-  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  @JoinColumn(name="origen_id", referencedColumnName = "id")
+  @ManyToOne(cascade = CascadeType.ALL)
+  @JoinColumn(name = "origen_id", referencedColumnName = "id")
   private Origen origen;
 
-  @OneToMany(mappedBy = "hecho", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  private List<Multimedia> multimedia = new ArrayList<>();
+  @OneToMany(mappedBy = "hecho", orphanRemoval = true, cascade = CascadeType.ALL)
+  private List<Multimedia> multimedia;
+
+  @ManyToMany(mappedBy = "hechos", fetch = FetchType.LAZY)
+  private Set<Fuente> fuentes;
+
+  @ManyToMany(mappedBy = "hechosConsensuados", fetch = FetchType.LAZY)
+  private Set<IConsensoStrategy> consensos;
 
   @Override
   public boolean equals(Object o) {
@@ -60,9 +71,6 @@ public class Hecho {
     return titulo.equals(hecho.titulo);
   }
 
-//  private static EntityManagerFactory emf =
-//      Persistence.createEntityManagerFactory("AMD");
-//  private static EntityManager em = emf.createEntityManager();
   public boolean cumpleFiltros(Set<IFiltroStrategy> filtros) {
     return filtros == null || filtros.isEmpty() || filtros.stream().allMatch(f -> f.cumpleFiltro(this));
   }

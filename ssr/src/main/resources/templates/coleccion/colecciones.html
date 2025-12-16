@@ -1,6 +1,3 @@
-<head>
-    <meta http-equiv="refresh" content="60">
-</head>
 <html th:replace="~{layout/baseTemplate :: html( ~{::js-extra} )}" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="contenido">
 
@@ -12,7 +9,8 @@
                 <p class="text-muted mb-0">Descubre conjuntos de hechos agrupados por temáticas y criterios.</p>
             </div>
 
-            <a sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/colecciones/nuevaColeccion}" class="btn btn-dark shadow-sm">
+            <a sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/colecciones/nuevaColeccion}"
+                class="btn btn-dark shadow-sm">
                 <i class="uil uil-plus-circle me-1"></i> Nueva Colección
             </a>
         </div>
@@ -31,29 +29,36 @@
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="d-flex align-items-center gap-2">
-                                <div class="bg-primary bg-opacity-10 text-primary rounded p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded p-2 d-flex align-items-center justify-content-center"
+                                    style="width: 40px; height: 40px;">
                                     <i class="uil uil-map"></i>
                                 </div>
-                                <h5 class="card-title fw-bold mb-0 text-truncate" style="max-width: 170px;"
-                                    th:text="${c.titulo}"
-                                    th:title="${c.titulo}"> Título
+                                <h5 class="card-title fw-bold mb-0 text-truncate" style="max-width: 15rem;"
+                                    th:text="${c.titulo}" th:title="${c.titulo}"> Título
                                 </h5>
                             </div>
 
                             <div class="dropdown" sec:authorize="hasRole('ADMINISTRADOR')">
-                                <button class="btn btn-link text-muted p-0 text-decoration-none" type="button" data-bs-toggle="dropdown">
+                                <button class="btn btn-link text-muted p-0 text-decoration-none" type="button"
+                                    data-bs-toggle="dropdown">
                                     <i class="uil uil-ellipsis-v fs-5"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0">
                                     <li>
                                         <h6 class="dropdown-header">Administrar</h6>
                                     </li>
-                                    <li><a class="dropdown-item" th:href="@{/colecciones/{id}/editar (id=${c.id})}"><i class="uil uil-edit me-2 text-warning"></i> Editar</a></li>
-                                    <li><a class="dropdown-item" th:href="@{/colecciones/{id}/nuevaEstadistica (id=${c.id})}"><i class="uil uil-chart-line me-2 text-info"></i> Estadísticas</a></li>
+                                    <li><a class="dropdown-item" th:href="@{/colecciones/{id}/editar (id=${c.id})}"><i
+                                                class="uil uil-edit me-2 text-warning"></i> Editar</a></li>
+                                    <li><a class="dropdown-item"
+                                            th:href="@{/colecciones/{id}/nuevaEstadistica (id=${c.id})}"><i
+                                                class="uil uil-chart-line me-2 text-info"></i> Estadísticas</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
-                                    <li><a class="dropdown-item text-danger" th:href="@{/colecciones/{id}/eliminar (id=${c.id})}" onclick="return confirm('¿Eliminar colección?');"><i class="uil uil-trash-alt me-2"></i> Eliminar</a></li>
+                                    <li><a class="dropdown-item text-danger"
+                                            th:href="@{/colecciones/{id}/eliminar (id=${c.id})}"
+                                            onclick="return confirm('¿Eliminar colección?');"><i
+                                                class="uil uil-trash-alt me-2"></i> Eliminar</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -68,46 +73,53 @@
 
                         <div class="mb-3">
                             <div class="d-flex align-items-center justify-content-between mb-1">
-                                <span class="text-uppercase fw-bold text-secondary" style="font-size: 0.65rem; letter-spacing: 0.5px;">Algoritmo de Consenso</span>
+                                <span class="text-uppercase fw-bold text-secondary"
+                                    style="font-size: 0.65rem; letter-spacing: 0.5px;">Algoritmo de Consenso</span>
 
-                                <i class="uil uil-info-circle text-muted"
-                                    style="cursor: help; font-size: 0.9rem;"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
+                                <i class="uil uil-info-circle text-muted" style="cursor: help; font-size: 0.9rem;"
+                                    data-bs-toggle="tooltip" data-bs-placement="top"
                                     title="El algoritmo determina qué hechos se consideran válidos para la navegación curada."></i>
                             </div>
 
                             <div th:switch="${c.algoritmoConsenso}">
 
-                                <div th:case="'ABSOLUTO'" class="d-flex align-items-center text-success bg-success bg-opacity-10 border border-success border-opacity-25 rounded p-2">
+                                <div th:case="'ABSOLUTO'"
+                                    class="d-flex align-items-center text-success bg-success bg-opacity-10 border border-success border-opacity-25 rounded p-2">
                                     <i class="uil uil-shield-check fs-5 me-2"></i>
                                     <div class="lh-1">
                                         <span class="d-block fw-bold small">Consenso Absoluto</span>
-                                        <span class="d-block text-muted" style="font-size: 0.65rem;">Todas las fuentes coinciden</span>
+                                        <span class="d-block text-muted" style="font-size: 0.65rem;">Todas las fuentes
+                                            coinciden</span>
                                     </div>
                                 </div>
 
-                                <div th:case="'MAYORIA_SIMPLE'" class="d-flex align-items-center text-primary bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded p-2">
+                                <div th:case="'MAYORIA_SIMPLE'"
+                                    class="d-flex align-items-center text-primary bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded p-2">
                                     <i class="uil uil-users-alt fs-5 me-2"></i>
                                     <div class="lh-1">
                                         <span class="d-block fw-bold small">Mayoría Simple</span>
-                                        <span class="d-block text-muted" style="font-size: 0.65rem;">+50% de las fuentes coinciden</span>
+                                        <span class="d-block text-muted" style="font-size: 0.65rem;">+50% de las fuentes
+                                            coinciden</span>
                                     </div>
                                 </div>
 
-                                <div th:case="'MULTIPLES_MENCIONES'" class="d-flex align-items-center text-warning bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded p-2">
+                                <div th:case="'MULTIPLES_MENCIONES'"
+                                    class="d-flex align-items-center text-warning bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded p-2">
                                     <i class="uil uil-comment-alt-verify fs-5 me-2"></i>
                                     <div class="lh-1 text-dark">
                                         <span class="d-block fw-bold small">Múltiples Menciones</span>
-                                        <span class="d-block text-muted" style="font-size: 0.65rem;">Al menos 2 fuentes coinciden</span>
+                                        <span class="d-block text-muted" style="font-size: 0.65rem;">Al menos 2 fuentes
+                                            coinciden</span>
                                     </div>
                                 </div>
 
-                                <div th:case="*" class="d-flex align-items-center text-secondary bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded p-2">
+                                <div th:case="*"
+                                    class="d-flex align-items-center text-secondary bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded p-2">
                                     <i class="uil uil-question-circle fs-5 me-2"></i>
                                     <div class="lh-1">
                                         <span class="d-block fw-bold small">Sin restricción</span>
-                                        <span class="d-block text-muted" style="font-size: 0.65rem;">Todos los hechos visibles</span>
+                                        <span class="d-block text-muted" style="font-size: 0.65rem;">Todos los hechos
+                                            visibles</span>
                                     </div>
                                 </div>
 
@@ -115,16 +127,17 @@
                         </div>
 
                         <div class="mb-2">
-                            <span class="text-uppercase fw-bold text-secondary d-block mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">Criterios de Agrupación</span>
+                            <span class="text-uppercase fw-bold text-secondary d-block mb-1"
+                                style="font-size: 0.65rem; letter-spacing: 0.5px;">Criterios de Agrupación</span>
                             <div class="d-flex flex-wrap gap-1">
                                 <th:block th:if="${!#lists.isEmpty(c.criterios)}">
                                     <span th:each="etiqueta : ${c.criterioLabels}"
-                                        class="badge bg-light text-dark border fw-normal"
-                                        th:text="${etiqueta}">
+                                        class="badge bg-light text-dark border fw-normal" th:text="${etiqueta}">
                                         Categoría: Test
                                     </span>
                                 </th:block>
-                                <span th:if="${#lists.isEmpty(c.criterios)}" class="text-muted small fst-italic">Sin criterios aplicados</span>
+                                <span th:if="${#lists.isEmpty(c.criterios)}" class="text-muted small fst-italic">Sin
+                                    criterios aplicados</span>
                             </div>
                         </div>
                     </div>
@@ -132,25 +145,26 @@
                     <div class="card-body d-flex flex-column">
 
                         <div th:if="${c.estado == 'PROCESANDO'}"
-                             class="alert alert-info border-0 bg-info bg-opacity-10 d-flex align-items-center p-2 mb-3">
+                            class="alert alert-info border-0 bg-info bg-opacity-10 d-flex align-items-center p-2 mb-3">
                             <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
-                            <small class="fw-bold text-info">Procesando archivo...</small>
+                            <small class="fw-bold text-info">Procesando fuente...</small>
                         </div>
 
                         <div class="card-footer bg-white border-top-0 pt-0 pb-4">
 
                             <a th:if="${c.estado != 'PROCESANDO'}"
-                               th:href="@{/colecciones/{idColeccion}/hechos (idColeccion=${c.id})}"
-                               class="btn btn-outline-primary w-100 rounded-pill fw-medium">
+                                th:href="@{/colecciones/{idColeccion}/hechos (idColeccion=${c.id})}"
+                                class="btn btn-outline-primary w-100 rounded-pill fw-medium">
                                 <i class="uil uil-map-marker me-1"></i> Explorar Mapa
                             </a>
 
                             <button th:if="${c.estado == 'PROCESANDO'}"
-                                    class="btn btn-light w-100 rounded-pill fw-medium text-muted" disabled>
+                                class="btn btn-light w-100 rounded-pill fw-medium text-muted" disabled>
                                 <i class="uil uil-sync me-1"></i> Cargando datos...
                             </button>
 
                         </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -164,4 +178,5 @@
         })
     </script>
 </th:block>
+
 </html>

@@ -2,7 +2,7 @@ package ar.edu.utn.frba.dds.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ColeccionCreadaDto {
+public class ColeccionCreadaDTO {
   @JsonProperty("id")
   private String id;
   @JsonProperty("titulo")

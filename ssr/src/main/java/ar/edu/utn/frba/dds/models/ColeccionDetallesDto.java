@@ -4,8 +4,8 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ColeccionDetallesDto {
-  private List<HechoDto> data;
+public class ColeccionDetallesDTO {
+  private List<HechoDTO> data;
   private Integer currentPage;
   private Integer perPage;
   private Integer totalPages;

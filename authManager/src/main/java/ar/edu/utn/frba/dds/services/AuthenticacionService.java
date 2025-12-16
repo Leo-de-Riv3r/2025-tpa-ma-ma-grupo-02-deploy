@@ -6,6 +6,7 @@ import ar.edu.utn.frba.dds.models.entities.TipoRol;
 import ar.edu.utn.frba.dds.models.entities.User;
 import ar.edu.utn.frba.dds.models.entities.dto.LoginDto;
 import ar.edu.utn.frba.dds.models.entities.dto.NewUserDto;
+import ar.edu.utn.frba.dds.models.entities.dto.OAuthLogingDto;
 import ar.edu.utn.frba.dds.models.entities.dto.UserRolesAndAuthoritiesDto;
 import ar.edu.utn.frba.dds.models.entities.dto.UserTokensDto;
 import ar.edu.utn.frba.dds.models.repositories.UserRepository;
@@ -23,8 +24,8 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class AuthenticacionService implements IAuthenticationService {
-  //logica para creacion de administrador
+public class AuthenticacionService {
+  // logica para creacion de administrador
   @Value("${privateAdminName}")
   private String secretAdminName;
   private final PasswordEncoder passwordEncoder;
@@ -32,14 +33,14 @@ public class AuthenticacionService implements IAuthenticationService {
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
 
-  public AuthenticacionService(PasswordEncoder passwordEncoder, UserRepository userRepository, JwtService jwtService, AuthenticationManager authenticationManager) {
+  public AuthenticacionService(PasswordEncoder passwordEncoder, UserRepository userRepository, JwtService jwtService,
+      AuthenticationManager authenticationManager) {
     this.passwordEncoder = passwordEncoder;
     this.userRepository = userRepository;
     this.jwtService = jwtService;
     this.authenticationManager = authenticationManager;
   }
 
-  @Override
   public UserTokensDto register(NewUserDto request) {
     Optional<User> userInDb = userRepository.findByUsername(request.getUsername());
     if (userInDb.isPresent()) {
@@ -49,39 +50,35 @@ public class AuthenticacionService implements IAuthenticationService {
         .username(request.getUsername())
         .passwordHash(passwordEncoder.encode(request.getPassword()))
         .build();
-    //save user
-    //controlo si el usuario tiene name master of puppets
+    // save user
+    // controlo si el usuario tiene name master of puppets
     Rol rol = new Rol();
     if (Objects.equals(request.getUsername(), secretAdminName)) {
-      //crear admin
+      // crear admin
       rol.setTiporol(TipoRol.ADMINISTRADOR);
-      rol.setPermisos(List.of(Permiso.GESTION_COLECCIONES, Permiso.EDITAR_HECHO, Permiso.GESTIONAR_HECHOS, Permiso.GESTIONAR_SOLICITUDES));
+      rol.setPermisos(List.of(Permiso.GESTION_COLECCIONES, Permiso.EDITAR_HECHO, Permiso.GESTIONAR_HECHOS,
+          Permiso.GESTIONAR_SOLICITUDES));
     } else {
       rol.setTiporol(TipoRol.CONTRIBUYENTE);
       rol.setPermisos(List.of(Permiso.EDITAR_HECHO));
     }
     user.setRol(rol);
     User registeredUser = userRepository.save(user);
-    log.info("{} se ha registrado con rol {}", registeredUser.getUsername(), registeredUser.getRol().getTiporol().toString());
+    log.info("{} se ha registrado con rol {}", registeredUser.getUsername(),
+        registeredUser.getRol().getTiporol().toString());
     var token = jwtService.generateAccessToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
-    UserTokensDto resp = UserTokensDto.builder().
-        accessToken(token).refreshToken(refreshToken).
-        build();
+    UserTokensDto resp = UserTokensDto.builder().accessToken(token).refreshToken(refreshToken).build();
     return resp;
   }
 
-  @Override
   public UserTokensDto login(LoginDto request) {
 
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
-            request.getUsername(), request.getPassword()
-        )
-    );
+            request.getUsername(), request.getPassword()));
     User user = userRepository.findByUsername(request.getUsername()).orElseThrow(
-        () -> new UsernameNotFoundException("Not found")
-    );
+        () -> new UsernameNotFoundException("Not found"));
     String accessToken = jwtService.generateAccessToken(user);
     String refreshToken = jwtService.generateRefreshToken(user);
     return UserTokensDto.builder()
@@ -90,7 +87,36 @@ public class AuthenticacionService implements IAuthenticationService {
         .build();
   }
 
-  @Override
+  public UserTokensDto loginOAuth(OAuthLogingDto request) {
+    Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
+    User user;
+
+    if (userOptional.isEmpty()) {
+      Rol rol = new Rol();
+      rol.setTiporol(TipoRol.CONTRIBUYENTE);
+      rol.setPermisos(List.of(Permiso.EDITAR_HECHO));
+
+      user = User.builder()
+          .username(request.getUsername())
+          .passwordHash("")
+          .rol(rol)
+          .build();
+
+      userRepository.save(user);
+      log.info("Usuario OAuth creado: {}", request.getUsername());
+    } else {
+      user = userOptional.get();
+    }
+
+    String accessToken = jwtService.generateAccessToken(user);
+    String refreshToken = jwtService.generateRefreshToken(user);
+
+    return UserTokensDto.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .build();
+  }
+
   public UserTokensDto refresh(String tokenHeader) {
     User user = getUserByToken(tokenHeader);
 
@@ -104,7 +130,6 @@ public class AuthenticacionService implements IAuthenticationService {
         .build();
   }
 
-  @Override
   public UserRolesAndAuthoritiesDto getRolesAndAuthorities(String reqToken) {
     User user = getUserByToken(reqToken);
 

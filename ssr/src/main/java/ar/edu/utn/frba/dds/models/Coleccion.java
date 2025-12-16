@@ -3,10 +3,8 @@ package ar.edu.utn.frba.dds.models;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
-@Getter
 public class Coleccion {
   private String id;
   private String titulo;
@@ -50,4 +48,3 @@ public class Coleccion {
     }
   }
 }
-

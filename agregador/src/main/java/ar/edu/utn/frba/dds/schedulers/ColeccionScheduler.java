@@ -12,17 +12,14 @@ public class ColeccionScheduler {
     this.coleccionService = coleccionService;
   }
 
-  @Scheduled(fixedDelay = 3600000)
+  @Scheduled(fixedDelay = 3600000, initialDelay = 3600000)
   public void refrescarColecciones() {
     coleccionService.refrescoFuentes();
-    coleccionService.refrescarHechosFiltrados();
   }
 
   @Scheduled(cron = "${scheduler.cron.curaduria}", zone = "America/Argentina/Buenos_Aires")
   public void refrescarHechosCurados() {
-    System.out.println("CRON_NOCTURNO: Iniciando cálculo de consenso y curaduría...");
     coleccionService.refrescarHechosCurados();
-    System.out.println("CRON_NOCTURNO: Finalizado.");
   }
 
   @Scheduled(fixedRate = 300000)

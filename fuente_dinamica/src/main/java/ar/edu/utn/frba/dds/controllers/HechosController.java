@@ -5,7 +5,7 @@ import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionInputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoOutputDTO;
 import ar.edu.utn.frba.dds.models.dtos.output.HechoRevisionOutputDTO;
-import ar.edu.utn.frba.dds.services.impl.HechosService;
+import ar.edu.utn.frba.dds.services.HechosService;
 
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -53,8 +53,8 @@ public class HechosController {
   @PreAuthorize("hasAnyRole('ADMINISTRADOR','CONTRIBUYENTE')")
   @PutMapping("/{id}")
   public ResponseEntity<?> modificarHecho(@PathVariable Long id,
-                                          @RequestPart("hecho") HechoUpdateDTO hechoDto,
-                                          @RequestPart(value = "multimedia", required = false) List<MultipartFile> multimedia) {
+      @RequestPart("hecho") HechoUpdateDTO hechoDto,
+      @RequestPart(value = "multimedia", required = false) List<MultipartFile> multimedia) {
     try {
       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -82,8 +82,8 @@ public class HechosController {
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @GetMapping("/pendientes")
   public List<HechoRevisionOutputDTO> getHechosPendientes(
-      // @RequestParam(required = false, defaultValue = "1") int page,
-      // @RequestParam(required = false, defaultValue = "15") int perPage
+  // @RequestParam(required = false, defaultValue = "1") int page,
+  // @RequestParam(required = false, defaultValue = "15") int perPage
   ) {
     return hechosService.getHechosPendientes();
   }
@@ -91,7 +91,7 @@ public class HechosController {
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/{id}/aceptar")
   public ResponseEntity<HechoRevisionOutputDTO> aceptarHecho(@PathVariable Long id,
-                                                             @RequestBody RevisionInputDTO revisionDto) {
+      @RequestBody RevisionInputDTO revisionDto) {
     try {
       HechoRevisionOutputDTO hechoAceptado = hechosService.aceptarHecho(id, revisionDto);
       return ResponseEntity.ok(hechoAceptado);
@@ -103,7 +103,7 @@ public class HechosController {
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/{id}/aceptar-con-sugerencias")
   public ResponseEntity<HechoRevisionOutputDTO> aceptarHechoConSugerencias(@PathVariable Long id,
-                                                                           @RequestBody RevisionInputDTO revisionDto) {
+      @RequestBody RevisionInputDTO revisionDto) {
     try {
       HechoRevisionOutputDTO hechoAceptado = hechosService.aceptarHechoConSugerencias(id, revisionDto);
       return ResponseEntity.ok(hechoAceptado);

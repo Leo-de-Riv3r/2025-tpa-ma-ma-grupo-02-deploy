@@ -2,27 +2,26 @@ package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.entities.dto.LoginDto;
 import ar.edu.utn.frba.dds.models.entities.dto.NewUserDto;
+import ar.edu.utn.frba.dds.models.entities.dto.OAuthLogingDto;
 import ar.edu.utn.frba.dds.models.entities.dto.UserRolesAndAuthoritiesDto;
 import ar.edu.utn.frba.dds.models.entities.dto.UserTokensDto;
-import ar.edu.utn.frba.dds.services.IAuthenticationService;
+import ar.edu.utn.frba.dds.services.AuthenticacionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-  private final IAuthenticationService authenticationService;
+  private final AuthenticacionService authenticationService;
 
-  public AuthController(IAuthenticationService authenticationService) {
+  public AuthController(AuthenticacionService authenticationService) {
     this.authenticationService = authenticationService;
   }
 
@@ -33,6 +32,9 @@ public class AuthController {
 
   @PostMapping("/register")
   public ResponseEntity<UserTokensDto> registerUser(@RequestBody NewUserDto request) {
+    if (request.getPassword().length() < 8) {
+      throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres");
+    }
     return ResponseEntity.ok(authenticationService.register(request));
   }
 
@@ -42,8 +44,14 @@ public class AuthController {
     return ResponseEntity.ok(resp);
   }
 
+  @PostMapping("/oauth-login")
+  public ResponseEntity<UserTokensDto> loginOAuth(@RequestBody OAuthLogingDto request) {
+    return ResponseEntity.ok(authenticationService.loginOAuth(request));
+  }
+
   @GetMapping("/user/roles-permisos")
-  public ResponseEntity<UserRolesAndAuthoritiesDto> getRolesPermisos(@RequestHeader(HttpHeaders.AUTHORIZATION) String reqToken) {
+  public ResponseEntity<UserRolesAndAuthoritiesDto> getRolesPermisos(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) String reqToken) {
     return ResponseEntity.ok(authenticationService.getRolesAndAuthorities(reqToken));
   }
 }

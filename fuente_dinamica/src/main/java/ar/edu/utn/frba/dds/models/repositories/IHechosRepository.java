@@ -19,7 +19,7 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
   @Query(value = "SELECT * FROM hechos WHERE estado = 'RECHAZADO'", nativeQuery = true)
   List<Hecho> findHechosRechazados();
 
-  @Query(value = "SELECT * FROM hechos WHERE estado IN ('ACEPTADO', 'ACEPTADO_CON_SUGERENCIAS')", nativeQuery = true)
+  @Query(value = "SELECT * FROM hechos WHERE estado = 'ACEPTADO'", nativeQuery = true)
   List<Hecho> findHechosAceptados();
 
   @Query(value = "SELECT * FROM hechos WHERE estado IN ('PENDIENTE', 'ACEPTADO_CON_SUGERENCIAS') AND nombre_autor = ?1", nativeQuery = true)

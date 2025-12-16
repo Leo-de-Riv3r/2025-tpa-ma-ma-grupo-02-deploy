@@ -8,7 +8,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -20,21 +19,20 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 public class FuenteDinamicaService {
-  private final MetamapaApiService metamapaApiService;
-  private final RestTemplate restTemplate;
-  private final String fuenteDinamicaServiceUrl;
   private final WebApiCallerService webApiCallerService;
-  @Value("${modification.allowance-days}")
-  private long diasPermitidosEdicion;
+  private final RestTemplate restTemplate;
+  private final long diasPermitidosEdicion;
+  private final String fuenteDinamicaServiceUrl;
 
   public FuenteDinamicaService(
-      MetamapaApiService metamapaApiService, RestTemplate restTemplate,
-      @Value("${fuenteDinamica.service.url}") String fuenteDinamicaServiceUrl,
-      WebApiCallerService webApiCallerService) {
-    this.metamapaApiService = metamapaApiService;
-    this.restTemplate = restTemplate;
-    this.fuenteDinamicaServiceUrl = fuenteDinamicaServiceUrl;
+      WebApiCallerService webApiCallerService,
+      RestTemplate restTemplate,
+      @Value("${modification.allowance-days}") long diasPermitidosEdicion,
+      @Value("${fuenteDinamica.service.url}") String fuenteDinamicaServiceUrl) {
     this.webApiCallerService = webApiCallerService;
+    this.restTemplate = restTemplate;
+    this.diasPermitidosEdicion = diasPermitidosEdicion;
+    this.fuenteDinamicaServiceUrl = fuenteDinamicaServiceUrl;
   }
 
   public HechoUpdateDTO obtenerHechoEdicion(Long id) {
@@ -68,38 +66,25 @@ public class FuenteDinamicaService {
     }
   }
 
-  public void crearHecho(HechoManualDTO hechoDto, List<MultipartFile> multimedia) {
-    // --- 1. Crear el cuerpo de la petición Multipart ---
-    // Esto contendrá las diferentes "partes" (el JSON y los archivos)
+  public void crearHecho(HechoManualDTO hechoDTO, List<MultipartFile> multimedia) {
     MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-
-    // --- 2. Añadir la parte "hecho" (el JSON) ---
-    // Tomamos el DTO que recibimos (poblado por @ModelAttribute)
-    // y lo envolvemos para que se envíe como 'application/json'.
-    // Esta es la "traducción" clave.
     HttpHeaders jsonHeaders = new HttpHeaders();
     jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
-    HttpEntity<HechoManualDTO> jsonPart = new HttpEntity<>(hechoDto, jsonHeaders);
-
-    // La API externa espera una parte llamada "hecho"
+    HttpEntity<HechoManualDTO> jsonPart = new HttpEntity<>(hechoDTO, jsonHeaders);
     body.add("hecho", jsonPart);
 
-    // --- 3. Añadir la parte "multimedia" (los archivos) ---
     if (multimedia != null && !multimedia.isEmpty()) {
       for (MultipartFile file : multimedia) {
         if (file.isEmpty())
           continue;
 
         try {
-          // Creamos un recurso desde los bytes del archivo
           ByteArrayResource fileResource = new ByteArrayResource(file.getBytes()) {
             @Override
             public String getFilename() {
-              // Es vital sobreescribir 'getFilename'
               return file.getOriginalFilename();
             }
           };
-          // La API externa espera partes llamadas "multimedia"
           body.add("multimedia", fileResource);
         } catch (Exception e) {
           throw new RuntimeException("Error al procesar archivo para la API", e);
@@ -107,30 +92,26 @@ public class FuenteDinamicaService {
       }
     }
 
-    // --- 4. Crear los Headers de la petición principal ---
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-    // --- 5. Ensamblar y enviar la petición ---
     HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
     try {
-      // Hacemos el POST a la API externa
-      ResponseEntity<Void> response = restTemplate.postForEntity(
+      restTemplate.postForEntity(
           fuenteDinamicaServiceUrl + "/hechos",
           requestEntity,
           Void.class);
 
     } catch (Exception e) {
-      // Manejo básico de errores (la API está caída, devuelve 500, etc.)
       throw new RuntimeException("Error al comunicarse con la API de Hechos: " + e.getMessage(), e);
     }
   }
 
-  public void editarHecho(Long id, HechoUpdateDTO hechoDto, List<MultipartFile> multimedia) {
-    if (hechoDto.getTitulo() == null || hechoDto.getTitulo().isBlank()) {
+  public void editarHecho(Long id, HechoUpdateDTO hechoDTO, List<MultipartFile> multimedia) {
+    if (hechoDTO.getTitulo() == null || hechoDTO.getTitulo().isBlank()) {
       throw new IllegalArgumentException("DEBUG: El título del DTO es nulo o vacío después del post.");
     }
-    if (hechoDto.getLatitud() == null || hechoDto.getLongitud() == null) {
+    if (hechoDTO.getLatitud() == null || hechoDTO.getLongitud() == null) {
       throw new IllegalArgumentException("DEBUG: Latitud o Longitud son nulas. Revise el JS y los IDs del HTML.");
     }
 
@@ -140,7 +121,7 @@ public class FuenteDinamicaService {
 
     HttpHeaders jsonHeaders = new HttpHeaders();
     jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
-    HttpEntity<HechoUpdateDTO> jsonPart = new HttpEntity<>(hechoDto, jsonHeaders);
+    HttpEntity<HechoUpdateDTO> jsonPart = new HttpEntity<>(hechoDTO, jsonHeaders);
     body.add("hecho", jsonPart);
 
     if (multimedia != null && !multimedia.isEmpty()) {
@@ -172,27 +153,31 @@ public class FuenteDinamicaService {
     }
   }
 
-  public List<SolicitudHechoDto> obtenerSolicitudesHecho() {
-    return metamapaApiService.obtenerSolicitudesHecho();
+  public List<SolicitudHechoDTO> obtenerSolicitudesHecho() {
+    return this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos/pendientes", SolicitudHechoDTO.class);
   }
 
-  public SolicitudHechoInputDto obtenerSolicitudById(Long idHecho) {
-    return metamapaApiService.obtenerSolicitudHechoById(idHecho);
+  public SolicitudHechoInputDTO obtenerSolicitudById(Long idHecho) {
+    return this.webApiCallerService.get(fuenteDinamicaServiceUrl + "/hechos/" + idHecho, SolicitudHechoInputDTO.class);
   }
 
-  public void aceptarSolicitud(Long idHecho, RevisionHechoDto revisionHechoDto) {
-    metamapaApiService.aceptarSolicitudHecho(idHecho, revisionHechoDto);
+  public void aceptarSolicitud(Long idHecho, RevisionHechoDTO revisionHechoDTO) {
+    this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/aceptar", revisionHechoDTO,
+        Void.class);
   }
 
-  public void rechazarSolicitud(Long idHecho, RevisionHechoDto revisionHechoDto) {
-    metamapaApiService.rechazarSolicitudHecho(idHecho, revisionHechoDto);
+  public void rechazarSolicitud(Long idHecho, RevisionHechoDTO revisionHechoDTO) {
+    this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/rechazar", revisionHechoDTO,
+        Void.class);
   }
 
-  public void aceptarConSugerencias(Long idHecho, RevisionHechoDto revisionHechoDto) {
-    metamapaApiService.aceptarSolicitudConSugerencias(idHecho, revisionHechoDto);
+  public void aceptarConSugerencias(Long idHecho, RevisionHechoDTO revisionHechoDTO) {
+    this.webApiCallerService.put(fuenteDinamicaServiceUrl + "/hechos/" + idHecho + "/aceptar-con-sugerencias",
+        revisionHechoDTO, Void.class);
   }
 
-  public List<SolicitudHechoDto> obtenerHechosPorCreador() {
-    return metamapaApiService.obtenerHechosPorCreador();
+  public List<SolicitudHechoDTO> obtenerHechosPorCreador() {
+    return this.webApiCallerService.getList(fuenteDinamicaServiceUrl + "/hechos/pendientes_por_creador",
+        SolicitudHechoDTO.class);
   }
 }

@@ -3,7 +3,7 @@ package ar.edu.utn.frba.dds.models;
 import lombok.Data;
 
 @Data
-public class HechoDto {
+public class HechoDTO {
   private Long id;
   private String titulo;
   private String categoria;

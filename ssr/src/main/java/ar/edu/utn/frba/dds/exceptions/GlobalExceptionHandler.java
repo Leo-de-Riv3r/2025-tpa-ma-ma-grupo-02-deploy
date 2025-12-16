@@ -4,6 +4,7 @@ import ar.edu.utn.frba.dds.ExternalApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,11 +34,13 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(RuntimeException.class)
   public String handleRuntimeException(RuntimeException ex) {
+    System.out.println("RuntimeException caught: " + ex.getMessage());
     return "notserver.html";
   }
 
   @ExceptionHandler(ResourceAccessException.class)
   public String handleRuntimeException(ResourceAccessException ex) {
+    System.out.println("ResourceAccessException caught: " + ex.getMessage());
     return "notserver.html";
   }
 
@@ -51,6 +54,7 @@ public class GlobalExceptionHandler {
     log.error("Error 5xx, msg: {}",  ex.getMessage());
     return "error";
   }
+
   @ExceptionHandler(Exception.class)
   public String handleError(HttpServletRequest req, Exception ex, Model model) {
     model.addAttribute("titulo", ex.getClass());
@@ -61,7 +65,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(TokenExpiradoException.class)
   public String handleTokenExpirado(TokenExpiradoException ex, HttpServletRequest request,
-                                    RedirectAttributes redirectAttributes) {
+      RedirectAttributes redirectAttributes) {
     log.warn("Sesión expirada: {}", ex.getMessage());
     HttpSession session = request.getSession(false);
     if (session != null) {

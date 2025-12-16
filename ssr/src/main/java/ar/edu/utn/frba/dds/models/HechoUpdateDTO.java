@@ -1,7 +1,9 @@
 package ar.edu.utn.frba.dds.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import lombok.Getter;
 
@@ -18,4 +20,3 @@ public class HechoUpdateDTO {
   @JsonProperty("created_at")
   private LocalDateTime createdAt;
 }
-

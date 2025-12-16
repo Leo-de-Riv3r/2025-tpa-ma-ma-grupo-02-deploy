@@ -23,7 +23,7 @@
           </div>
         </div>
 
-        <form th:action="${esEdicion} ? @{/editar-hecho/{id}(id=${idHecho})} : @{/subir-hecho}" th:object="${hechoDto}"
+        <form th:action="${esEdicion} ? @{/editar-hecho/{id}(id=${idHecho})} : @{/subir-hecho}" th:object="${hechoDTO}"
           method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
 
           <div class="card border-0 shadow-sm mb-4">
@@ -79,8 +79,8 @@
                   accept="image/*,video/*">
               </div>
               <div th:if="${esEdicion}" class="alert alert-warning py-2 mt-2 small">
-                <i class="uil uil-info-circle"></i> Nota: Subir nuevos archivos reemplazará los existentes (si el
-                backend así lo maneja) o se agregarán.
+                <i class="uil uil-info-circle"></i>
+                Nota: Subir nuevos archivos reemplazará los existentes.
               </div>
             </div>
           </div>
@@ -107,8 +107,8 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script th:inline="javascript">
     /*<![CDATA[*/
-    const initialLat = /*[[${hechoDto.latitud ?: -34.6037}]]*/ -34.6037;
-    const initialLon = /*[[${hechoDto.longitud ?: -58.3816}]]*/ -58.3816;
+    const initialLat = /*[[${hechoDTO.latitud ?: -34.6037}]]*/ -34.6037;
+    const initialLon = /*[[${hechoDTO.longitud ?: -58.3816}]]*/ -58.3816;
     const latInput = document.getElementById('latitud');
     const lonInput = document.getElementById('longitud');
 

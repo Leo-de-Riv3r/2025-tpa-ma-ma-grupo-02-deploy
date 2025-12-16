@@ -4,7 +4,6 @@ import ar.edu.utn.frba.dds.ExternalApiException;
 import ar.edu.utn.frba.dds.models.AuthResponseDTO;
 import ar.edu.utn.frba.dds.models.utils.ExternalUser;
 import ar.edu.utn.frba.dds.models.utils.UserConverter;
-import ar.edu.utn.frba.dds.services.MetamapaApiService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,6 +11,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,43 +22,32 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-  private final MetamapaApiService metamapaApiService;
+  private final AuthProvider authProvider;
   private final UserConverter userConverter;
+
   @Override
-  public void onAuthenticationSuccess(HttpServletRequest request,
-                                      HttpServletResponse response,
-                                      Authentication authentication) throws IOException, ServletException {
+  public void onAuthenticationSuccess(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      Authentication authentication) throws IOException, ServletException {
     OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
-
-    // Extraer email o nombre
     String url = request.getRequestURL().toString();
-
 
     ExternalUser externalUser = userConverter.getUser(oauthUser, url);
     String username = externalUser.getUsername();
-    String password = externalUser.getPassword();
+    String provider = externalUser.getProvider();
     try {
-      // Intentar loguearse en el servicio externo
-      AuthResponseDTO tokens = metamapaApiService.login(username, password);
+      AuthResponseDTO tokens = authProvider.loginOAuth(username, provider);
 
-      // Si no existe, lo registramos y volvemos a loguear
-      if (tokens == null) {
-        boolean registered = metamapaApiService.register(username, password);
-        if (!registered) {
-          throw new RuntimeException("No se pudo registrar el usuario externo");
-        }
-        tokens = metamapaApiService.login(username, password);
-      }
-
-      // Guardar tokens en la sesión
       request.getSession().setAttribute("accessToken", tokens.getAccessToken());
       request.getSession().setAttribute("refreshToken", tokens.getRefreshToken());
       request.getSession().setAttribute("username", username);
-      // Obtener roles y permisos
-      var rolesPermisos = metamapaApiService.getRolesPermisos(tokens.getAccessToken());
+
+      var rolesPermisos = authProvider.getRolesPermisos(tokens.getAccessToken());
       request.getSession().setAttribute("rol", rolesPermisos.getRol());
       request.getSession().setAttribute("permisos", rolesPermisos.getPermisos());
 
@@ -66,17 +56,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         authorities.add(new SimpleGrantedAuthority(permiso.name()));
       });
       authorities.add(new SimpleGrantedAuthority("ROLE_" + rolesPermisos.getRol().name()));
-      // Redirigir al home
-      response.sendRedirect("/colecciones");
-    }
-    catch( HttpClientErrorException e) {
+      response.sendRedirect("/");
+    } catch (HttpClientErrorException e) {
       if (e.getStatusCode().value() == 409) {
         SecurityContextHolder.clearContext();
         request.getSession().invalidate();
         response.sendRedirect("/registro?userExists");
       }
-    }
-    catch (ExternalApiException e) {
+    } catch (ExternalApiException e) {
       response.sendRedirect("/login?authErr");
       SecurityContextHolder.clearContext();
       request.getSession().invalidate();
@@ -84,6 +71,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
     catch (Exception e) {
       response.sendRedirect("/login?auth0err");
+      log.error("Error en OAuth2LoginSuccessHandler: ", e);
       SecurityContextHolder.clearContext();
       request.getSession().invalidate();
     }

@@ -8,8 +8,6 @@ public class GithubUserConverterStrategy implements UserConverterStrategy {
   @Override
   public ExternalUser convert(OAuth2User user) {
     String username = user.getAttribute("name");
-    String email = user.getAttribute("email");
-    String password = user.getAttribute("id").toString();
-    return new ExternalUser(username, password);
+    return new ExternalUser(username, null, "github");
   }
 }

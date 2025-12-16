@@ -10,7 +10,6 @@ import jakarta.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class FuenteEstaticaService implements IFuenteEstaticaService {
   private IFuenteRepository fuenteRepository;
   private ExtractorHechosCSV extractorHechosCSV;
+
   public FuenteEstaticaService(IFuenteRepository fuenteRepository, ExtractorHechosCSV extractorHechosCSV) {
     this.fuenteRepository = fuenteRepository;
     this.extractorHechosCSV = extractorHechosCSV;
@@ -27,21 +27,26 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
 
   @Override
   public FuenteCsvDTOOutput getFuente(Long id) {
-    Fuente fuente = fuenteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
+    Fuente fuente = fuenteRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
     return new FuenteCsvDTOOutput(fuente.getId(), fuente.getUrl(), fuente.getHechos().size());
   }
 
   @Override
   public List<Hecho> getHechos(Long id, Integer page, Integer per_page) {
-    Fuente fuente = fuenteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
+    Fuente fuente = fuenteRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
     List<Hecho> hechos = fuente.getHechos();
-    if (page < 1) page = 1;
-    per_page = hechos.size();
-    if (page < 1) page = 1;
+    if (page < 1)
+      page = 1;
+    if (per_page > 2000)
+      per_page = 2000;
+    if (page < 1)
+      page = 1;
     Integer total = hechos.size();
     Integer inicio = (page - 1) * per_page;
     Integer fin = Math.min(inicio + per_page, total);
-    List <Hecho> hechosPag = List.of();
+    List<Hecho> hechosPag = List.of();
     Integer lastPage = (int) Math.ceil((double) total / per_page);
 
     if (inicio > total) {
@@ -54,6 +59,15 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
     return hechosPag;
   }
 
+  // @Override
+  // public FuenteCsvDTOOutput crearNuevaFuente(MultipartFile link) {
+  // Fuente fuente = new Fuente();
+  // fuente.setHechos(extractorHechosCSV.obtenerHechosCsv(link));
+  // fuente.setUrl(link.getName());
+  // Fuente fuenteCreada = fuenteRepository.save(fuente);
+  // return new FuenteCsvDTOOutput(fuenteCreada.getId(), fuenteCreada.getUrl(),
+  // fuenteCreada.getHechos().size());
+  // }
 
   @Override
   public void eliminarFuente(Long id) {
@@ -82,15 +96,8 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
     List<Hecho> hechosCsv = this.extractorHechosCSV.obtenerHechos(link);
     fuente.setHechos(hechosCsv);
     fuente.setUrl(link.getOriginalFilename());
-    List<Fuente> fuenteConarchivoExistente = fuenteRepository.findByUrl(fuente.getUrl());
-    if (fuenteConarchivoExistente.isEmpty()) {
-      Fuente fuenteGuardado = fuenteRepository.save(fuente);
-      log.info("Nueva fuente csv de archivo {}", link.getOriginalFilename());
-      return new FuenteCsvDTOOutput(fuente.getId(), link.getOriginalFilename(), fuenteGuardado.getHechos().size());
-    }
-    else {
-      return new FuenteCsvDTOOutput(fuenteConarchivoExistente.get(0).getId(), fuenteConarchivoExistente.get(0).getUrl(), fuenteConarchivoExistente.get(0).getHechos().size());
-    }
+    Fuente fuenteGuardado = fuenteRepository.save(fuente);
+    log.info("Nueva fuente csv de archivo {}", link.getOriginalFilename());
+    return new FuenteCsvDTOOutput(fuente.getId(), link.getOriginalFilename(), fuenteGuardado.getHechos().size());
   }
 }
-

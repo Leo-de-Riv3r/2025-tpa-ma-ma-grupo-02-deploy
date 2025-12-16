@@ -1,32 +1,22 @@
 package ar.edu.utn.frba.dds.controllers;
 
 import ar.edu.utn.frba.dds.models.dtos.CambioAlgoritmoDTO;
-import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.input.ColeccionDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.FiltroDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
-import ar.edu.utn.frba.dds.models.dtos.input.HechoUpdateDto;
-import ar.edu.utn.frba.dds.models.dtos.input.SolicitudModificacionHechoDto;
-import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDetallesDTOSalida;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
-import ar.edu.utn.frba.dds.models.dtos.output.HechoDtoSalida;
-import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDto;
-import ar.edu.utn.frba.dds.models.dtos.output.ResumenActividadDto;
-import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
-import ar.edu.utn.frba.dds.models.dtos.output.SolicitudModificacionHechoDtoOutput;
-import ar.edu.utn.frba.dds.models.dtos.output.SolicitudResumenDtoOutput;
-import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.dtos.output.HechoDTOSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDTOSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.ResumenActividadDTOSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudEliminacionDTOSalida;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
 import ar.edu.utn.frba.dds.services.ColeccionService;
 import ar.edu.utn.frba.dds.services.GeoToolsProcessorService;
-import ar.edu.utn.frba.dds.services.SolicitudService;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-import org.springframework.data.repository.query.Param;
+import ar.edu.utn.frba.dds.services.SolicitudEliminacionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,29 +28,33 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 public class AgregadorController {
-  private final SolicitudService solicitudService;
+  private final SolicitudEliminacionService solicitudService;
   private final ColeccionService coleccionService;
   private final GeoToolsProcessorService geoService;
 
-  public AgregadorController(SolicitudService solicitudService, ColeccionService coleccionService, GeoToolsProcessorService geoService) {
+  public AgregadorController(SolicitudEliminacionService solicitudService, ColeccionService coleccionService,
+      GeoToolsProcessorService geoService) {
     this.solicitudService = solicitudService;
     this.coleccionService = coleccionService;
     this.geoService = geoService;
   }
 
-  //Panel control
+  // Panel control
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @GetMapping("/resumen")
-  public ResponseEntity<ResumenActividadDto> getResumenActividad() {
-    ResumenActividadDto resumenActividadDto = coleccionService.getResumenActividad();
-    return ResponseEntity.status(HttpStatus.OK).body(resumenActividadDto);
+  public ResponseEntity<ResumenActividadDTOSalida> getResumenActividad() {
+    ResumenActividadDTOSalida resumenActividadDTO = coleccionService.getResumenActividad();
+    return ResponseEntity.status(HttpStatus.OK).body(resumenActividadDTO);
   }
-  //COLECCIONES
+  // COLECCIONES
 
-  //CRUD COLECCIONES
+  // CRUD COLECCIONES
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping("/colecciones")
   public ResponseEntity<ColeccionDTOSalida> createColeccion(@RequestBody ColeccionDTOEntrada dto) {
@@ -91,7 +85,7 @@ public class AgregadorController {
   }
 
   @GetMapping("/colecciones/{id}/hechos")
-  public PaginacionDto<HechoDtoSalida> getHechos(
+  public PaginacionDTOSalida<HechoDTOSalida> getHechos(
       @PathVariable String id,
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false, defaultValue = "false") Boolean curados,
@@ -100,16 +94,14 @@ public class AgregadorController {
       @RequestParam(required = false) LocalDate fecha_acontecimiento_hasta,
       @RequestParam(required = false) String provincia,
       @RequestParam(required = false) String municipio,
-      @RequestParam(required = false) String departamento
-  ) {
+      @RequestParam(required = false) String departamento) {
     Set<IFiltroStrategy> filtros = FiltroStrategyFactory.fromParams(
         categoria,
         fecha_acontecimiento_desde,
         fecha_acontecimiento_hasta,
         provincia,
         municipio,
-        departamento
-    );
+        departamento);
 
     return coleccionService.getHechos(id, curados, page, filtros);
   }
@@ -132,8 +124,7 @@ public class AgregadorController {
   @PostMapping("/colecciones/{id}/filtros")
   public ResponseEntity<String> addCriterio(
       @PathVariable String id,
-      @RequestBody FiltroDTOEntrada dto
-  ) {
+      @RequestBody FiltroDTOEntrada dto) {
     IFiltroStrategy filtro = FiltroStrategyFactory.fromDTO(dto);
     coleccionService.addCriterio(id, filtro);
     return ResponseEntity.ok("Filtro agregado correctamente");
@@ -145,89 +136,52 @@ public class AgregadorController {
   }
 
   @PutMapping("/colecciones")
-  public void actualiza() {coleccionService.refrescoFuentes();}
+  public void actualiza() {
+    coleccionService.refrescoFuentes();
+  }
 
-  //HECHOS
+  // HECHOS
   @GetMapping("/hechos/{idHecho}")
-  public ResponseEntity<HechoDetallesDtoSalida> obtenerHecho(
+  public ResponseEntity<HechoDetallesDTOSalida> obtenerHecho(
       @PathVariable Long idHecho) {
-    HechoDetallesDtoSalida respuesta = coleccionService.getHechoDto(idHecho);
+    HechoDetallesDTOSalida respuesta = coleccionService.getHechoDTO(idHecho);
     return ResponseEntity.ok(respuesta);
   }
 
-  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
-  @PostMapping("/hechos/{idHecho}/solicitar-modificacion")
-  public ResponseEntity<String> solicitarModificacionHecho (
-      @PathVariable Long idHecho, @RequestBody SolicitudModificacionHechoDto solicitudModificacionHechoDto) {
-    coleccionService.createSolicitudModificacionHecho(solicitudModificacionHechoDto);
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Solicitud cargada");
-  }
-
-  @GetMapping("/hechos/solicitudesModificacion")
-  public PaginacionDto<SolicitudModificacionHechoDtoOutput> getSolicitudesModificacion(
-      @RequestParam(required = false) Integer page
-  ) {
-    return coleccionService.getSolicitudesModificacion(page);
-  }
-
-  @PreAuthorize("hasAnyRole('ADMINISTRADOR')")
-  @PutMapping("/hechos/solicitudesModificacion/{id}/aceptar")
-  public ResponseEntity<String> aceptarSolicitudModificacion(
-      @PathVariable Long id
-  ) {
-    coleccionService.aceptarSolicitudModificacion(id);
-    return ResponseEntity.noContent().build();
-  }
-  @PreAuthorize("hasAnyRole('ADMINISTRADOR')")
-  @PutMapping("/hechos/solicitudesModificacion/{id}/rechazar")
-  public ResponseEntity<String> rechazarSolicitudModificacion(
-      @PathVariable Long id
-  ) {
-    coleccionService.rechazarSolicitudModificacion(id);
-    return ResponseEntity.noContent().build();
-  }
-
-
-  //SOLICITUDES
+  // SOLICITUDES DE ELIMINACION
   @PostMapping("/solicitudes")
-  public ResponseEntity<String> agregarSolicitud(@RequestBody SolicitudDTOEntrada dto) {
-    solicitudService.createSolicitud(dto);
+  public ResponseEntity<String> agregarSolicitudEliminacion(@RequestBody SolicitudDTOEntrada dto) {
+    solicitudService.createSolicitudEliminacion(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body("Solicitud creada");
   }
+
   @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
   @GetMapping("/solicitudes")
-  public PaginacionDto<SolicitudResumenDtoOutput> getSolicitudes(
-      @RequestParam (required = false, defaultValue = "1") Integer page,
-      @RequestParam (required = false, defaultValue = "true") Boolean pendientes,
-      @RequestParam (required = false, defaultValue = "false") Boolean filterByCreator
-  ){
-    return solicitudService.getSolicitudes(page, pendientes, filterByCreator);
+  public PaginacionDTOSalida<SolicitudEliminacionDTOSalida> getSolicitudesEliminacion(
+      @RequestParam(required = false, defaultValue = "1") Integer page,
+      @RequestParam(required = false, defaultValue = "true") Boolean pendientes,
+      @RequestParam(required = false, defaultValue = "false") Boolean filterByCreator) {
+    return solicitudService.getSolicitudesEliminacionDTO(page, pendientes, filterByCreator);
   }
-
 
   @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CONTRIBUYENTE')")
   @GetMapping("/solicitudes/{id}")
-  public SolicitudDTOOutput getSolicitud(
-      @PathVariable Long id
-  ){
-    return solicitudService.getSolicitudDto(id);
+  public SolicitudDTOSalida getSolicitudEliminacion(@PathVariable Long id) {
+    return solicitudService.getSolicitudEliminacionDTO(id);
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/solicitudes/{id}/aceptar")
-  public ResponseEntity<String> aceptarSolicitud(
-      @PathVariable Long id
-  ) {
-    solicitudService.aceptarSolicitud(id);
+  public ResponseEntity<String> aceptarSolicitudEliminacion(@PathVariable Long id) {
+    solicitudService.aceptarSolicitudEliminacion(id);
     return ResponseEntity.noContent().build();
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/solicitudes/{id}/denegar")
-  public ResponseEntity<String> rechazarSolicitud(
-      @PathVariable Long id
-  ) {
-    solicitudService.rechazarSolicitud(id);
+  public ResponseEntity<String> rechazarSolicitudEliminacion(
+      @PathVariable Long id) {
+    solicitudService.rechazarSolicitudEliminacion(id);
     return ResponseEntity.noContent().build();
   }
 

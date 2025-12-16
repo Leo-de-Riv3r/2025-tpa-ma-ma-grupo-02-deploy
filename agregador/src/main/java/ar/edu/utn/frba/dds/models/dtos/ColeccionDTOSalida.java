@@ -1,7 +1,9 @@
 package ar.edu.utn.frba.dds.models.dtos;
 
-import ar.edu.utn.frba.dds.models.dtos.output.FiltroDtoSalida;
-import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOOutput;
+import ar.edu.utn.frba.dds.models.dtos.output.FiltroDTOSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.FuenteDTOSalida;
+import ar.edu.utn.frba.dds.models.entities.enums.EstadoColeccion;
+
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,11 +14,12 @@ public class ColeccionDTOSalida {
   private String id;
   private String titulo;
   private String descripcion;
-  private List<FuenteDTOOutput> fuentes;
+  private List<FuenteDTOSalida> fuentes;
   private Integer cantSolicitudesSpam;
-  private List<FiltroDtoSalida> criterios;
+  private List<FiltroDTOSalida> criterios;
   private String algoritmoConsenso;
-  private String estado;
+  private EstadoColeccion estado;
+
   public ColeccionDTOSalida() {
     this.cantSolicitudesSpam = 0;
   }

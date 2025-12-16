@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Data
 @Setter
-public class NuevaEstadisticaDto {
+public class NuevaEstadisticaDTO {
   private String urlColeccion;
   private String categoriaEspecifica;
 }

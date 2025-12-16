@@ -14,8 +14,6 @@ public interface IFuenteEstaticaService {
 
   List<Hecho> getHechos(Long id, Integer page, Integer per_page);
 
-  //FuenteCsvDTOOutput crearNuevaFuente(MultipartFile link);
-
   void eliminarFuente(Long id);
 
   List<FuenteCsvDTOOutput> obtenerFuentesDTO();

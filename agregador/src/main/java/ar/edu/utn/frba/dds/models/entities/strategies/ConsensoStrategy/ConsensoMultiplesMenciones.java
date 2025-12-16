@@ -16,13 +16,7 @@ public class ConsensoMultiplesMenciones extends IConsensoStrategy {
   }
 
   @Override
-  public Integer getCantMinima(Integer numFuentes) {
-    return 2;
-  }
-
-  @Override
   public TipoAlgoritmo getTipo() {
     return TipoAlgoritmo.MULTIPLES_MENCIONES;
   }
 }
-

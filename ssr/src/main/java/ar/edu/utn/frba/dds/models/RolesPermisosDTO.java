@@ -1,6 +1,9 @@
 package ar.edu.utn.frba.dds.models;
 
 import java.util.List;
+
+import ar.edu.utn.frba.dds.models.enums.Permiso;
+import ar.edu.utn.frba.dds.models.enums.Rol;
 import lombok.Data;
 
 @Data

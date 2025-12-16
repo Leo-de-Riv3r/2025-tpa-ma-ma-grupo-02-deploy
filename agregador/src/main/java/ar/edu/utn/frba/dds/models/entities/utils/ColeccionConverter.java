@@ -1,17 +1,12 @@
 package ar.edu.utn.frba.dds.models.entities.utils;
 
 import ar.edu.utn.frba.dds.models.dtos.ColeccionDTOSalida;
-import ar.edu.utn.frba.dds.models.dtos.output.FiltroDtoSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.FiltroDTOSalida;
 import ar.edu.utn.frba.dds.models.entities.Coleccion;
+import ar.edu.utn.frba.dds.models.entities.enums.EstadoColeccion;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroCategoria;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroDepartamento;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFecha;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroFuente;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroMunicipio;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.FiltroProvincia;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
-import java.time.LocalDate;
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ColeccionConverter {
   private final FuenteConverter fuenteConverter;
+
   public ColeccionConverter(FuenteConverter fuenteConverter) {
     this.fuenteConverter = fuenteConverter;
   }
@@ -32,30 +28,29 @@ public class ColeccionConverter {
     Set<Fuente> fuentes = coleccion.getFuentes();
     respuesta.setFuentes(fuentes.stream().map(fuenteConverter::fromEntity).toList());
 
-    if(!coleccion.getCriterios().isEmpty()) {
-
-      List<FiltroDtoSalida> criterioDtoList = new ArrayList<>();
-      //List<CriterioColeccionDtoSalida> criterios = new ArrayList<>();
+    if (!coleccion.getCriterios().isEmpty()) {
+      List<FiltroDTOSalida> criterioDTOList = new ArrayList<>();
       coleccion.getCriterios().forEach(criterio -> {
-        criterioDtoList.add(mapStrategyToDto(criterio));
+        criterioDTOList.add(mapStrategyToDTO(criterio));
       });
-      respuesta.setCriterios(criterioDtoList);
+      respuesta.setCriterios(criterioDTOList);
     }
-    if(coleccion.getAlgoritmoConsenso() != null) {
+
+    if (coleccion.getAlgoritmoConsenso() != null) {
       respuesta.setAlgoritmoConsenso(coleccion.getAlgoritmoConsenso().getTipo().name());
     }
 
     if (coleccion.getEstado() != null) {
-      respuesta.setEstado(coleccion.getEstado().toString());
+      respuesta.setEstado(coleccion.getEstado());
     } else {
-      respuesta.setEstado("DISPONIBLE");
+      respuesta.setEstado(EstadoColeccion.DISPONIBLE);
     }
 
     return respuesta;
   }
 
-  private FiltroDtoSalida mapStrategyToDto(IFiltroStrategy strategy) {
-    FiltroDtoSalida dto = new FiltroDtoSalida();
+  private FiltroDTOSalida mapStrategyToDTO(IFiltroStrategy strategy) {
+    FiltroDTOSalida dto = new FiltroDTOSalida();
     dto.setTipoFiltro(strategy.getTipoFiltro().toString());
 
     if (strategy instanceof FiltroCategoria f)

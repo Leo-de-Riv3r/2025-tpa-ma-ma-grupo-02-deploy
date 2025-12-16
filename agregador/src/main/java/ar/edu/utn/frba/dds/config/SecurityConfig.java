@@ -21,18 +21,17 @@ public class SecurityConfig {
     return http
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
-            //modificar esto
+            // modificar esto
             // Permitir GET libremente
-            .requestMatchers(HttpMethod.GET, "/colecciones/**", "/actuator/**", "/graphql/**", "/ubicaciones/**").permitAll()
-            //new config
-            .requestMatchers(HttpMethod.GET, "/hechos/**").permitAll()
-            .requestMatchers(HttpMethod.POST, "/solicitudes", "/graphql/**", "/fuentes/refrescar-dinamica/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/colecciones/**", "/actuator/**", "/graphql/**", "/hechos/**",
+                "/ubicaciones/**")
+            .permitAll()
+            .requestMatchers(HttpMethod.POST, "/solicitudes", "/graphql/**", "/fuentes/refrescar-dinamica").permitAll()
             // Requerir autenticación para POST y PUT
             .requestMatchers(HttpMethod.POST, "/colecciones/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/colecciones/**").authenticated()
             .requestMatchers(HttpMethod.DELETE, "/colecciones/**").authenticated()
-            .anyRequest().authenticated()
-        )
+            .anyRequest().authenticated())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .build();

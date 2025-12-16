@@ -11,7 +11,7 @@ package ar.edu.utn.frba.dds.models.dtos;
 //    "updated_at": "2025-05-06T22:14:14.000000Z"
 //    }
 
-import ar.edu.utn.frba.dds.models.dtos.input.MultimediaDtoInput;
+import ar.edu.utn.frba.dds.models.dtos.input.MultimediaDTOEntrada;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +19,7 @@ import lombok.Data;
 
 @Data
 public class HechoDTOEntrada {
+  private Long id;
   private String titulo;
   private String descripcion;
   private String categoria;
@@ -30,6 +31,6 @@ public class HechoDTOEntrada {
   private LocalDateTime createdAt;
   @JsonProperty("updated_at")
   private LocalDateTime updatedAt;
-  private List<MultimediaDtoInput> multimedia;
+  private List<MultimediaDTOEntrada> multimedia;
   private String autor;
 }

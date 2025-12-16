@@ -1,8 +1,8 @@
 package ar.edu.utn.frba.dds.models.entities.utils;
 
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
-import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOOutput;
-import ar.edu.utn.frba.dds.models.dtos.output.SolicitudResumenDtoOutput;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudDTOSalida;
+import ar.edu.utn.frba.dds.models.dtos.output.SolicitudEliminacionDTOSalida;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Solicitud;
 import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
@@ -17,7 +17,7 @@ public class SolicitudConverter {
     this.hechoRepository = hechoRepository;
   }
 
-  public Solicitud fromDto(SolicitudDTOEntrada dtoSolicitud) {
+  public Solicitud fromDTO(SolicitudDTOEntrada dtoSolicitud) {
     if (dtoSolicitud.getTitulo() == null || dtoSolicitud.getTitulo().isBlank() ||
     dtoSolicitud.getTexto() == null || dtoSolicitud.getIdHecho() == null) {
       throw new IllegalArgumentException("Falta llenar campos obligatorios");
@@ -37,8 +37,8 @@ public class SolicitudConverter {
     return solicitud;
   }
 
-  public SolicitudResumenDtoOutput fromEntity(Solicitud solicitud) {
-    SolicitudResumenDtoOutput dto = new SolicitudResumenDtoOutput();
+  public SolicitudEliminacionDTOSalida fromEntity(Solicitud solicitud) {
+    SolicitudEliminacionDTOSalida dto = new SolicitudEliminacionDTOSalida();
     dto.setId(solicitud.getId());
     dto.setTitulo(solicitud.getTitulo());
     dto.setFecha(solicitud.getFecha());
@@ -48,8 +48,8 @@ public class SolicitudConverter {
     return dto;
   }
 
-  public SolicitudDTOOutput fromEntityDetails(Solicitud solicitud) {
-    SolicitudDTOOutput dto = new SolicitudDTOOutput();
+  public SolicitudDTOSalida fromEntityDetails(Solicitud solicitud) {
+    SolicitudDTOSalida dto = new SolicitudDTOSalida();
     dto.setId(solicitud.getId());
     dto.setIdHecho(solicitud.getHecho().getId());
     dto.setTitulo(solicitud.getTitulo());

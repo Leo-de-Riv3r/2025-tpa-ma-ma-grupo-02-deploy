@@ -42,7 +42,8 @@ public class WebApiCallerService {
       // Primer intento con el token actual
       return apiCall.execute(accessToken);
     } catch (WebClientResponseException e) {
-      if ((e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) && refreshToken != null) {
+      if ((e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN)
+          && refreshToken != null) {
         try {
           // Token expirado, intentar refresh
           AuthResponseDTO newTokens = refreshToken(refreshToken);
@@ -66,14 +67,16 @@ public class WebApiCallerService {
    * Ejecuta una llamada HTTP GET
    */
   public <T> T get(String url, Class<T> responseType) {
-    return executeWithTokenRetry(accessToken -> webClient.get().uri(url).header("Authorization", "Bearer " + accessToken).retrieve().bodyToMono(responseType).block());
+    return executeWithTokenRetry(accessToken -> webClient.get().uri(url)
+        .header("Authorization", "Bearer " + accessToken).retrieve().bodyToMono(responseType).block());
   }
 
   /**
    * Ejecuta una llamada HTTP GET que retorna una lista
    */
   public <T> java.util.List<T> getList(String url, Class<T> responseType) {
-    return executeWithTokenRetry(accessToken -> webClient.get().uri(url).header("Authorization", "Bearer " + accessToken).retrieve().bodyToFlux(responseType).collectList().block());
+    return executeWithTokenRetry(accessToken -> webClient.get().uri(url)
+        .header("Authorization", "Bearer " + accessToken).retrieve().bodyToFlux(responseType).collectList().block());
   }
 
   /**
@@ -81,7 +84,8 @@ public class WebApiCallerService {
    */
   public <T> T getWithAuth(String url, String accessToken, Class<T> responseType) {
     try {
-      return webClient.get().uri(url).header("Authorization", "Bearer " + accessToken).retrieve().bodyToMono(responseType).block();
+      return webClient.get().uri(url).header("Authorization", "Bearer " + accessToken).retrieve()
+          .bodyToMono(responseType).block();
     } catch (Exception e) {
       throw new RuntimeException("Error en llamada al API: " + e.getMessage(), e);
     }
@@ -91,14 +95,18 @@ public class WebApiCallerService {
    * Ejecuta una llamada HTTP POST
    */
   public <T> T post(String url, Object body, Class<T> responseType) {
-    return executeWithTokenRetry(accessToken -> webClient.post().uri(url).header("Authorization", "Bearer " + accessToken).bodyValue(body).retrieve().bodyToMono(responseType).block());
+    return executeWithTokenRetry(accessToken -> webClient.post().uri(url)
+        .header("Authorization", "Bearer " + accessToken).bodyValue(body).retrieve().bodyToMono(responseType).block());
   }
 
   /**
    * Ejecuta una llamada HTTP PUT
    */
   public <T> T put(String url, Object body, Class<T> responseType) {
-    return executeWithTokenRetry(accessToken -> webClient.put().uri(url).header("Authorization", "Bearer " + accessToken).bodyValue(body).retrieve().bodyToMono(responseType).doOnSuccess(r -> System.out.println("✅ PUT ejecutado correctamente")).doOnError(e -> System.err.println("❌ Error en PUT: " + e.getMessage())).block());
+    return executeWithTokenRetry(
+        accessToken -> webClient.put().uri(url).header("Authorization", "Bearer " + accessToken).bodyValue(body)
+            .retrieve().bodyToMono(responseType).doOnSuccess(r -> System.out.println("✅ PUT ejecutado correctamente"))
+            .doOnError(e -> System.err.println("❌ Error en PUT: " + e.getMessage())).block());
   }
 
   /**
@@ -106,7 +114,8 @@ public class WebApiCallerService {
    */
   public void delete(String url) {
     executeWithTokenRetry(accessToken -> {
-      webClient.delete().uri(url).header("Authorization", "Bearer " + accessToken).retrieve().bodyToMono(Void.class).block();
+      webClient.delete().uri(url).header("Authorization", "Bearer " + accessToken).retrieve().bodyToMono(Void.class)
+          .block();
       return null;
     });
   }
@@ -116,7 +125,8 @@ public class WebApiCallerService {
    */
   private AuthResponseDTO refreshToken(String refreshToken) {
     try {
-      AuthResponseDTO response = webClient.post().uri(authServiceUrl + "/refresh").header("Authorization", "Bearer " + refreshToken).retrieve().bodyToMono(AuthResponseDTO.class).block();
+      AuthResponseDTO response = webClient.post().uri(authServiceUrl + "/refresh")
+          .header("Authorization", "Bearer " + refreshToken).retrieve().bodyToMono(AuthResponseDTO.class).block();
 
       // Actualizar tokens en sesión
       updateTokensInSession(response.getAccessToken(), response.getRefreshToken());

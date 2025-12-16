@@ -1,8 +1,6 @@
 package ar.edu.utn.frba.dds.models.dtos.input;
 
 import ar.edu.utn.frba.dds.models.dtos.FuenteDTO;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Set;
 import lombok.Data;
 
@@ -12,6 +10,5 @@ public class ColeccionDTOEntrada {
   private String descripcion;
   private Set<FuenteDTO> fuentes;
   private String algoritmoConsenso;
-  @JsonProperty("criterios")
   private Set<FiltroDTOEntrada> criterios;
 }

@@ -1,11 +1,20 @@
 package ar.edu.utn.frba.dds.config;
 
+import static org.springframework.http.HttpStatus.CONFLICT;
 import ar.edu.utn.frba.dds.models.AuthResponseDTO;
 import ar.edu.utn.frba.dds.models.RolesPermisosDTO;
-import ar.edu.utn.frba.dds.services.MetamapaApiService;
+import ar.edu.utn.frba.dds.services.WebApiCallerService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,15 +23,89 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Component
 public class AuthProvider implements AuthenticationProvider {
-  private final MetamapaApiService externalAuthService;
+  private final WebApiCallerService webApiCallerService;
+  private final WebClient webClient;
+  private final RestTemplate restTemplate;
+  private final String authServiceUrl;
 
-  public AuthProvider(MetamapaApiService externalAuthService) {
-    this.externalAuthService = externalAuthService;
+  public AuthProvider(
+      WebApiCallerService webApiCallerService,
+      WebClient.Builder webClientBuilder,
+      RestTemplate restTemplate,
+      @Value("${auth.service.url}") String authServiceUrl) {
+    this.webApiCallerService = webApiCallerService;
+    this.webClient = webClientBuilder.build();
+    this.restTemplate = restTemplate;
+    this.authServiceUrl = authServiceUrl;
+  }
+
+  public AuthResponseDTO login(String username, String password) {
+    try {
+      Map<String, String> body = new HashMap<>();
+      body.put("username", username);
+      body.put("password", password);
+      ResponseEntity<AuthResponseDTO> response = restTemplate.postForEntity(
+          authServiceUrl + "/login",
+          body,
+          AuthResponseDTO.class);
+      return response.getBody();
+    } catch (WebClientResponseException e) {
+      if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+        return null;
+      }
+      throw new RuntimeException("Error en el servicio de autenticación: " + e.getMessage(), e);
+    } catch (Exception e) {
+      throw new RuntimeException("Error de conexión con el servicio de autenticación: " + e.getMessage(), e);
+    }
+  }
+
+  public AuthResponseDTO loginOAuth(String username, String provider) {
+    Map<String, String> body = new HashMap<>();
+    body.put("username", username);
+    body.put("provider", provider);
+
+    return webClient.post()
+        .uri(authServiceUrl + "/oauth-login")
+        .bodyValue(body)
+        .retrieve()
+        .bodyToMono(AuthResponseDTO.class)
+        .block();
+  }
+
+  public Boolean register(String username, String password) {
+    Map<String, String> body = new HashMap<>();
+    body.put("username", username);
+    body.put("password", password);
+    ResponseEntity<Void> response = restTemplate.postForEntity(
+        authServiceUrl + "/register",
+        body,
+        Void.class);
+    if (response.getStatusCode() == HttpStatus.OK) {
+      return true;
+    } else if (response.getStatusCode() == CONFLICT) {
+      return false;
+    }
+    return false;
+  }
+
+  public RolesPermisosDTO getRolesPermisos(String accessToken) {
+    try {
+      RolesPermisosDTO response = webApiCallerService.getWithAuth(
+          authServiceUrl + "/user/roles-permisos",
+          accessToken,
+          RolesPermisosDTO.class);
+      return response;
+    } catch (Exception e) {
+      throw new RuntimeException("Error al obtener roles y permisos: " + e.getMessage(), e);
+    }
   }
 
   @Override
@@ -30,7 +113,7 @@ public class AuthProvider implements AuthenticationProvider {
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();
     try {
-      AuthResponseDTO authResponse = externalAuthService.login(username, password);
+      AuthResponseDTO authResponse = login(username, password);
 
       if (authResponse == null) {
         throw new BadCredentialsException("Usuario o contraseña inválidos");
@@ -43,7 +126,7 @@ public class AuthProvider implements AuthenticationProvider {
       request.getSession().setAttribute("refreshToken", authResponse.getRefreshToken());
       request.getSession().setAttribute("username", username);
 
-      RolesPermisosDTO rolesPermisos = externalAuthService.getRolesPermisos(authResponse.getAccessToken());
+      RolesPermisosDTO rolesPermisos = getRolesPermisos(authResponse.getAccessToken());
 
       request.getSession().setAttribute("rol", rolesPermisos.getRol());
       request.getSession().setAttribute("permisos", rolesPermisos.getPermisos());

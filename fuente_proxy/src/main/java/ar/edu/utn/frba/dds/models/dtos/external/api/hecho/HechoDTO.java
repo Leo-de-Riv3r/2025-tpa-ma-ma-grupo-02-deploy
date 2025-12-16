@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class HechoDTO {
-  //private Integer id;
+  private Long id;
   private String titulo;
   private String descripcion;
   private String categoria;

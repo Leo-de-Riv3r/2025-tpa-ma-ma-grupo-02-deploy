@@ -1,8 +1,7 @@
 package ar.edu.utn.frba.dds.controllers;
 
-import ar.edu.utn.frba.dds.services.MetamapaApiService;
+import ar.edu.utn.frba.dds.config.AuthProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,11 +12,8 @@ import org.springframework.web.client.HttpClientErrorException;
 
 @Controller
 public class LoginController {
-  @Value("${auth.service.url}")
-  private String authServiceUrl;
-
   @Autowired
-  private MetamapaApiService metamapaApiService;
+  private AuthProvider authProvider;
 
   @GetMapping("/login")
   public String login() {
@@ -25,10 +21,12 @@ public class LoginController {
   }
 
   @PostMapping("/registrar")
-  public String procesarRegistro(@RequestParam String username,
-                                 @RequestParam String password, Model model) {
+  public String procesarRegistro(
+      @RequestParam String username,
+      @RequestParam String password,
+      Model model) {
     try {
-      Boolean pudoRegistrar = metamapaApiService.register(username, password);
+      authProvider.register(username, password);
       return "redirect:/login?registrado";
     } catch (HttpClientErrorException e) {
       if (e.getStatusCode() == HttpStatus.CONFLICT) {

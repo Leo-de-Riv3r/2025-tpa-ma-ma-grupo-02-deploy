@@ -1,12 +1,10 @@
 package ar.edu.utn.frba.dds.models;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Data;
 
 @Data
-public class HechoDetallesDto {
-
+public class HechoDetallesDTO {
 
   private Long id;
   private String titulo;
@@ -16,9 +14,9 @@ public class HechoDetallesDto {
   private Double longitud;
   private String provincia;
   private String municipio;
-  private String departamento;
+  private String departamento;  
   private String fechaAcontecimiento;
   private String nombreAutor;
-  private List<MultimediaDto> multimedia;
+  private List<MultimediaDTO> multimedia;
 
 }

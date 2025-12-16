@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Setter @Getter
-public class HechoDetallesDtoSalida {
+public class HechoDetallesDTOSalida {
   private Long id;
   private String titulo;
   private String descripcion;
@@ -20,6 +20,6 @@ public class HechoDetallesDtoSalida {
   private TipoFuente tipoOrigen;
   private LocalDateTime fechaAcontecimiento;
   private LocalDateTime fechaCarga;
-  private List<MultimediaDtoOutput> multimedia;
+  private List<MultimediaDTOSalida> multimedia;
   private String nombreAutor;
 }

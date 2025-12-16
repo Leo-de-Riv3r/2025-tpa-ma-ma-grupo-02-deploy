@@ -23,6 +23,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(UsernameNotFoundException.class)
   public ResponseEntity<String> handleUsernameNotFound(UsernameNotFoundException ex) {
+    log.error("ERROR_404 - {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
 
@@ -31,6 +32,7 @@ public class GlobalExceptionHandler {
     log.error("ERROR_409 - {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
   }
+
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<String> handleUsernameNotFound(BadCredentialsException ex) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
@@ -44,8 +46,6 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
     log.error("ERROR_5xx - {}", ex.getMessage());
-    log.error(ex.getClass().toString());
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error","Error inesperado"));
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error inesperado"));
   }
-
 }

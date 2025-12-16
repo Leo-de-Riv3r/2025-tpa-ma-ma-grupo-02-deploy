@@ -12,13 +12,8 @@ import java.util.Set;
 public class ConsensoMayorSimple extends IConsensoStrategy {
   @Override
   public Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes) {
-    Integer mitad = fuentes.size() / 2;
-    return cumpleConsensoBase(hecho, fuentes, mitad);
-  }
-
-  @Override
-  public Integer getCantMinima(Integer numFuentes) {
-    return (numFuentes / 2) + 1;
+    Integer mayoria = (fuentes.size() / 2) + 1;
+    return cumpleConsensoBase(hecho, fuentes, mayoria);
   }
 
   @Override
@@ -26,4 +21,3 @@ public class ConsensoMayorSimple extends IConsensoStrategy {
     return TipoAlgoritmo.MAYORIA_SIMPLE;
   }
 }
-

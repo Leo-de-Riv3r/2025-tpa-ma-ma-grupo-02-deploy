@@ -1,3 +1,10 @@
+
+type FuenteDTOOutput{
+    id: ID!
+    tipoFuente : String
+    url: String
+}
+
 type FiltroDTOSalida {
     tipoFiltro: String
     valor: String
@@ -6,33 +13,19 @@ type FiltroDTOSalida {
     fechaFin: String
 }
 
-type FuenteDtoOutput{
-    id: ID!
-    tipoFuente : String
-    url: String
-}
-
-type CriterioDtoOutput {
-    tipoCriterio: String
-    valor : String
-    tipoFuente : String
-    fechaInicio : String
-    fechaFin : String
-}
-
 type ColeccionDTOSalidaGQL {
     id: ID!
     titulo: String
     descripcion: String
     cantSolicitudesSpam: Int
-    fuentes: [FuenteDtoOutput]
+    fuentes: [FuenteDTOOutput]
     criterios: [FiltroDTOSalida]
     algoritmoConsenso: String
-    hechos : PaginacionDtoHechoDtoSalida
-    estado : String
+    hechos : PaginacionDTOHechoDTOSalida
+    estado: String
 }
 
-type HechoDtoSalida {
+type HechoDTOSalida {
     id: ID!
     titulo: String
     descripcion: String
@@ -45,22 +38,23 @@ type HechoDtoSalida {
     tipoFuente: String
     nombreAutor: String
     fechaAcontecimiento: String
-    multimedia: MultimediaDtoOutput
+    multimedia: MultimediaDTOOutput
 }
 
-type PaginacionDtoHechoDtoSalida {
-    data: [HechoDtoSalida]
+# Basado en PaginacionDTO<HechoDTOSalida>
+type PaginacionDTOHechoDTOSalida {
+    data: [HechoDTOSalida]
     currentPage: Int
     totalPages: Int
 }
 
-type MultimediaDtoOutput{
+type MultimediaDTOOutput{
     nombre: String
     ruta: String
     formato: String
 }
 
-type HechoDetallesDtoSalida {
+type HechoDetallesDTOSalida {
     id: ID!
     titulo: String
     descripcion: String
@@ -73,11 +67,11 @@ type HechoDetallesDtoSalida {
     tipoOrigen: String
     fechaAcontecimiento: String
     fechaCarga: String
-    multimedia: [MultimediaDtoOutput]
+    multimedia: [MultimediaDTOOutput]
     nombreAutor: String
 }
 
-type SolicitudDtoSalida {
+type SolicitudDTOSalida {
     id: ID!
     titulo: String
     motivo: String
@@ -88,8 +82,8 @@ type SolicitudDtoSalida {
     idHecho: Int
 }
 
-type PaginacionDtoSolicitudDtoSalida {
-    data: [SolicitudDtoSalida]
+type PaginacionDTOSolicitudDTOSalida {
+    data: [SolicitudDTOSalida]
     currentPage: Int
     totalPages: Int
 }
@@ -133,22 +127,22 @@ type Query {
         page: Int
         curados: Boolean
         filtro: HechosFiltroInput
-    ) : PaginacionDtoHechoDtoSalida
+    ) : PaginacionDTOHechoDTOSalida
 
 
     hecho(
         id: ID!
-    ) : HechoDetallesDtoSalida
+    ) : HechoDetallesDTOSalida
 
     solicitudes(
         page: Int
         pendientes: Boolean
         filterByCreator: Boolean
-    ) : PaginacionDtoSolicitudDtoSalida
+    ) : PaginacionDTOSolicitudDTOSalida
 
     solicitud(
         id: ID!
-    ) : SolicitudDtoSalida
+    ) : SolicitudDTOSalida
 }
 
 type Mutation {

@@ -1,21 +1,16 @@
 package ar.edu.utn.frba.dds.services;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.queryParam;
-
 import ar.edu.utn.frba.dds.models.Coleccion;
-import ar.edu.utn.frba.dds.models.ColeccionDetallesDto;
-import ar.edu.utn.frba.dds.models.ColeccionHechosDto;
-import ar.edu.utn.frba.dds.models.ColeccionNuevaDto;
+import ar.edu.utn.frba.dds.models.ColeccionHechosDTO;
+import ar.edu.utn.frba.dds.models.ColeccionNuevaDTO;
 
-import ar.edu.utn.frba.dds.models.FiltrosDto;
-import ar.edu.utn.frba.dds.models.HechoDetallesDto;
-import ar.edu.utn.frba.dds.models.PaginacionDtoHechoDtoSalida;
-import ar.edu.utn.frba.dds.models.ResumenActividadDto;
-import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDto;
-import ar.edu.utn.frba.dds.models.SolicitudEliminacionDto;
-import ar.edu.utn.frba.dds.models.SolicitudModificacionDto;
-import ar.edu.utn.frba.dds.models.SolicitudesModificacionPaginado;
-import ar.edu.utn.frba.dds.models.SolicitudesPaginasDto;
+import ar.edu.utn.frba.dds.models.FiltrosDTO;
+import ar.edu.utn.frba.dds.models.HechoDetallesDTO;
+import ar.edu.utn.frba.dds.models.ResumenActividadDTO;
+import ar.edu.utn.frba.dds.models.SolicitudEliminacionDetallesDTO;
+import ar.edu.utn.frba.dds.models.SolicitudEliminacionDTO;
+import ar.edu.utn.frba.dds.models.SolicitudEliminacionPaginadaDTO;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,168 +21,130 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class AgregadorService {
-  private final MetamapaApiService metamapaApiService;
-  private final HttpGraphQlClient gqlAgregadorClient;
-  @Value("${agregador.service.url}")
-  private String urlBase;
-  @Value("${fuenteDinamica.service.url}")
-  private String fuenteDinamicaUrl;
+  private final WebApiCallerService webApiCallerService;
   private final RestTemplate restTemplate;
-  @Value("${fuenteEstatica.service.url}")
-  private String fuenteEstaticaUrl;
+  private final HttpGraphQlClient gqlAgregadorClient;
+  private final String agregadorServiceUrl;
 
-  @Value("${fuenteProxy.service.url}")
-  private String fuenteProxyUrl;
-  public AgregadorService(MetamapaApiService metamapaApiService, HttpGraphQlClient gqlAgregadorClient, RestTemplate restTemplate) {
-    this.metamapaApiService = metamapaApiService;
-    this.gqlAgregadorClient = gqlAgregadorClient;
+  public AgregadorService(
+      WebApiCallerService webApiCallerService,
+      RestTemplate restTemplate,
+      HttpGraphQlClient gqlAgregadorClient,
+      @Value("${agregador.service.url}") String agregadorServiceUrl) {
+    this.webApiCallerService = webApiCallerService;
     this.restTemplate = restTemplate;
+    this.gqlAgregadorClient = gqlAgregadorClient;
+    this.agregadorServiceUrl = agregadorServiceUrl;
   }
 
   public List<Coleccion> obtenerColecciones() {
-      return gqlAgregadorClient.documentName("getColecciones")
-          .retrieve("colecciones")
-          .toEntityList(Coleccion.class).block();
+    return gqlAgregadorClient.documentName("getColecciones")
+        .retrieve("colecciones")
+        .toEntityList(Coleccion.class).block();
   }
 
-  public ColeccionHechosDto getHechosColeccion(String idColeccion, FiltrosDto filtros, int page) {
+  public ColeccionHechosDTO getHechosColeccion(String idColeccion, FiltrosDTO filtros, int page) {
     return gqlAgregadorClient.documentName("getHechosColeccion")
         .variable("id", idColeccion)
         .variable("page", page)
         .variable("filtro", filtros)
-        .variable("curados", (filtros != null && filtros.getCurados() != null && filtros.getCurados().equalsIgnoreCase("Si") ))
+        .variable("curados",
+            (filtros != null && filtros.getCurados() != null && filtros.getCurados().equalsIgnoreCase("Si")))
         .retrieve("coleccion")
-        .toEntity(ColeccionHechosDto.class).block();
+        .toEntity(ColeccionHechosDTO.class).block();
   }
 
-  public void crearColeccion(ColeccionNuevaDto coleccionNueva) {
-    if (coleccionNueva.getAlgoritmoConsenso().isBlank()) coleccionNueva.setAlgoritmoConsenso(null);
-
-    if (coleccionNueva.getFuentes() != null) {
-      coleccionNueva.getFuentes().forEach(f -> {
-        if (f.getTipoFuente().equals("DINAMICA")) {
-          f.setUrl(fuenteDinamicaUrl);
-        } else if (f.getTipoFuente().equals("ESTATICA")){
-          f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
-        } else if(f.getTipoFuente().equals("PROXY_METAMAPA")) {
-          f.setUrl(fuenteProxyUrl);
-        }
-    });
-
-    }
-
-    metamapaApiService.crearColeccion(coleccionNueva);
+  public void crearColeccion(ColeccionNuevaDTO coleccionDTO) {
+    webApiCallerService.post(agregadorServiceUrl + "/colecciones", coleccionDTO, Void.class);
   }
 
   public Coleccion obtenerColeccionPorId(String idColeccion) {
     ResponseEntity<Coleccion> response = restTemplate.exchange(
-        urlBase + "/colecciones/" + idColeccion,
+        agregadorServiceUrl + "/colecciones/" + idColeccion,
         HttpMethod.GET,
         null,
-        Coleccion.class
-    );
+        Coleccion.class);
     return response.getBody();
   }
 
-  public void actualizarColeccion(String idColeccion, ColeccionNuevaDto coleccion) {
-    if (coleccion.getAlgoritmoConsenso() == null) coleccion.setAlgoritmoConsenso(null);
-
-    if (coleccion.getFuentes() != null) {
-      coleccion.getFuentes().forEach(f -> {
-        if (f.getTipoFuente().equals("DINAMICA")) {
-          f.setUrl(fuenteDinamicaUrl);
-        } else if (f.getTipoFuente().equals("PROXY_METAMAPA")) {
-          f.setUrl(fuenteProxyUrl);
-        } else if (f.getTipoFuente().equals("ESTATICA")){
-          if (!f.getUrl().startsWith("http")) f.setUrl(fuenteEstaticaUrl + "/" + f.getUrl());
-        }
-      });
-    }
-    metamapaApiService.actualizarColeccion(idColeccion, coleccion);
+  public void actualizarColeccion(String idColeccion, ColeccionNuevaDTO coleccion) {
+    webApiCallerService.put(agregadorServiceUrl + "/colecciones/" + idColeccion, coleccion, Void.class);
   }
 
   public void eliminarColeccion(String idColeccion) {
-    metamapaApiService.eliminarColeccion(idColeccion);
+    webApiCallerService.delete(agregadorServiceUrl + "/colecciones/" + idColeccion);
   }
 
-  public HechoDetallesDto getDetallesHecho(Long idHecho) {
+  public HechoDetallesDTO getDetallesHecho(Long idHecho) {
     return gqlAgregadorClient.documentName("getHechoById")
         .variable("id", idHecho)
         .retrieve("hecho")
-        .toEntity(HechoDetallesDto.class).block();
+        .toEntity(HechoDetallesDTO.class).block();
   }
 
-  public void enviarSolicitud(SolicitudEliminacionDto solicitud) {
-    ResponseEntity<Void> response = restTemplate.exchange(
-        urlBase + "/solicitudes",
+  public ResumenActividadDTO obtenerResumenActividad() {
+    return webApiCallerService.get(agregadorServiceUrl + "/resumen", ResumenActividadDTO.class);
+  }
+
+  public void enviarSolicitudEliminacion(SolicitudEliminacionDTO solicitud) {
+    restTemplate.exchange(
+        agregadorServiceUrl + "/solicitudes",
         HttpMethod.POST,
         new HttpEntity<>(solicitud),
-        Void.class
-    );
+        Void.class);
   }
 
-  public ResumenActividadDto obtenerResumenActividad() {
-    return metamapaApiService.obtenerResumenActividad();
+  public SolicitudEliminacionPaginadaDTO obtenerSolicitudesEliminacion(int page, Boolean pendientes,
+      Boolean filterByCreator) {
+    String url = UriComponentsBuilder.fromUriString(agregadorServiceUrl)
+        .path("/solicitudes")
+        .queryParam("page", page)
+        .queryParam("pendientes", pendientes)
+        .queryParam("filterByCreator", filterByCreator)
+        .build()
+        .toUriString();
+
+    return webApiCallerService.get(url, SolicitudEliminacionPaginadaDTO.class);
   }
 
-  public SolicitudesPaginasDto obtenerSolicitudes(int page, Boolean pendientes) {
-    return metamapaApiService.obtenerSolicitudes(page, pendientes);
-  }
-
-  public SolicitudEliminacionDetallesDto obtenerSolicitud(Long idSolicitud) {
+  public SolicitudEliminacionDetallesDTO obtenerSolicitudEliminacion(Long idSolicitud) {
     return gqlAgregadorClient.documentName("getSolicitudEliminacion")
         .variable("id", idSolicitud)
         .retrieve("solicitud")
-        .toEntity(SolicitudEliminacionDetallesDto.class).block();
+        .toEntity(SolicitudEliminacionDetallesDTO.class).block();
   }
 
-  public void aceptarSolicitud(Long idSolicitud) {
-    metamapaApiService.aceptarSolicitud(idSolicitud);
+  // public SolicitudEliminacionDetallesDTO obtenerSolicitud(Long idSolicitud) {
+  // return webApiCallerService.get(agregadorServiceUrl + "/solicitudes/" +
+  // idSolicitud, SolicitudEliminacionDetallesDTO.class);
+  // }
+
+  public void aceptarSolicitudEliminacion(Long idSolicitud) {
+    webApiCallerService.put(agregadorServiceUrl + "/solicitudes/" + idSolicitud + "/aceptar", Void.class, Void.class);
   }
 
-  public void rechazarSolicitud(Long idSolicitud) {
-    metamapaApiService.rechazarSolicitud(idSolicitud);
+  public void rechazarSolicitudEliminacion(Long idSolicitud) {
+    webApiCallerService.put(agregadorServiceUrl + "/solicitudes/" + idSolicitud + "/denegar", Void.class, Void.class);
   }
-
-  public SolicitudesPaginasDto obtenerSolicitudesCreadasPor(int page, Boolean pendientes) {
-    return metamapaApiService.obtenerSolicitudesCreadasPor(page, pendientes);
-//    return httpGraphQlClient.documentName("getSolicitudesEliminacionDeUsuario")
-//        .variable("page", page)
-//        .variable("pendientes", pendientes)
-//        .variable("filterByCreator", true)
-//        .retrieve("solicitudes")
-//        .toEntity(SolicitudesPaginasDto.class).block();
-  }
-
-  public void modificarHecho(SolicitudModificacionDto solicitud) {
-    metamapaApiService.modificarHecho(solicitud);
-  }
-
-  public SolicitudesModificacionPaginado obtenerSolicitudesModificacion(int page) {
-    return metamapaApiService.obtenerSolicitudesModificacion(page);
-  }
-
-  public void aceptarSolicitudModificacion(Long idSolicitud) {
-    metamapaApiService.aceptarSolicitudModificacion(idSolicitud);
-  }
-
 
   public List<String> obtenerProvincias() {
     try {
       ResponseEntity<List<String>> response = restTemplate.exchange(
-          urlBase + "/ubicaciones/provincias",
+          agregadorServiceUrl + "/ubicaciones/provincias",
           HttpMethod.GET,
           null,
           new ParameterizedTypeReference<List<String>>() {
           });
       return response.getBody();
     } catch (Exception e) {
+      log.error("Error al obtener provincias: ", e);
       return new ArrayList<>();
     }
   }
@@ -195,7 +152,7 @@ public class AgregadorService {
   public List<String> obtenerMunicipios() {
     try {
       return restTemplate.exchange(
-          urlBase + "/ubicaciones/municipios",
+          agregadorServiceUrl + "/ubicaciones/municipios",
           HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
           }).getBody();
     } catch (Exception e) {
@@ -206,7 +163,7 @@ public class AgregadorService {
   public List<String> obtenerDepartamentos() {
     try {
       return restTemplate.exchange(
-          urlBase + "/ubicaciones/departamentos",
+          agregadorServiceUrl + "/ubicaciones/departamentos",
           HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
           }).getBody();
     } catch (Exception e) {

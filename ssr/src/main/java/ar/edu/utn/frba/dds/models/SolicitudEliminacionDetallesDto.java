@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class SolicitudEliminacionDetallesDto {
+public class SolicitudEliminacionDetallesDTO {
   private Long id;
   private String titulo;
   private String motivo;

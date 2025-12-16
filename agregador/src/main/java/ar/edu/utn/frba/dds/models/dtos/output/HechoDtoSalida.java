@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Setter @Getter
-public class HechoDtoSalida {
+public class HechoDTOSalida {
   private Long id;
   private String titulo;
   private String categoria;

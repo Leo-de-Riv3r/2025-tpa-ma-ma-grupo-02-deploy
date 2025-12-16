@@ -1,13 +1,11 @@
 package ar.edu.utn.frba.dds.models;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Data
-public class FiltrosDto {
+public class FiltrosDTO {
   String curados;
   String categoria;
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

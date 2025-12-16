@@ -4,6 +4,6 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ColeccionesDto {
+public class ColeccionesDTO {
   public List<Coleccion> colecciones;
 }

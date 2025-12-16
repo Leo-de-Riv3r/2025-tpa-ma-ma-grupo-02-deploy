@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class SolicitudResumenDto {
+public class SolicitudResumenDTO {
   private Long id;
   private String titulo;
   private LocalDateTime fecha;
