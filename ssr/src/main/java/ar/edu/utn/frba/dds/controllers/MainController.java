@@ -155,7 +155,7 @@ public class MainController {
   public String mostrarRevisionHechos(Model model) {
     List<SolicitudHechoDTO> solicitudesHecho = fuenteDinamicaService.obtenerSolicitudesHecho();
     model.addAttribute("solicitudesHechos", solicitudesHecho);
-    return "/revisionHechos";
+    return "revisionHechos";
   }
 
   @GetMapping("/panel-control/revisionHechos/{idHecho}")
@@ -220,7 +220,7 @@ public class MainController {
     model.addAttribute("hechoId", idHecho);
     model.addAttribute("revisionHechoDTO", revisionHechoDTO);
     model.addAttribute("accionHecho", "rechazar");
-    return "/subirComentariosSolicitud";
+    return "subirComentariosSolicitud";
   }
 
   @PreAuthorize("hasRole('ADMINISTRADOR')")
@@ -232,7 +232,7 @@ public class MainController {
     model.addAttribute("hechoId", idHecho);
     model.addAttribute("revisionHechoDTO", revisionHechoDTO);
     model.addAttribute("accionHecho", "aceptarConSugerencia");
-    return "/subirComentariosSolicitud";
+    return "subirComentariosSolicitud";
   }
 
   @PostMapping("/panel-control/revisionHechos/{idHecho}/rechazar")
