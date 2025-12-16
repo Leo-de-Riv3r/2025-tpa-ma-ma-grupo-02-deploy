@@ -35,8 +35,8 @@
               <div class="mb-4 p-3 bg-light rounded border border-dashed">
                 <label class="form-label fw-bold small text-uppercase text-muted">Modo de Navegación</label>
                 <select th:field="*{curados}" class="form-select border-primary" onchange="this.form.submit()">
-                  <option value="No">Irrestricta (Todos)</option>
-                  <option value="Si">Curada (Solo Consensuados)</option>
+                  <option value="false">Irrestricta (Todos)</option>
+                  <option value="true">Curada (Solo Consensuados)</option>
                 </select>
                 <div class="form-text small mt-2">
                   <i class="uil uil-info-circle"></i> La navegación curada aplica algoritmos de consenso.

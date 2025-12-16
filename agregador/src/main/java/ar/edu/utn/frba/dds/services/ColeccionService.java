@@ -324,8 +324,6 @@ public class ColeccionService {
       if (navegacionCurada) {
         if (coleccion.getAlgoritmoConsenso() != null) {
           spec = spec.and(HechoSpecs.deConsenso(coleccion.getAlgoritmoConsenso().getId()));
-        } else {
-          return new PaginacionDTOSalida<>(new ArrayList<>(), 1, 0);
         }
       } else {
         List<String> fuenteIds = coleccion.getFuentes().stream().map(Fuente::getId).toList();
