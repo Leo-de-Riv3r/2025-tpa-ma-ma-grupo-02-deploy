@@ -23,27 +23,25 @@ import org.springframework.web.multipart.MultipartFile;
 @CrossOrigin(origins = "*")
 public class FuentesController {
   private IFuenteEstaticaService fuenteEstaticaService;
+
   public FuentesController(IFuenteEstaticaService fuenteEstaticaService) {
     this.fuenteEstaticaService = fuenteEstaticaService;
   }
 
   @GetMapping("/{id}/hechos")
-  public List<Hecho> getHechos(
-      @PathVariable(required = true) Long id
-      ,@RequestParam(value = "page", required = false, defaultValue = "1") int page,
-      @RequestParam(value = "per_page", required = false, defaultValue = "2000") int perPage) {
-    return fuenteEstaticaService.getHechos(id, page, perPage);
+  public List<Hecho> getHechos(@PathVariable(required = true) Long id) {
+    return fuenteEstaticaService.getHechos(id);
   }
 
   @PostMapping("")
-  public FuenteCsvDTOOutput crearFuenteCsv (@RequestParam("file") MultipartFile file) throws IOException {
+  public FuenteCsvDTOOutput crearFuenteCsv(@RequestParam("file") MultipartFile file) throws IOException {
     return fuenteEstaticaService.crearNuevaFuente(file);
   }
 
   @PostMapping("/validar-csv")
   public ResponseEntity<Map<String, Object>> validarCsv(@RequestParam("file") MultipartFile file) {
-    Map<String,Object> response = fuenteEstaticaService.validarCsv(file);
-    if(response.get("error") == null) {
+    Map<String, Object> response = fuenteEstaticaService.validarCsv(file);
+    if (response.get("error") == null) {
       return ResponseEntity.status(HttpStatus.OK).body(response);
     } else {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -51,7 +49,7 @@ public class FuentesController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<String> eliminarFuente(@PathVariable Long id){
+  public ResponseEntity<String> eliminarFuente(@PathVariable Long id) {
     fuenteEstaticaService.eliminarFuente(id);
     return ResponseEntity.ok("Operacion completada");
   }

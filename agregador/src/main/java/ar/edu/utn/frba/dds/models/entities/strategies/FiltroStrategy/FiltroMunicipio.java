@@ -1,6 +1,10 @@
 package ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 
+import java.util.Optional;
+
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Lugar;
+import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +22,7 @@ public class FiltroMunicipio extends IFiltroStrategy {
 
   public FiltroMunicipio(String municipio) {
     if (municipio.isBlank()) {
-      throw new IllegalArgumentException("Municipio no puede ser nula");
+      throw new IllegalArgumentException("Municipio no puede ser nulo");
     }
     this.tipoFiltro = TipoFiltro.FILTRO_MUNICIPIO;
     this.municipio = municipio;
@@ -26,12 +30,10 @@ public class FiltroMunicipio extends IFiltroStrategy {
 
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
-
-    if (hecho.getUbicacion() == null)
-      return false;
-
-    String municipioHecho = hecho.getUbicacion().getLugar() != null ? hecho.getUbicacion().getLugar().getMunicipio()
-        : null;
+    String municipioHecho = Optional.ofNullable(hecho.getUbicacion())
+        .map(Ubicacion::getLugar)
+        .map(Lugar::getMunicipio)
+        .orElse(null);
     if (municipioHecho != null)
       return municipioHecho.toLowerCase().contains(municipio.toLowerCase());
     else

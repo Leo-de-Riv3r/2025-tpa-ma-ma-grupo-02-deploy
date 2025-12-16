@@ -3,11 +3,9 @@ package ar.edu.utn.frba.dds.models.repositories;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 
-import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -20,6 +18,4 @@ public interface IFuenteRepository extends JpaRepository<Fuente, String> {
 
   @Query("SELECT f FROM Fuente f JOIN f.hechos h WHERE h.id = :hechoId")
   List<Fuente> findFuentesByHechoId(@Param("hechoId") Long hechoId);
-
-
 }

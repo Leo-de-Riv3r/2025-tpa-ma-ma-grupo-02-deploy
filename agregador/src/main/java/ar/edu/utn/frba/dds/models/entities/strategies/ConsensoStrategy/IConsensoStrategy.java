@@ -21,47 +21,48 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "algoritmo_consenso")
-@Getter
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="tipo")
+@DiscriminatorColumn(name = "tipo")
 public abstract class IConsensoStrategy {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   protected Long id;
+
   @Column
   protected Integer cantidadMinimaApariciones = 0;
 
-  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @JoinTable(
-      name="hecho_consensuado",
-      joinColumns = @JoinColumn(name="algoritmo_id", referencedColumnName = "id"),
-      inverseJoinColumns = @JoinColumn(name="hecho_id", referencedColumnName = "id")
-  )
-  //@Transient
+  public abstract TipoAlgoritmo getTipo();
+
+  @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+  @JoinTable(name = "hecho_consensuado", joinColumns = @JoinColumn(name = "algoritmo_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id"))
   private Set<Hecho> hechosConsensuados = new HashSet<>();
 
-  protected Boolean cumpleConsensoBase(Hecho hecho, Set<Fuente> fuentes, Integer numfuentes) {
-    Integer cantidadMinima = this.getCantMinima(numfuentes);
+  protected Boolean cumpleConsensoBase(Hecho hecho, Set<Fuente> fuentes, Integer cantMin) {
+    cantidadMinimaApariciones = cantMin;
+
     long apariciones = fuentes.stream()
-        .map(fuente -> fuente.getHechos())
-        .filter(hechos -> hechos.stream()
-            .anyMatch(h -> Objects.equals(h.getTitulo(), hecho.getTitulo()) && Objects.equals(h.getCategoria(), hecho.getCategoria()) && Objects.equals(h.getDescripcion(), hecho.getDescripcion())))
+        .map(Fuente::getHechos)
+        .filter(hechosDeFuente -> hechosDeFuente.stream()
+            .anyMatch(h -> sonHechosIguales(h, hecho)))
         .count();
 
-    return apariciones >= cantidadMinima;
+    return apariciones >= cantMin;
   }
 
   public abstract Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes);
 
   public void actualizarHechos(Set<Hecho> hechos, Set<Fuente> fuentes) {
-    System.out.println("hechos a analizar: " + hechos.size());
     this.hechosConsensuados.clear();
     Set<Hecho> hechosC = hechos.stream()
-        .filter(h -> cumpleConsensoBase(h, fuentes, fuentes.size()))
+        .filter(h -> cumpleConsenso(h, fuentes))
         .collect(Collectors.toSet());
+
     this.hechosConsensuados.addAll(hechosC);
   }
 
@@ -69,7 +70,14 @@ public abstract class IConsensoStrategy {
     return this.hechosConsensuados;
   }
 
-  public abstract Integer getCantMinima(Integer numFuentes);
+  private Boolean sonHechosIguales(Hecho h1, Hecho h2) {
+    if (h1 == null || h2 == null)
+      return false;
 
-  public abstract TipoAlgoritmo getTipo();
+    Boolean titulosIguales = h1.getTitulo() != null && h1.getTitulo().equals(h2.getTitulo());
+    Boolean categoriasIguales = h1.getCategoria() != null && h1.getCategoria().equals(h2.getCategoria());
+    Boolean fechasIguales = h1.getFechaAcontecimiento() != null &&
+        h1.getFechaAcontecimiento().equals(h2.getFechaAcontecimiento());
+    return titulosIguales && categoriasIguales && fechasIguales;
+  }
 }
