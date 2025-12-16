@@ -1,6 +1,10 @@
 package ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy;
 
+import java.util.Optional;
+
 import ar.edu.utn.frba.dds.models.entities.Hecho;
+import ar.edu.utn.frba.dds.models.entities.Lugar;
+import ar.edu.utn.frba.dds.models.entities.Ubicacion;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFiltro;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,11 +30,10 @@ public class FiltroProvincia extends IFiltroStrategy {
 
   @Override
   public Boolean cumpleFiltro(Hecho hecho) {
-    if (hecho.getUbicacion() == null)
-      return false;
-
-    String provinciaHecho = hecho.getUbicacion().getLugar() != null ? hecho.getUbicacion().getLugar().getProvincia()
-        : null;
+    String provinciaHecho = Optional.ofNullable(hecho.getUbicacion())
+        .map(Ubicacion::getLugar)
+        .map(Lugar::getProvincia)
+        .orElse(null);
     if (provinciaHecho != null)
       return provinciaHecho.toLowerCase().contains(provincia.toLowerCase());
     else

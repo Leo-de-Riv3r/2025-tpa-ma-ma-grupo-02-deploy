@@ -68,9 +68,6 @@ public class ColeccionService {
   private final ISolicitudEliminacionRepository solicitudRepository;
   private final ApplicationEventPublisher eventPublisher;
 
-  @PersistenceContext
-  private EntityManager em;
-
   public ColeccionService(
       IColeccionRepository coleccionRepository,
       SolicitudEliminacionService solicitudService,
@@ -103,6 +100,7 @@ public class ColeccionService {
       try {
         TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmoConsenso());
         coleccion.setAlgoritmoConsenso(tipoAlgoritmo.getStrategy());
+        coleccion.refrescarHechosCurados();
       } catch (Exception e) {
         throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmoConsenso() + " no aceptado");
       }
@@ -203,12 +201,13 @@ public class ColeccionService {
           fuente = fuenteExistente.get();
           if (fuente.getTipoFuente() == TipoFuente.DINAMICA) {
             coleccion.setEstado(EstadoColeccion.PROCESANDO);
+            idsFuentesParaProcesar.add(fuente.getId());
           }
         } else {
           fuente = fuenteRepository.save(fuente);
           coleccion.setEstado(EstadoColeccion.PROCESANDO);
+          idsFuentesParaProcesar.add(fuente.getId());
         }
-        idsFuentesParaProcesar.add(fuente.getId());
         fuentes.add(fuente);
       });
       coleccion.setearFuentes(fuentes);
@@ -221,6 +220,7 @@ public class ColeccionService {
         TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmoConsenso().toUpperCase());
         IConsensoStrategy algoritmoConsenso = tipoAlgoritmo.getStrategy();
         coleccion.setAlgoritmoConsenso(algoritmoConsenso);
+        coleccion.refrescarHechosCurados();
       } catch (Exception e) {
         throw new IllegalArgumentException("Algoritmo de tipo " + dto.getAlgoritmoConsenso() + " no aceptado");
       }
@@ -240,8 +240,8 @@ public class ColeccionService {
     Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
 
     if (!idsFuentesParaProcesar.isEmpty()) {
-      log.info("EVENTO_UPDATE - Se disparó procesamiento/refresco para las fuentes {}.", idsFuentesParaProcesar);
       eventPublisher.publishEvent(new FuentesAProcesarEvent(coleccion.getId(), idsFuentesParaProcesar));
+      log.info("EVENTO_UPDATE - Se disparó procesamiento/refresco para las fuentes {}.", idsFuentesParaProcesar);
     }
 
     log.info("EVENTO_MODIFICACIÓN - Colección actualizada. ID: {}, Titulo: '{}'",
@@ -285,8 +285,8 @@ public class ColeccionService {
     List<String> todosLosIds = fuentes.stream()
         .map(Fuente::getId)
         .toList();
-    log.info("Se disparó el refresco masivo para {} fuentes.", todosLosIds.size());
     eventPublisher.publishEvent(new FuentesAProcesarEvent(null, todosLosIds));
+    log.info("Se disparó el refresco masivo para {} fuentes.", todosLosIds.size());
   }
 
   @Transactional
@@ -324,7 +324,6 @@ public class ColeccionService {
       if (navegacionCurada) {
         if (coleccion.getAlgoritmoConsenso() != null) {
           spec = spec.and(HechoSpecs.deConsenso(coleccion.getAlgoritmoConsenso().getId()));
-
         } else {
           return new PaginacionDTOSalida<>(new ArrayList<>(), 1, 0);
         }
@@ -405,7 +404,7 @@ public class ColeccionService {
   @Transactional
   public void refrescarHechosCurados() {
     List<Coleccion> colecciones = coleccionRepository.findAll();
-    colecciones.forEach(coleccion -> coleccion.refrescarHechosCurados());
+    colecciones.forEach(Coleccion::refrescarHechosCurados);
     coleccionRepository.saveAll(colecciones);
   }
 

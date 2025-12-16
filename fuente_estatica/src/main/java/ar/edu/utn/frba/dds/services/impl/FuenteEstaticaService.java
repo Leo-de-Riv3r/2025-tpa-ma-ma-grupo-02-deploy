@@ -33,37 +33,11 @@ public class FuenteEstaticaService implements IFuenteEstaticaService {
   }
 
   @Override
-  public List<Hecho> getHechos(Long id, Integer page, Integer per_page) {
-    Fuente fuente = fuenteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
-    List<Hecho> hechos = fuente.getHechos();
-    if (page < 1) page = 1;
-    per_page = hechos.size();
-    if (page < 1) page = 1;
-    Integer total = hechos.size();
-    Integer inicio = (page - 1) * per_page;
-    Integer fin = Math.min(inicio + per_page, total);
-    List <Hecho> hechosPag = List.of();
-    Integer lastPage = (int) Math.ceil((double) total / per_page);
-
-    if (inicio > total) {
-      System.out.println("0-9");
-      hechosPag = hechos.subList(0, 9);
-    } else {
-      System.out.println("Inicio: " + inicio + ". Fin: " + fin);
-      hechosPag = hechos.subList(inicio, fin);
-    }
-    return hechosPag;
+  public List<Hecho> getHechos(Long id) {
+    Fuente fuente = fuenteRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Fuente no encontrada"));
+    return fuente.getHechos();
   }
-
-  // @Override
-  // public FuenteCsvDTOOutput crearNuevaFuente(MultipartFile link) {
-  // Fuente fuente = new Fuente();
-  // fuente.setHechos(extractorHechosCSV.obtenerHechosCsv(link));
-  // fuente.setUrl(link.getName());
-  // Fuente fuenteCreada = fuenteRepository.save(fuente);
-  // return new FuenteCsvDTOOutput(fuenteCreada.getId(), fuenteCreada.getUrl(),
-  // fuenteCreada.getHechos().size());
-  // }
 
   @Override
   public void eliminarFuente(Long id) {

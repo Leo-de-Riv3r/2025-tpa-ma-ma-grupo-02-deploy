@@ -12,7 +12,7 @@ public interface IFuenteEstaticaService {
 
   FuenteCsvDTOOutput getFuente(Long id);
 
-  List<Hecho> getHechos(Long id, Integer page, Integer per_page);
+  List<Hecho> getHechos(Long id);
 
   void eliminarFuente(Long id);
 

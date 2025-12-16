@@ -37,12 +37,6 @@ public class Coleccion {
   @JoinTable(name = "coleccion_fuente", joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "fuente_id", referencedColumnName = "id"))
   private Set<Fuente> fuentes;
 
-//  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
-//  @JoinTable(
-//      name="hecho_filtrado",joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"),
-//      inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id"))
-//  private Set<Hecho> hechosFiltrados = new HashSet<>();
-
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "algoritmo_id", referencedColumnName = "id")
   private IConsensoStrategy algoritmoConsenso;
@@ -94,13 +88,6 @@ public class Coleccion {
   public void clearFuentes() {
     this.fuentes.clear();
   }
-
-//  public void actualizarHechosFiltrados() {
-//    this.hechosFiltrados.clear();
-//    Set<Hecho> hechosColeccion = this.getHechos();
-//    this.hechosFiltrados.addAll(hechosColeccion.stream().filter(h -> h.cumpleFiltros(criterios)).collect(Collectors.toSet()));
-//  }
-
 
   public void setearFuentes(Set<Fuente> fuentes) {
     this.fuentes.clear();

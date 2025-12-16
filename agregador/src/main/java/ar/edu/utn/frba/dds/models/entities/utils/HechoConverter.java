@@ -80,7 +80,7 @@ public class HechoConverter {
     HechoDTOSalida hechoDTOSalida = new HechoDTOSalida();
     hechoDTOSalida.setId(hecho.getId());
     hechoDTOSalida.setTitulo(hecho.getTitulo());
-    if (hecho.getUbicacion().getLugar() != null) {
+    if (hecho.getUbicacion() != null && hecho.getUbicacion().getLugar() != null) {
       if (hecho.getUbicacion().getLugar().getDepartamento() != null) {
         hechoDTOSalida.setDepartamento(hecho.getUbicacion().getLugar().getDepartamento());
       }
@@ -92,8 +92,10 @@ public class HechoConverter {
       }
     }
     hechoDTOSalida.setCategoria(hecho.getCategoria());
-    hechoDTOSalida.setLatitud(hecho.getUbicacion().getLatitud());
-    hechoDTOSalida.setLongitud(hecho.getUbicacion().getLongitud());
+    if (hecho.getUbicacion() != null) {
+      hechoDTOSalida.setLatitud(hecho.getUbicacion().getLatitud());
+      hechoDTOSalida.setLongitud(hecho.getUbicacion().getLongitud());
+    }
     hechoDTOSalida.setTipoFuente(hecho.getOrigen().getTipo().toString());
     hechoDTOSalida.setNombreAutor(hecho.getOrigen().getAutor());
     hechoDTOSalida.setFechaAcontecimiento(hecho.getFechaAcontecimiento());
