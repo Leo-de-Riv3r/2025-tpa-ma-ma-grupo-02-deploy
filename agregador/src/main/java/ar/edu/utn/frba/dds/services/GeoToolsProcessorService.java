@@ -1,28 +1,34 @@
 package ar.edu.utn.frba.dds.services;
 
 import ar.edu.utn.frba.dds.models.entities.Lugar;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.geotools.data.FileDataStore;
+import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
 import org.geotools.geometry.jts.JTSFactoryFinder;
-import org.locationtech.jts.index.strtree.STRtree; // IMPORTANTE
-import org.opengis.feature.simple.SimpleFeature;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.index.strtree.STRtree;
+import org.opengis.feature.simple.SimpleFeature;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.List;
-import java.util.ArrayList;
-import jakarta.annotation.PostConstruct;
-import java.io.File;
-import java.net.URL;
 
 @Slf4j
 @Service
@@ -57,10 +63,12 @@ public class GeoToolsProcessorService {
     private STRtree buildIndex(String path, String capa, Set<String> nombresSet) {
         STRtree index = new STRtree();
         try {
-            URL url = resourceLoader.getResource(path).getURL();
-            File file = new File(url.toURI());
-            if (!file.exists())
+            File file = getFileFromResource(path);
+
+            if (file == null || !file.exists()) {
+                log.error("GEOTOOLS: No se pudo encontrar el archivo {}", path);
                 return null;
+            }
 
             FileDataStore store = FileDataStoreFinder.getDataStore(file);
             SimpleFeatureSource featureSource = store.getFeatureSource();
@@ -87,6 +95,57 @@ public class GeoToolsProcessorService {
         } catch (Exception e) {
             log.error("GEOTOOLS: Error cargando {}", capa, e);
             e.printStackTrace();
+            return null;
+        }
+    }
+
+    private File getFileFromResource(String resourcePath) {
+        try {
+            Resource resource = resourceLoader.getResource(resourcePath);
+
+            if (resource.isFile()) {
+                return resource.getFile();
+            }
+
+            log.info("GEOTOOLS: Extrayendo recurso desde JAR a Temp: {}", resourcePath);
+
+            Path tempDir = Files.createTempDirectory("geotools_data");
+            String filename = resource.getFilename();
+            if (filename == null)
+                return null;
+            String baseName = filename.replace(".shp", "");
+
+            String[] extensions = { ".shp", ".shx", ".dbf", ".prj", ".cpg", ".fix" };
+
+            File mainFile = null;
+
+            String cleanPath = resourcePath.replace("classpath:", "");
+            String folderPath = cleanPath.substring(0, cleanPath.lastIndexOf('/') + 1); // ej: "geodata/"
+
+            for (String ext : extensions) {
+                try {
+                    String siblingPath = "classpath:" + folderPath + baseName + ext;
+                    Resource siblingResource = resourceLoader.getResource(siblingPath);
+
+                    if (siblingResource.exists()) {
+                        File tempFile = new File(tempDir.toFile(), baseName + ext);
+                        try (InputStream is = siblingResource.getInputStream();
+                                FileOutputStream os = new FileOutputStream(tempFile)) {
+                            FileCopyUtils.copy(is, os);
+                        }
+                        if (ext.equals(".shp")) {
+                            mainFile = tempFile;
+                        }
+                    }
+                } catch (Exception ex) {
+                    log.debug("No se encontró extensión opcional {} para {}", ext, baseName);
+                }
+            }
+
+            return mainFile;
+
+        } catch (Exception e) {
+            log.error("Error extrayendo archivo de recursos", e);
             return null;
         }
     }

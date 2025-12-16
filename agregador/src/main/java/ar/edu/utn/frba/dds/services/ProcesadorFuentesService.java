@@ -1,9 +1,7 @@
 package ar.edu.utn.frba.dds.services;
 
-import ar.edu.utn.frba.dds.models.entities.Coleccion;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
-import ar.edu.utn.frba.dds.models.entities.enums.EstadoColeccion;
 import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
 import ar.edu.utn.frba.dds.models.repositories.IColeccionRepository;
 import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
@@ -31,7 +29,6 @@ public class ProcesadorFuentesService {
   private final IHechoRepository hechoRepository;
   private final IOrigenRepository origenRepo;
   private final IFuenteRepository fuenteRepository;
-  private final IColeccionRepository coleccionRepository;
   private final HechoConverter hechoConverter;
   private final WebClient webClient;
 
@@ -41,7 +38,6 @@ public class ProcesadorFuentesService {
     this.hechoRepository = hechoRepository;
     this.origenRepo = origenRepo;
     this.fuenteRepository = fuenteRepository;
-    this.coleccionRepository = coleccionRepository;
     this.hechoConverter = hechoConverter;
     this.webClient = webClientBuilder.build();
   }
