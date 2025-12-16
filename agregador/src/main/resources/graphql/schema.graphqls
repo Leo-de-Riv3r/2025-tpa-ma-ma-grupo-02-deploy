@@ -17,7 +17,6 @@ type ColeccionDTOSalidaGQL {
     id: ID!
     titulo: String
     descripcion: String
-    cantSolicitudesSpam: Int
     fuentes: [FuenteDTOOutput]
     criterios: [FiltroDTOSalida]
     algoritmoConsenso: String
@@ -102,7 +101,7 @@ input ColeccionDTOEntrada {
 
 input HechosFiltroInput {
     categoria: String
-    curados: String
+    curados: Boolean
     fecha_acontecimiento_desde: String
     fecha_acontecimiento_hasta: String
     provincia: String

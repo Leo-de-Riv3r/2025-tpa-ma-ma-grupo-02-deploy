@@ -72,6 +72,11 @@ public class AgregadorController {
     return coleccionService.getColeccionDTO(id);
   }
 
+  @GetMapping("/colecciones/{id}/spam")
+  public Integer getSolicitudesSpam(@PathVariable String id) {
+    return coleccionService.solicitudesSpamPorColeccion(id);
+  }
+
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/colecciones/{id}")
   public void updateColeccion(@PathVariable String id, @RequestBody ColeccionDTOEntrada dto) {
@@ -128,11 +133,6 @@ public class AgregadorController {
     IFiltroStrategy filtro = FiltroStrategyFactory.fromDTO(dto);
     coleccionService.addCriterio(id, filtro);
     return ResponseEntity.ok("Filtro agregado correctamente");
-  }
-
-  @PutMapping("/colecciones/normaliza")
-  public void actualizarHechosCurados() {
-    coleccionService.refrescarHechosCurados();
   }
 
   @PutMapping("/colecciones")

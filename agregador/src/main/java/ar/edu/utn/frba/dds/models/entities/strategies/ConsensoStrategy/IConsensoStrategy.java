@@ -51,7 +51,6 @@ public abstract class IConsensoStrategy {
         .filter(hechosDeFuente -> hechosDeFuente.stream()
             .anyMatch(h -> sonHechosIguales(h, hecho)))
         .count();
-
     return apariciones >= cantMin;
   }
 

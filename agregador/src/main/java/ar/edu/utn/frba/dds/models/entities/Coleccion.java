@@ -29,11 +29,11 @@ public class Coleccion {
   @Column(name = "estado")
   private EstadoColeccion estado;
 
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "coleccion_id", referencedColumnName = "id")
   private Set<IFiltroStrategy> criterios = new HashSet<>();
 
-  @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
+  @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
   @JoinTable(name = "coleccion_fuente", joinColumns = @JoinColumn(name = "coleccion_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "fuente_id", referencedColumnName = "id"))
   private Set<Fuente> fuentes;
 
@@ -44,7 +44,7 @@ public class Coleccion {
   public Coleccion() {
     this.id = UUID.randomUUID().toString();
     this.fuentes = new HashSet<>();
-    this.estado = EstadoColeccion.PROCESANDO;
+    this.estado = EstadoColeccion.DISPONIBLE;
   }
 
   public Set<Hecho> getHechos() {
@@ -59,10 +59,14 @@ public class Coleccion {
     }
   }
 
-  public void refrescarHechosCurados() {
+  public void refrescarHechosCurados(Set<Hecho> hechosPreFiltrados) {
     if (algoritmoConsenso != null) {
-      algoritmoConsenso.actualizarHechos(this.getHechos(), fuentes);
+      algoritmoConsenso.actualizarHechos(hechosPreFiltrados, fuentes);
     }
+  }
+
+  public void refrescarHechosCurados() {
+    this.refrescarHechosCurados(this.getHechos());
   }
 
   public Set<Hecho> getHechosCurados() {

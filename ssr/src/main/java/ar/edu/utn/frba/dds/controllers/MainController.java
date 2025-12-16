@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.controllers;
 
+import ar.edu.utn.frba.dds.exceptions.TokenExpiradoException;
 import ar.edu.utn.frba.dds.models.*;
 import ar.edu.utn.frba.dds.services.AgregadorService;
 import ar.edu.utn.frba.dds.services.BlockedIpService;
@@ -388,6 +389,9 @@ public class MainController {
       agregadorService.actualizarColeccion(idColeccion, coleccion);
       redirectAttributes.addFlashAttribute("success", "Colección actualizada correctamente.");
     } catch (Exception e) {
+      if (e instanceof TokenExpiradoException) {
+        throw (TokenExpiradoException) e;
+      }
       redirectAttributes.addFlashAttribute("error", "Error al actualizar: " + e.getMessage());
       return "redirect:/colecciones/" + idColeccion + "/editar";
     }

@@ -19,9 +19,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Entity
@@ -40,6 +43,8 @@ public class Fuente {
   @Column
   protected TipoFuente tipoFuente;
 
+  @ToString.Exclude
+  @EqualsAndHashCode.Exclude
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(name = "fuente_hecho", joinColumns = @JoinColumn(name = "fuente_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id"))
   protected Set<Hecho> hechos = new HashSet<>();
@@ -75,7 +80,6 @@ public class Fuente {
   public void addHechos(Set<Hecho> hechos) {
     this.hechos.addAll(hechos);
   }
-
 
   public void addHecho(Hecho hecho) {
     this.hechos.add(hecho);

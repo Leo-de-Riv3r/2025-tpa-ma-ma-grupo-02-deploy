@@ -55,8 +55,7 @@ public class AgregadorService {
         .variable("id", idColeccion)
         .variable("page", page)
         .variable("filtro", filtros)
-        .variable("curados",
-            (filtros != null && filtros.getCurados() != null && filtros.getCurados().equalsIgnoreCase("Si")))
+        .variable("curados", filtros.getCurados())
         .retrieve("coleccion")
         .toEntity(ColeccionHechosDTO.class).block();
   }

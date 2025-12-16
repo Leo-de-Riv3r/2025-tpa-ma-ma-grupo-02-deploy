@@ -11,6 +11,4 @@ public class ColeccionDTO {
   private String titulo;
   @JsonProperty("descripcion")
   private String descripcion;
-  @JsonProperty("cantSolicitudesSpam")
-  private Integer cantSolicitudesSpam;
 }

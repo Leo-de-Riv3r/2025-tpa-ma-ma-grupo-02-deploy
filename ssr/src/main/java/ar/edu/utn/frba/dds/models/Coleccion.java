@@ -10,7 +10,6 @@ public class Coleccion {
   private String titulo;
   private String descripcion;
   private List<Fuente> fuentes;
-  private int cantSolicitudesSpam;
   private List<FiltroDTOSalida> criterios;
   private String algoritmoConsenso;
   private String estado;

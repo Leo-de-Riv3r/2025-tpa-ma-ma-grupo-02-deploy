@@ -10,7 +10,6 @@ public class ColeccionGQLDTOSalida {
   private String titulo;
   private String descripcion;
   private List<FuenteDTOSalida> fuentes;
-  private Integer cantSolicitudesSpam;
   private List<FiltroDTOSalida> criterios;
   private String algoritmoConsenso;
   private PaginacionDTOSalida<HechoDTOSalida> hechos;
@@ -21,7 +20,6 @@ public class ColeccionGQLDTOSalida {
     this.titulo = dto.getTitulo();
     this.descripcion = dto.getDescripcion();
     this.fuentes = dto.getFuentes();
-    this.cantSolicitudesSpam = dto.getCantSolicitudesSpam();
     this.criterios = dto.getCriterios();
     this.algoritmoConsenso = dto.getAlgoritmoConsenso();
     this.estado = dto.getEstado().toString();

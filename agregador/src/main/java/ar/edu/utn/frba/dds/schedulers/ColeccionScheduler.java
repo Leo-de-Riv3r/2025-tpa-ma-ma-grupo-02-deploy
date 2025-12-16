@@ -19,7 +19,7 @@ public class ColeccionScheduler {
 
   @Scheduled(cron = "${scheduler.cron.curaduria}", zone = "America/Argentina/Buenos_Aires")
   public void refrescarHechosCurados() {
-    coleccionService.refrescarHechosCurados();
+    coleccionService.refrescarHechosCurados(null);
   }
 
   @Scheduled(fixedRate = 300000)

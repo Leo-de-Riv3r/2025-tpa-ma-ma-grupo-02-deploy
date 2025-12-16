@@ -6,7 +6,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @Data
 public class FiltrosDTO {
-  String curados;
+  Boolean curados;
   String categoria;
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   LocalDate fecha_acontecimiento_desde;
