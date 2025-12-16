@@ -267,7 +267,7 @@
 </div>
 
 <th:block th:fragment="js-extra">
-    <script>
+    <script th:inline="javascript">
         /*<![CDATA[*/
         const FUENTE_ESTATICA_URL = /*[[${fuenteEstaticaUrl}]]*/ 'https://fuente-estatica.up.railway.app';
         const FUENTE_DINAMICA_URL = /*[[${fuenteDinamicaUrl}]]*/ 'http://fuente-dinamica.railway.internal:4040';
