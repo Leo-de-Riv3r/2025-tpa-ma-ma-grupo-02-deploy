@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.dds.services;
-
-import ar.edu.utn.frba.dds.externalApi.SpamApi;
+import ar.edu.utn.frba.dds.ai.DetectorSpamAi;
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionHechoDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
 import ar.edu.utn.frba.dds.models.dtos.output.PaginacionDTOSalida;
@@ -35,14 +34,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class SolicitudEliminacionService {
   private final ISolicitudEliminacionRepository solicitudesEliminacionRepo;
-  private final SpamApi detectorSpam;
   private final SolicitudConverter solicitudConverter;
   private final IFuenteRepository fuenteRepository;
   private final WebClient webClient;
+  private final DetectorSpamAi detectorSpam;
 
   public SolicitudEliminacionService(
       ISolicitudEliminacionRepository solicitudesEliminacionRepo,
-      SpamApi detectorSpam,
+      DetectorSpamAi detectorSpam,
       SolicitudConverter solicitudConverter,
       IFuenteRepository fuenteRepository,
       WebClient.Builder webClientBuilder) {
