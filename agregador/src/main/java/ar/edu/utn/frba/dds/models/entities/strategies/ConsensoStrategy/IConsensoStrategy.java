@@ -76,8 +76,7 @@ public abstract class IConsensoStrategy {
 
     Boolean titulosIguales = h1.getTitulo() != null && h1.getTitulo().equals(h2.getTitulo());
     Boolean categoriasIguales = h1.getCategoria() != null && h1.getCategoria().equals(h2.getCategoria());
-    Boolean fechasIguales = h1.getFechaAcontecimiento() != null &&
-        h1.getFechaAcontecimiento().equals(h2.getFechaAcontecimiento());
-    return titulosIguales && categoriasIguales && fechasIguales;
+    Boolean descripcionesIguales = Objects.equals(h1.getDescripcion(), h2.getDescripcion());
+    return titulosIguales && categoriasIguales && descripcionesIguales;
   }
 }
