@@ -86,6 +86,7 @@ public class GeoToolsProcessorService {
             return index;
         } catch (Exception e) {
             log.error("GEOTOOLS: Error cargando {}", capa, e);
+            e.printStackTrace();
             return null;
         }
     }
