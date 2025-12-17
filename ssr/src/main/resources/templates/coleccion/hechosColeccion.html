@@ -201,7 +201,16 @@
             descCorta = descCorta.substring(0, 70) + '...';
           }
 
-          const fechaStr = hecho.fechaAcontecimiento ? String(hecho.fechaAcontecimiento).substring(0, 10) : '';
+          let fechaStr = '';
+          if (hecho.fechaAcontecimiento) {
+            try {
+              const rawDate = String(hecho.fechaAcontecimiento).substring(0, 10);
+              const [year, month, day] = rawDate.split('-');
+              fechaStr = `${day}/${month}/${year}`;
+            } catch (e) {
+              fechaStr = String(hecho.fechaAcontecimiento).substring(0, 10);
+            }
+          }
 
           const popupContent = `
             <div class="card border-0 p-0" style="width: 250px; font-family: sans-serif;">

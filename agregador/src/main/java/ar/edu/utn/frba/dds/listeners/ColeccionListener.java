@@ -30,29 +30,45 @@ public class ColeccionListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void procesarFuentes(FuentesAProcesarEvent event) {
-        if (event.fuenteIds() == null || event.fuenteIds().isEmpty())
-            return;
+        if (event.fuenteIds() != null && !event.fuenteIds().isEmpty()) {
+            log.info("Iniciando procesamiento paralelo para {} fuentes...", event.fuenteIds().size());
 
-        log.info("Iniciando procesamiento paralelo para colección: {}", event.coleccionId());
+            List<CompletableFuture<Void>> futuros = event.fuenteIds().stream()
+                    .map(fuenteId -> procesadorFuentesService.procesarFuenteAsync(fuenteId, event.coleccionId())
+                            .exceptionally(ex -> {
+                                log.error("Error al procesar fuente {}: {}", fuenteId, ex.getMessage());
+                                return null;
+                            }))
+                    .collect(Collectors.toList());
 
-        List<CompletableFuture<Void>> futuros = event.fuenteIds().stream()
-                .map(fuenteId -> procesadorFuentesService.procesarFuenteAsync(fuenteId, event.coleccionId()))
-                .collect(Collectors.toList());
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                    futuros.toArray(new CompletableFuture[0]));
 
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-                futuros.toArray(new CompletableFuture[0]));
+            allFutures.thenRun(() -> {
+                ejecutarRefresco(event);
+            });
 
-        allFutures.thenRun(() -> {
-            try {
-                if (event.coleccionId() != null) {
-                    if (event.recalcularConsenso()) {
-                        coleccionService.refrescarHechosCurados(event.coleccionId());
-                    }
-                    coleccionService.actualizarEstadoColeccion(event.coleccionId(), EstadoColeccion.DISPONIBLE);
+        } else if (event.recalcularConsenso()) {
+            ejecutarRefresco(event);
+        }
+    }
+
+    private void ejecutarRefresco(FuentesAProcesarEvent event) {
+        log.info("Finalizando flujo de eventos. Iniciando actualización de consensos...");
+        try {
+            if (event.coleccionId() != null) {
+                if (event.recalcularConsenso()) {
+                    coleccionService.refrescarHechosCurados(event.coleccionId());
                 }
-            } catch (Exception e) {
-                log.error("Error al finalizar procesamiento", e);
+                coleccionService.actualizarEstadoColeccion(event.coleccionId(), EstadoColeccion.DISPONIBLE);
+            } else {
+                if (event.recalcularConsenso() && event.fuenteIds() != null && !event.fuenteIds().isEmpty()) {
+                    log.info("Refresco global: Recalculando consensos para colecciones afectadas.");
+                    coleccionService.refrescarColeccionesAfectadas(event.fuenteIds());
+                }
             }
-        });
+        } catch (Exception e) {
+            log.error("Error al finalizar procesamiento y recalcular consensos", e);
+        }
     }
 }

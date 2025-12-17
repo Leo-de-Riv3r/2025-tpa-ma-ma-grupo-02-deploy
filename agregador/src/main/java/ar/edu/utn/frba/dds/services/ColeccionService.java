@@ -18,7 +18,7 @@ import ar.edu.utn.frba.dds.models.entities.enums.TipoEstado;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import ar.edu.utn.frba.dds.models.entities.factories.FiltroStrategyFactory;
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
-import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.*; // Importante para el instanceof
+import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.*;
 import ar.edu.utn.frba.dds.models.entities.utils.ColeccionConverter;
 import ar.edu.utn.frba.dds.models.entities.utils.FuenteConverter;
 import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
@@ -28,18 +28,19 @@ import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
 import ar.edu.utn.frba.dds.models.repositories.IOrigenRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudEliminacionRepository;
-import ar.edu.utn.frba.dds.models.repositories.specs.HechoSpecs; // Tu nueva clase de Specs
+import ar.edu.utn.frba.dds.models.repositories.specs.FiltroSpecFactory;
+import ar.edu.utn.frba.dds.models.repositories.specs.HechoSpecs;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.transaction.annotation.Transactional; // Importante usar el de Spring
 
-import java.time.LocalDate;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -64,6 +65,7 @@ public class ColeccionService {
   private final IFuenteRepository fuenteRepository;
   private final ISolicitudEliminacionRepository solicitudRepository;
   private final ApplicationEventPublisher eventPublisher;
+  private final FiltroSpecFactory filtroSpecFactory;
 
   public ColeccionService(
       IColeccionRepository coleccionRepository,
@@ -75,7 +77,8 @@ public class ColeccionService {
       HechoConverter hechoConverter,
       IFuenteRepository fuenteRepository,
       ISolicitudEliminacionRepository solicitudRepository,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      FiltroSpecFactory filtroSpecFactory) {
     this.coleccionRepository = coleccionRepository;
     this.solicitudService = solicitudService;
     this.hechoRepository = hechoRepository;
@@ -85,6 +88,7 @@ public class ColeccionService {
     this.fuenteRepository = fuenteRepository;
     this.solicitudRepository = solicitudRepository;
     this.eventPublisher = eventPublisher;
+    this.filtroSpecFactory = filtroSpecFactory;
   }
 
   @Transactional
@@ -105,15 +109,12 @@ public class ColeccionService {
     }
 
     List<String> idsFuentes = new ArrayList<>();
-
     if (dto.getFuentes() != null) {
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
         Fuente fuente = fuenteConverter.fromDTO(fuenteDTO);
         Optional<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(
-            fuente.getUrl(),
-            fuente.getTipoFuente());
-
+            fuente.getUrl(), fuente.getTipoFuente());
         if (fuenteExistente.isPresent()) {
           fuente = fuenteExistente.get();
         } else {
@@ -124,67 +125,21 @@ public class ColeccionService {
       });
       coleccion.setearFuentes(fuentes);
     }
-
     if (dto.getCriterios() != null) {
-      System.out.println(dto.getCriterios());
       Set<IFiltroStrategy> criterios = dto.getCriterios().stream()
           .map(FiltroStrategyFactory::fromDTO).collect(Collectors.toSet());
       coleccion.setearCriterios(criterios);
     }
-
     if (!idsFuentes.isEmpty() || calcularConsenso) {
       coleccion.setEstado(EstadoColeccion.PROCESANDO);
     }
-
     Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
 
     if (!idsFuentes.isEmpty()) {
       eventPublisher.publishEvent(new FuentesAProcesarEvent(
-          coleccionGuardada.getId(),
-          idsFuentes,
-          calcularConsenso));
+          coleccionGuardada.getId(), idsFuentes, calcularConsenso));
     }
-
-    log.info("EVENTO_CREACIÓN - Colección creada exitosamente. ID: {}, Título: '{}'",
-        coleccionGuardada.getId(),
-        coleccionGuardada.getTitulo());
     return coleccionConverter.fromEntity(coleccionGuardada);
-  }
-
-  @Transactional(readOnly = true)
-  public List<ColeccionDTOSalida> getColeccionesDTO() {
-    List<Coleccion> colecciones = coleccionRepository.findAll();
-    return colecciones.stream().map(coleccionConverter::fromEntity).toList();
-  }
-
-  @Transactional(readOnly = true)
-  public List<Coleccion> getColecciones() {
-    return coleccionRepository.findAll();
-  }
-
-  @Transactional(readOnly = true)
-  public ColeccionDTOSalida getColeccionDTO(String coleccionId) {
-    Coleccion coleccion = this.getColeccion(coleccionId);
-    ColeccionDTOSalida respuesta = coleccionConverter.fromEntity(coleccion);
-    return respuesta;
-  }
-
-  @Transactional(readOnly = true)
-  public Integer solicitudesSpamPorColeccion(String coleccionId) {
-    Set<Hecho> hechos = this.getColeccion(coleccionId).getHechos();
-    AtomicReference<Integer> cantidadSolicitudesSpam = new AtomicReference<>(0);
-    hechos.forEach(h -> {
-      cantidadSolicitudesSpam
-          .getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(h.getId()));
-    });
-    return cantidadSolicitudesSpam.get();
-  }
-
-  @Transactional(readOnly = true)
-  public Coleccion getColeccion(String coleccionId) {
-    return coleccionRepository
-        .findById(coleccionId)
-        .orElseThrow(() -> new EntityNotFoundException("Coleccion con id " + coleccionId + " no encontrada"));
   }
 
   @Transactional
@@ -197,95 +152,298 @@ public class ColeccionService {
     if (dto.getDescripcion() != null)
       coleccion.setDescripcion(dto.getDescripcion());
 
-    List<String> idsFuentesParaProcesar = new ArrayList<>();
-
     if (dto.getFuentes() != null) {
-      Set<String> idsFuentesActuales = coleccion.getFuentes().stream()
-          .map(Fuente::getId)
-          .collect(Collectors.toSet());
-
+      Set<String> idsFuentesActuales = coleccion.getFuentes().stream().map(Fuente::getId).collect(Collectors.toSet());
       Set<Fuente> fuentesNuevas = new HashSet<>();
-
       dto.getFuentes().forEach(fuenteDTO -> {
         Fuente fuente = fuenteConverter.fromDTO(fuenteDTO);
         Optional<Fuente> fuenteExistente = fuenteRepository.findByUrlAndTipoFuente(
             fuente.getUrl(), fuente.getTipoFuente());
-
         if (fuenteExistente.isPresent()) {
           fuente = fuenteExistente.get();
         } else {
           fuente = fuenteRepository.save(fuente);
-          idsFuentesParaProcesar.add(fuente.getId());
         }
         fuentesNuevas.add(fuente);
       });
+      Set<String> idsFuentesNuevas = fuentesNuevas.stream().map(Fuente::getId).collect(Collectors.toSet());
 
-      Set<String> idsFuentesNuevas = fuentesNuevas.stream()
-          .map(Fuente::getId)
-          .collect(Collectors.toSet());
-
-      if (!idsFuentesActuales.equals(idsFuentesNuevas)) {
+      if (!idsFuentesActuales.equals(idsFuentesNuevas))
         recalcularConsenso = true;
-        log.info("DETECTADO CAMBIO EN FUENTES: Se requerirá recálculo de consenso.");
-      }
 
       coleccion.setearFuentes(fuentesNuevas);
-    } else {
-      if (!coleccion.getFuentes().isEmpty()) {
-        recalcularConsenso = true;
-        coleccion.clearFuentes();
-      }
     }
 
     if (dto.getAlgoritmoConsenso() != null && !dto.getAlgoritmoConsenso().isEmpty()) {
       try {
         TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.valueOf(dto.getAlgoritmoConsenso().toUpperCase());
-        IConsensoStrategy algoritmoConsenso = tipoAlgoritmo.getStrategy();
-        if (coleccion.getAlgoritmoConsenso() == null ||
-            !coleccion.getAlgoritmoConsenso().getTipo().equals(tipoAlgoritmo)) {
+        if (coleccion.getAlgoritmoConsenso() == null
+            || !coleccion.getAlgoritmoConsenso().getTipo().equals(tipoAlgoritmo)) {
           recalcularConsenso = true;
         }
-        coleccion.setAlgoritmoConsenso(algoritmoConsenso);
+        coleccion.setAlgoritmoConsenso(tipoAlgoritmo.getStrategy());
       } catch (Exception e) {
         throw new IllegalArgumentException("Algoritmo inválido");
       }
-    } else {
-      recalcularConsenso = false;
+    } else if (dto.getAlgoritmoConsenso() != null && dto.getAlgoritmoConsenso().isEmpty()) {
+      recalcularConsenso = true;
       coleccion.setAlgoritmoConsenso(null);
     }
 
     if (dto.getCriterios() != null) {
-      Set<IFiltroStrategy> criterios = dto.getCriterios().stream()
-          .map(FiltroStrategyFactory::fromDTO).collect(Collectors.toSet());
-      coleccion.setearCriterios(criterios);
+      coleccion
+          .setearCriterios(dto.getCriterios().stream().map(FiltroStrategyFactory::fromDTO).collect(Collectors.toSet()));
+      recalcularConsenso = true;
     } else {
       if (!coleccion.getCriterios().isEmpty()) {
         coleccion.clearCriterios();
+        recalcularConsenso = true;
       }
     }
 
-    if (!idsFuentesParaProcesar.isEmpty() || recalcularConsenso) {
+    if (recalcularConsenso) {
       coleccion.setEstado(EstadoColeccion.PROCESANDO);
+      coleccionRepository.save(coleccion);
+      eventPublisher.publishEvent(new FuentesAProcesarEvent(coleccion.getId(), new ArrayList<>(), true));
+    } else {
+      coleccionRepository.save(coleccion);
+    }
+  }
+
+  @Transactional
+  public void refrescoFuentes() {
+    List<Fuente> fuentes = fuenteRepository.findAll();
+    if (fuentes.isEmpty())
+      return;
+    List<String> todosLosIds = fuentes.stream().map(Fuente::getId).toList();
+
+    List<Coleccion> afectadas = coleccionRepository.findColeccionesByFuentesId(todosLosIds);
+    for (Coleccion c : afectadas)
+      c.setEstado(EstadoColeccion.PROCESANDO);
+    coleccionRepository.saveAll(afectadas);
+
+    eventPublisher.publishEvent(new FuentesAProcesarEvent(null, todosLosIds, true));
+    log.info("Se disparó el refresco masivo para {} fuentes.", todosLosIds.size());
+  }
+
+  @Transactional
+  public void refrescarFuenteDinamica() {
+    Optional<Fuente> fuenteDinamica = fuenteRepository.findByTipoFuente(TipoFuente.DINAMICA);
+    if (fuenteDinamica.isPresent()) {
+      String fuenteId = fuenteDinamica.get().getId();
+      List<Coleccion> afectadas = coleccionRepository.findColeccionesByFuentesId(List.of(fuenteId));
+      for (Coleccion c : afectadas)
+        c.setEstado(EstadoColeccion.PROCESANDO);
+      coleccionRepository.saveAll(afectadas);
+
+      eventPublisher.publishEvent(new FuentesAProcesarEvent(null, List.of(fuenteId), true));
+      log.info("Se solicitó refresco manual para fuente dinamica {}", fuenteId);
+    }
+  }
+
+  @Transactional
+  public void refrescarColeccionesAfectadas(List<String> fuenteIds) {
+    if (fuenteIds == null || fuenteIds.isEmpty())
+      return;
+    log.info("Buscando colecciones afectadas por actualización de fuentes: {}", fuenteIds);
+    List<Coleccion> coleccionesAfectadas = coleccionRepository.findColeccionesByFuentesId(fuenteIds);
+    for (Coleccion coleccion : coleccionesAfectadas) {
+      try {
+        log.info("Refrescando consenso automáticamente para colección: {}", coleccion.getId());
+        this.optimizarYRefrescar(coleccion);
+        coleccion.setEstado(EstadoColeccion.DISPONIBLE);
+        coleccionRepository.save(coleccion);
+      } catch (Exception e) {
+        log.error("Error al refrescar colección {}: {}", coleccion.getId(), e.getMessage());
+        coleccion.setEstado(EstadoColeccion.DISPONIBLE);
+        coleccionRepository.save(coleccion);
+      }
+    }
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void refrescarHechosCurados(String coleccionId) {
+    if (coleccionId != null) {
+      log.info("Iniciando cálculo de consenso para colección: {}", coleccionId);
+      Coleccion coleccion = coleccionRepository.findById(coleccionId).orElseThrow();
+      optimizarYRefrescar(coleccion);
+      coleccionRepository.save(coleccion);
+      log.info("Fin cálculo de consenso para colección: {}", coleccionId);
+    }
+  }
+
+  private void optimizarYRefrescar(Coleccion coleccion) {
+    if (coleccion.getAlgoritmoConsenso() == null) {
+      return;
+    }
+    List<String> fuenteIds = coleccion.getFuentes().stream().map(Fuente::getId).toList();
+    if (fuenteIds.isEmpty()) {
+      coleccion.getAlgoritmoConsenso().getHechosConsensuados().clear();
+      return;
     }
 
-    Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+    IConsensoStrategy estrategia = coleccion.getAlgoritmoConsenso();
+    Integer totalFuentes = fuenteIds.size();
+    long minRequerido = estrategia.calcularMinimoRequerido(totalFuentes);
+    estrategia.setCantidadMinimaApariciones((int) minRequerido);
 
-    if (!idsFuentesParaProcesar.isEmpty()) {
-      eventPublisher.publishEvent(new FuentesAProcesarEvent(
-          coleccionGuardada.getId(),
-          idsFuentesParaProcesar,
-          recalcularConsenso));
-    } else if (recalcularConsenso) {
-      CompletableFuture.runAsync(() -> {
-        this.refrescarHechosCurados(coleccionGuardada.getId());
-      });
+    List<Hecho> hechosCrudos;
+    if (estrategia.getTipo() == TipoAlgoritmo.MULTIPLES_MENCIONES) {
+      log.info("Aplicando consenso estricto (Múltiples Menciones) para colección {}", coleccion.getId());
+      hechosCrudos = hechoRepository.findHechosConsensuadosEstricto(fuenteIds, minRequerido);
+    } else {
+      hechosCrudos = hechoRepository.findHechosConsensuados(fuenteIds, minRequerido);
     }
+
+    final List<Hecho> nuevosHechosConsensuados;
+    if (coleccion.getCriterios() != null && !coleccion.getCriterios().isEmpty()) {
+      nuevosHechosConsensuados = hechosCrudos.stream()
+          .filter(h -> h.cumpleFiltros(coleccion.getCriterios()))
+          .collect(Collectors.toList());
+    } else {
+      nuevosHechosConsensuados = hechosCrudos;
+    }
+
+    Set<Hecho> actuales = estrategia.getHechosConsensuados();
+    List<Hecho> aEliminar = actuales.stream().filter(h -> !nuevosHechosConsensuados.contains(h)).toList();
+    List<Hecho> aAgregar = nuevosHechosConsensuados.stream().filter(h -> !actuales.contains(h)).toList();
+
+    if (!aEliminar.isEmpty())
+      actuales.removeAll(aEliminar);
+    if (!aAgregar.isEmpty())
+      actuales.addAll(aAgregar);
+
+    log.info("Colección {}: Fuentes={}, Min={}, Cambios: +{} / -{}", coleccion.getId(), totalFuentes, minRequerido,
+        aAgregar.size(), aEliminar.size());
+  }
+
+  @Transactional(readOnly = true)
+  public PaginacionDTOSalida<HechoDTOSalida> getHechos(String coleccionId, boolean navegacionCurada, Integer page,
+      Set<IFiltroStrategy> filtrosUsuario) {
+
+    int pageSize = 500;
+    int pageNumber = (page == null || page < 1) ? 0 : page - 1;
+    Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("fechaAcontecimiento").descending());
+
+    Specification<Hecho> spec = Specification.where(HechoSpecs.excluirEliminados());
+
+    if (coleccionId != null) {
+      Coleccion coleccion = coleccionRepository.findById(coleccionId)
+          .orElseThrow(() -> new EntityNotFoundException("Coleccion no encontrada"));
+
+      // Aplicar criterios internos de la colección (Filtros persistidos)
+      if (coleccion.getCriterios() != null && !coleccion.getCriterios().isEmpty()) {
+        for (IFiltroStrategy criterioInterno : coleccion.getCriterios()) {
+          spec = spec.and(filtroSpecFactory.getSpec(criterioInterno));
+        }
+      }
+
+      if (navegacionCurada && coleccion.getAlgoritmoConsenso() != null) {
+        spec = spec.and(HechoSpecs.deConsenso(coleccion.getAlgoritmoConsenso().getId()));
+      } else {
+        List<String> fuenteIds = coleccion.getFuentes().stream().map(Fuente::getId).toList();
+        if (fuenteIds.isEmpty()) {
+          return new PaginacionDTOSalida<>(new ArrayList<>(), 1, 0);
+        }
+
+        spec = spec.and(HechoSpecs.deFuentes(fuenteIds));
+      }
+    }
+
+    if (filtrosUsuario != null && !filtrosUsuario.isEmpty()) {
+      for (IFiltroStrategy filtroExterno : filtrosUsuario)
+        spec = spec.and(filtroSpecFactory.getSpec(filtroExterno));
+    }
+
+    Page<Hecho> pageResult = hechoRepository.findAll(spec, pageable);
+    List<HechoDTOSalida> dtos = pageResult.getContent().stream().map(hechoConverter::fromEntity)
+        .collect(Collectors.toList());
+
+    return new PaginacionDTOSalida<>(dtos, pageResult.getNumber() + 1, pageResult.getTotalPages());
   }
 
   @Transactional
   public void deleteColeccion(String coleccionId) {
     coleccionRepository.deleteById(coleccionId);
     log.info("EVENTO_ELIMINACION - Colección eliminada. ID: {}", coleccionId);
+  }
+
+  @Transactional(readOnly = true)
+  public List<ColeccionDTOSalida> getColeccionesDTO() {
+    List<Coleccion> colecciones = coleccionRepository.findAll();
+    return colecciones.stream().map(coleccionConverter::fromEntity).toList();
+  }
+
+  @Transactional(readOnly = true)
+  public ColeccionDTOSalida getColeccionDTO(String coleccionId) {
+    Coleccion coleccion = this.getColeccion(coleccionId);
+    return coleccionConverter.fromEntity(coleccion);
+  }
+
+  @Transactional
+  public void addFuente(String coleccionId, FuenteDTO dto) {
+    Fuente fuente = fuenteConverter.fromDTO(dto);
+    Coleccion coleccion = this.getColeccion(coleccionId);
+    coleccion.addFuente(fuente);
+    coleccion.setEstado(EstadoColeccion.PROCESANDO);
+    coleccionRepository.save(coleccion);
+    eventPublisher.publishEvent(new FuentesAProcesarEvent(coleccion.getId(), List.of(fuente.getId()), true));
+  }
+
+  @Transactional
+  public void removeFuente(String coleccionId, String fuenteId) {
+    Coleccion coleccion = this.getColeccion(coleccionId);
+    coleccion.removeFuente(fuenteId);
+    coleccion.setEstado(EstadoColeccion.PROCESANDO);
+    coleccionRepository.save(coleccion);
+    eventPublisher.publishEvent(new FuentesAProcesarEvent(coleccion.getId(), new ArrayList<>(), true));
+  }
+
+  @Transactional
+  public void updateAlgoritmoConsenso(String coleccionId, CambioAlgoritmoDTO algoritmoDTO) {
+    ColeccionDTOEntrada dto = new ColeccionDTOEntrada();
+    dto.setAlgoritmoConsenso(algoritmoDTO.getTipoAlgoritmo());
+    updateColeccion(coleccionId, dto);
+  }
+
+  @Transactional
+  public void addCriterio(String id, IFiltroStrategy filtro) {
+    Coleccion coleccion = this.getColeccion(id);
+    coleccion.addCriterio(filtro);
+    coleccion.setEstado(EstadoColeccion.PROCESANDO);
+    coleccionRepository.save(coleccion);
+    eventPublisher.publishEvent(new FuentesAProcesarEvent(coleccion.getId(), new ArrayList<>(), true));
+  }
+
+  @Transactional(readOnly = true)
+  public HechoDetallesDTOSalida getHechoDTO(Long idHecho) {
+    Hecho hecho = hechoRepository.findById(idHecho)
+        .orElseThrow(() -> new EntityNotFoundException("Hecho no encontrado"));
+    return hechoConverter.fromEntityDetails(hecho);
+  }
+
+  @Transactional(readOnly = true)
+  public ResumenActividadDTOSalida getResumenActividad() {
+    ResumenActividadDTOSalida resumen = new ResumenActividadDTOSalida();
+    resumen.setHechostotales(hechoRepository.count());
+    resumen.setFuentesTotales(fuenteRepository.count());
+    resumen.setSolicitudesEliminacion(solicitudRepository.countByEstadoActual_Estado(TipoEstado.PENDIENTE));
+    return resumen;
+  }
+
+  @Transactional(readOnly = true)
+  public ColeccionGQLDTOSalida getColeccionOutputDTO(String id, Boolean curadosFinal, Integer page,
+      Set<IFiltroStrategy> filtros) {
+    Coleccion coleccion = this.getColeccion(id);
+    ColeccionDTOSalida coleccionDTO = coleccionConverter.fromEntity(coleccion);
+    ColeccionGQLDTOSalida respuesta = new ColeccionGQLDTOSalida(coleccionDTO);
+    respuesta.setHechos(this.getHechos(id, curadosFinal, page, filtros));
+    return respuesta;
+  }
+
+  @Transactional(readOnly = true)
+  public List<String> obtenerTodosLosIdsColecciones() {
+    return coleccionRepository.findAll().stream().map(Coleccion::getId).collect(Collectors.toList());
   }
 
   @Transactional
@@ -317,205 +475,22 @@ public class ColeccionService {
         .orElseThrow(() -> new EntityNotFoundException("Coleccion no encontrada"));
     coleccion.setEstado(nuevoEstado);
     coleccionRepository.save(coleccion);
-    log.info("ESTADO ACTUALIZADO: Colección {} marcada como {}", coleccionId, nuevoEstado);
-  }
-
-  @Transactional
-  public void refrescoFuentes() {
-    List<Fuente> fuentes = fuenteRepository.findAll();
-    if (fuentes.isEmpty())
-      return;
-    List<String> todosLosIds = fuentes.stream()
-        .map(Fuente::getId)
-        .toList();
-    eventPublisher.publishEvent(new FuentesAProcesarEvent(null, todosLosIds, false));
-    log.info("Se disparó el refresco masivo para {} fuentes.", todosLosIds.size());
-  }
-
-  @Transactional
-  public void refrescarFuenteDinamica() {
-    Optional<Fuente> fuenteDinamica = fuenteRepository.findByTipoFuente(TipoFuente.DINAMICA);
-    if (fuenteDinamica.isPresent()) {
-      String fuenteId = fuenteDinamica.get().getId();
-      eventPublisher.publishEvent(new FuentesAProcesarEvent(null, List.of(fuenteId), false));
-      log.info("Se solicitó refresco manual para fuente dinamica {}", fuenteId);
-    }
   }
 
   @Transactional(readOnly = true)
-  public PaginacionDTOSalida<HechoDTOSalida> getHechos(String coleccionId, boolean navegacionCurada, Integer page,
-      Set<IFiltroStrategy> filtrosUsuario) {
-
-    int pageSize = 500;
-    int pageNumber = (page == null || page < 1) ? 0 : page - 1;
-    Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("fechaAcontecimiento").descending());
-
-    Specification<Hecho> spec = Specification.where(HechoSpecs.excluirEliminados());
-
-    if (coleccionId != null) {
-      Coleccion coleccion = coleccionRepository.findById(coleccionId)
-          .orElseThrow(() -> new EntityNotFoundException("Coleccion no encontrada"));
-
-      if (coleccion.getCriterios() != null && !coleccion.getCriterios().isEmpty()) {
-        for (IFiltroStrategy criterioInterno : coleccion.getCriterios()) {
-          spec = spec.and(convertirFiltroASpec(criterioInterno));
-        }
-      }
-
-      if (navegacionCurada) {
-        if (coleccion.getAlgoritmoConsenso() != null) {
-          spec = spec.and(HechoSpecs.deConsenso(coleccion.getAlgoritmoConsenso().getId()));
-        }
-      } else {
-        List<String> fuenteIds = coleccion.getFuentes().stream().map(Fuente::getId).toList();
-        if (fuenteIds.isEmpty()) {
-          return new PaginacionDTOSalida<>(new ArrayList<>(), 1, 0);
-        }
-        spec = spec.and(HechoSpecs.deFuentes(fuenteIds));
-      }
-    }
-
-    if (filtrosUsuario != null && !filtrosUsuario.isEmpty()) {
-      for (IFiltroStrategy filtroExterno : filtrosUsuario) {
-        spec = spec.and(convertirFiltroASpec(filtroExterno));
-      }
-    }
-
-    Page<Hecho> pageResult = hechoRepository.findAll(spec, pageable);
-
-    List<HechoDTOSalida> dtos = pageResult.getContent().stream()
-        .map(hechoConverter::fromEntity)
-        .collect(Collectors.toList());
-
-    return new PaginacionDTOSalida<>(
-        dtos,
-        pageResult.getNumber() + 1,
-        pageResult.getTotalPages());
-  }
-
-  private Specification<Hecho> convertirFiltroASpec(IFiltroStrategy filtro) {
-    if (filtro instanceof FiltroCategoria f) {
-      return HechoSpecs.conCategoria(f.getNombreCategoria());
-    } else if (filtro instanceof FiltroProvincia f) {
-      return HechoSpecs.enProvincia(f.getProvincia());
-    } else if (filtro instanceof FiltroMunicipio f) {
-      return HechoSpecs.enMunicipio(f.getMunicipio());
-    } else if (filtro instanceof FiltroDepartamento f) {
-      return HechoSpecs.enDepartamento(f.getDepartamento());
-    } else if (filtro instanceof FiltroFuente f) {
-      if (f.getTipoFuente() != null) {
-        return HechoSpecs.conTipoFuente(f.getTipoFuente().toString());
-      }
-    } else if (filtro instanceof FiltroFechaAcontecimiento f) {
-      LocalDate inicio = f.getFechaInicio() != null ? f.getFechaInicio().toLocalDate() : null;
-      LocalDate fin = f.getFechaFinal() != null ? f.getFechaFinal().toLocalDate() : null;
-      return HechoSpecs.fechaAcontecimientoEntre(inicio, fin);
-    } else if (filtro instanceof FiltroFechaReporte f) {
-      LocalDate inicio = f.getFechaInicio() != null ? f.getFechaInicio().toLocalDate() : null;
-      LocalDate fin = f.getFechaFinal() != null ? f.getFechaFinal().toLocalDate() : null;
-      return HechoSpecs.fechaReporteEntre(inicio, fin);
-    }
-    return Specification.where(null);
-  }
-
-  @Transactional
-  public void addFuente(String coleccionId, FuenteDTO dto) {
-    Fuente fuente = fuenteConverter.fromDTO(dto);
-    Coleccion coleccion = this.getColeccion(coleccionId);
-    coleccion.addFuente(fuente);
-    coleccionRepository.save(coleccion);
-  }
-
-  @Transactional
-  public void removeFuente(String coleccionId, String fuenteId) {
-    Coleccion coleccion = this.getColeccion(coleccionId);
-    coleccion.removeFuente(fuenteId);
-    coleccionRepository.save(coleccion);
-  }
-
-  @Transactional
-  public void updateAlgoritmoConsenso(String coleccionId, CambioAlgoritmoDTO algoritmoDTO) {
-    ColeccionDTOEntrada dto = new ColeccionDTOEntrada();
-    dto.setAlgoritmoConsenso(algoritmoDTO.getTipoAlgoritmo());
-    updateColeccion(coleccionId, dto);
-  }
-
-  private void optimizarYRefrescar(Coleccion coleccion) {
-    if (coleccion.getAlgoritmoConsenso() == null) {
-      coleccion.getAlgoritmoConsenso().getHechosConsensuados().clear();
-      return;
-    }
-    Specification<Hecho> spec = Specification.where(HechoSpecs.excluirEliminados());
-    List<String> fuenteIds = coleccion.getFuentes().stream().map(Fuente::getId).toList();
-    if (fuenteIds.isEmpty()) {
-      coleccion.getAlgoritmoConsenso().getHechosConsensuados().clear();
-      return;
-    }
-    spec = spec.and(HechoSpecs.deFuentes(fuenteIds));
-    if (coleccion.getCriterios() != null) {
-      for (IFiltroStrategy filtro : coleccion.getCriterios()) {
-        spec = spec.and(convertirFiltroASpec(filtro));
-      }
-    }
-    List<Hecho> hechosCandidatos = hechoRepository.findAll(spec);
-    coleccion.refrescarHechosCurados(new HashSet<>(hechosCandidatos));
-  }
-
-  @Transactional
-  public void refrescarHechosCurados(String coleccionId) {
-    log.info("Recalculando hechos curados para la colección {}", coleccionId);
-
-    List<Coleccion> colecciones;
-    if (coleccionId != null) {
-      colecciones = List.of(this.getColeccion(coleccionId));
-    } else {
-      colecciones = coleccionRepository.findAll();
-    }
-
-    for (Coleccion c : colecciones) {
-      optimizarYRefrescar(c);
-    }
-
-    coleccionRepository.saveAll(colecciones);
-
-    log.info("Recalculo de hechos curados finalizado para la colección {}", coleccionId);
-  }
-
-  @Transactional
-  public void addCriterio(String id, IFiltroStrategy filtro) {
-    Coleccion coleccion = this.getColeccion(id);
-    coleccion.addCriterio(filtro);
-    coleccionRepository.save(coleccion);
+  public Coleccion getColeccion(String coleccionId) {
+    return coleccionRepository.findById(coleccionId)
+        .orElseThrow(() -> new EntityNotFoundException("Coleccion con id " + coleccionId + " no encontrada"));
   }
 
   @Transactional(readOnly = true)
-  public HechoDetallesDTOSalida getHechoDTO(Long idHecho) {
-    Hecho hecho = this.getHechoById(idHecho);
-    return hechoConverter.fromEntityDetails(hecho);
-  }
-
-  @Transactional(readOnly = true)
-  Hecho getHechoById(Long idHecho) {
-    return hechoRepository.findById(idHecho)
-        .orElseThrow(() -> new EntityNotFoundException("Hecho con id " + idHecho + " no encontrada"));
-  }
-
-  @Transactional(readOnly = true)
-  public ResumenActividadDTOSalida getResumenActividad() {
-    ResumenActividadDTOSalida resumenActividadDTO = new ResumenActividadDTOSalida();
-    resumenActividadDTO.setHechostotales(hechoRepository.count());
-    resumenActividadDTO.setFuentesTotales(fuenteRepository.count());
-    resumenActividadDTO.setSolicitudesEliminacion(solicitudRepository.countByEstadoActual_Estado(TipoEstado.PENDIENTE));
-    return resumenActividadDTO;
-  }
-
-  @Transactional(readOnly = true)
-  public ColeccionGQLDTOSalida getColeccionOutputDTO(String id, Boolean curadosFinal, Integer page,
-      Set<IFiltroStrategy> filtros) {
-    Coleccion coleccion = this.getColeccion(id);
-    ColeccionDTOSalida coleccionDTO = coleccionConverter.fromEntity(coleccion);
-    ColeccionGQLDTOSalida respuesta = new ColeccionGQLDTOSalida(coleccionDTO);
-    respuesta.setHechos(this.getHechos(id, curadosFinal, page, filtros));
-    return respuesta;
+  public Integer solicitudesSpamPorColeccion(String coleccionId) {
+    Set<Hecho> hechos = this.getColeccion(coleccionId).getHechos();
+    AtomicReference<Integer> cantidadSolicitudesSpam = new AtomicReference<>(0);
+    hechos.forEach(h -> {
+      cantidadSolicitudesSpam
+          .getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(h.getId()));
+    });
+    return cantidadSolicitudesSpam.get();
   }
 }

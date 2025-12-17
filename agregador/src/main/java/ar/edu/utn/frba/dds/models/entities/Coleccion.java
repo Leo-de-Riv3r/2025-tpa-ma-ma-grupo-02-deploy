@@ -6,7 +6,6 @@ import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStra
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,16 +56,6 @@ public class Coleccion {
     } else {
       return hechos;
     }
-  }
-
-  public void refrescarHechosCurados(Set<Hecho> hechosPreFiltrados) {
-    if (algoritmoConsenso != null) {
-      algoritmoConsenso.actualizarHechos(hechosPreFiltrados, fuentes);
-    }
-  }
-
-  public void refrescarHechosCurados() {
-    this.refrescarHechosCurados(this.getHechos());
   }
 
   public Set<Hecho> getHechosCurados() {

@@ -2,22 +2,11 @@ package ar.edu.utn.frba.dds.models.entities;
 
 import ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy.IConsensoStrategy;
 import ar.edu.utn.frba.dds.models.entities.strategies.FiltroStrategy.IFiltroStrategy;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.Objects;
 
 import lombok.*;
 
@@ -28,7 +17,6 @@ import lombok.*;
 @Setter
 @Entity
 @Table(name = "hecho")
-
 public class Hecho {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,13 +50,23 @@ public class Hecho {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
+    if (this == o)
       return true;
-    }
-    if (!(o instanceof Hecho hecho)) {
+    if (!(o instanceof Hecho hecho))
       return false;
-    }
-    return titulo.equals(hecho.titulo);
+
+    return Objects.equals(titulo, hecho.titulo) &&
+        Objects.equals(categoria, hecho.categoria) &&
+        Objects.equals(descripcion, hecho.descripcion) &&
+        (fechaAcontecimiento != null && hecho.fechaAcontecimiento != null &&
+            fechaAcontecimiento.compareTo(hecho.fechaAcontecimiento) == 0)
+        &&
+        Objects.equals(ubicacion, hecho.ubicacion);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(titulo, categoria, descripcion, fechaAcontecimiento, ubicacion);
   }
 
   public boolean cumpleFiltros(Set<IFiltroStrategy> filtros) {

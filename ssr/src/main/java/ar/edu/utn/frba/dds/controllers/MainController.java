@@ -410,6 +410,9 @@ public class MainController {
       agregadorService.crearColeccion(coleccionNueva);
       redirectAttributes.addFlashAttribute("success", "Colección creada correctamente.");
     } catch (Exception e) {
+      if (e instanceof TokenExpiradoException) {
+        throw (TokenExpiradoException) e;
+      }
       redirectAttributes.addFlashAttribute("error", "Error al crear: " + e.getMessage());
       return "redirect:/colecciones/nuevaColeccion";
     }

@@ -1,25 +1,10 @@
 package ar.edu.utn.frba.dds.models.entities.strategies.ConsensoStrategy;
 
-import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.enums.TipoAlgoritmo;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,45 +22,16 @@ public abstract class IConsensoStrategy {
   @Column
   protected Integer cantidadMinimaApariciones = 0;
 
-  public abstract TipoAlgoritmo getTipo();
-
   @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
   @JoinTable(name = "hecho_consensuado", joinColumns = @JoinColumn(name = "algoritmo_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "hecho_id", referencedColumnName = "id"))
   private Set<Hecho> hechosConsensuados = new HashSet<>();
 
-  protected Boolean cumpleConsensoBase(Hecho hecho, Set<Fuente> fuentes, Integer cantMin) {
-    cantidadMinimaApariciones = cantMin;
+  public abstract TipoAlgoritmo getTipo();
 
-    long apariciones = fuentes.stream()
-        .map(Fuente::getHechos)
-        .filter(hechosDeFuente -> hechosDeFuente.stream()
-            .anyMatch(h -> sonHechosIguales(h, hecho)))
-        .count();
-    return apariciones >= cantMin;
-  }
-
-  public abstract Boolean cumpleConsenso(Hecho hecho, Set<Fuente> fuentes);
-
-  public void actualizarHechos(Set<Hecho> hechos, Set<Fuente> fuentes) {
-    this.hechosConsensuados.clear();
-    Set<Hecho> hechosC = hechos.stream()
-        .filter(h -> cumpleConsenso(h, fuentes))
-        .collect(Collectors.toSet());
-
-    this.hechosConsensuados.addAll(hechosC);
-  }
+  // Nuevo método abstracto: solo calcula el número
+  public abstract Integer calcularMinimoRequerido(int totalFuentes);
 
   public Set<Hecho> getHechosCurados() {
     return this.hechosConsensuados;
-  }
-
-  private Boolean sonHechosIguales(Hecho h1, Hecho h2) {
-    if (h1 == null || h2 == null)
-      return false;
-
-    Boolean titulosIguales = h1.getTitulo() != null && h1.getTitulo().equals(h2.getTitulo());
-    Boolean categoriasIguales = h1.getCategoria() != null && h1.getCategoria().equals(h2.getCategoria());
-    Boolean descripcionesIguales = Objects.equals(h1.getDescripcion(), h2.getDescripcion());
-    return titulosIguales && categoriasIguales && descripcionesIguales;
   }
 }

@@ -13,4 +13,7 @@ public interface IColeccionRepository extends JpaRepository<Coleccion, String> {
     List<Coleccion> findColeccionesProcesandoPorUrlFuente(@Param("sufijoUrl") String sufijoUrl);
 
     List<Coleccion> findByEstado(EstadoColeccion estado);
+
+    @Query("SELECT DISTINCT c FROM Coleccion c JOIN c.fuentes f WHERE f.id IN :fuenteIds")
+    List<Coleccion> findColeccionesByFuentesId(@Param("fuenteIds") List<String> fuenteIds);
 }
