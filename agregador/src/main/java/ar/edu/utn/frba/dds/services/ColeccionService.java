@@ -126,6 +126,7 @@ public class ColeccionService {
     }
 
     if (dto.getCriterios() != null) {
+      System.out.println(dto.getCriterios());
       Set<IFiltroStrategy> criterios = dto.getCriterios().stream()
           .map(FiltroStrategyFactory::fromDTO).collect(Collectors.toSet());
       coleccion.setearCriterios(criterios);
@@ -249,20 +250,16 @@ public class ColeccionService {
         throw new IllegalArgumentException("Algoritmo inválido");
       }
     } else {
-      if (coleccion.getAlgoritmoConsenso() != null) {
-        recalcularConsenso = true;
-        coleccion.setAlgoritmoConsenso(null);
-      }
+      recalcularConsenso = false;
+      coleccion.setAlgoritmoConsenso(null);
     }
 
     if (dto.getCriterios() != null) {
       Set<IFiltroStrategy> criterios = dto.getCriterios().stream()
           .map(FiltroStrategyFactory::fromDTO).collect(Collectors.toSet());
       coleccion.setearCriterios(criterios);
-      recalcularConsenso = true;
     } else {
       if (!coleccion.getCriterios().isEmpty()) {
-        recalcularConsenso = true;
         coleccion.clearCriterios();
       }
     }
