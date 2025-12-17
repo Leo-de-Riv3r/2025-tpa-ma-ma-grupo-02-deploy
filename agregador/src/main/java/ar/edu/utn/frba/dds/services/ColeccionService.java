@@ -104,6 +104,8 @@ public class ColeccionService {
       }
     }
 
+    List<String> idsFuentes = new ArrayList<>();
+
     if (dto.getFuentes() != null) {
       Set<Fuente> fuentes = new HashSet<>();
       dto.getFuentes().forEach(fuenteDTO -> {
@@ -115,6 +117,7 @@ public class ColeccionService {
         if (fuenteExistente.isPresent()) {
           fuente = fuenteExistente.get();
         } else {
+          idsFuentes.add(fuente.getId());
           fuente = fuenteRepository.save(fuente);
         }
         fuentes.add(fuente);
@@ -128,11 +131,11 @@ public class ColeccionService {
       coleccion.setearCriterios(criterios);
     }
 
-    Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
+    if (!idsFuentes.isEmpty() || calcularConsenso) {
+      coleccion.setEstado(EstadoColeccion.PROCESANDO);
+    }
 
-    List<String> idsFuentes = coleccionGuardada.getFuentes().stream()
-        .map(Fuente::getId)
-        .toList();
+    Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
 
     if (!idsFuentes.isEmpty()) {
       eventPublisher.publishEvent(new FuentesAProcesarEvent(
@@ -209,13 +212,8 @@ public class ColeccionService {
 
         if (fuenteExistente.isPresent()) {
           fuente = fuenteExistente.get();
-          if (fuente.getTipoFuente() == TipoFuente.DINAMICA) {
-            coleccion.setEstado(EstadoColeccion.PROCESANDO);
-            idsFuentesParaProcesar.add(fuente.getId());
-          }
         } else {
           fuente = fuenteRepository.save(fuente);
-          coleccion.setEstado(EstadoColeccion.PROCESANDO);
           idsFuentesParaProcesar.add(fuente.getId());
         }
         fuentesNuevas.add(fuente);
@@ -269,6 +267,10 @@ public class ColeccionService {
       }
     }
 
+    if (!idsFuentesParaProcesar.isEmpty() || recalcularConsenso) {
+      coleccion.setEstado(EstadoColeccion.PROCESANDO);
+    }
+
     Coleccion coleccionGuardada = coleccionRepository.save(coleccion);
 
     if (!idsFuentesParaProcesar.isEmpty()) {
@@ -313,12 +315,12 @@ public class ColeccionService {
   }
 
   @Transactional
-  public void marcarColeccionComoDisponible(String coleccionId) {
+  public void actualizarEstadoColeccion(String coleccionId, EstadoColeccion nuevoEstado) {
     Coleccion coleccion = coleccionRepository.findById(coleccionId)
         .orElseThrow(() -> new EntityNotFoundException("Coleccion no encontrada"));
-    coleccion.setEstado(EstadoColeccion.DISPONIBLE);
+    coleccion.setEstado(nuevoEstado);
     coleccionRepository.save(coleccion);
-    log.info("ESTADO ACTUALIZADO: Colección {} marcada como DISPONIBLE", coleccionId);
+    log.info("ESTADO ACTUALIZADO: Colección {} marcada como {}", coleccionId, nuevoEstado);
   }
 
   @Transactional
@@ -351,10 +353,8 @@ public class ColeccionService {
     int pageNumber = (page == null || page < 1) ? 0 : page - 1;
     Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("fechaAcontecimiento").descending());
 
-    // 2. Especificación Base
     Specification<Hecho> spec = Specification.where(HechoSpecs.excluirEliminados());
 
-    // 3. Lógica de Colección
     if (coleccionId != null) {
       Coleccion coleccion = coleccionRepository.findById(coleccionId)
           .orElseThrow(() -> new EntityNotFoundException("Coleccion no encontrada"));

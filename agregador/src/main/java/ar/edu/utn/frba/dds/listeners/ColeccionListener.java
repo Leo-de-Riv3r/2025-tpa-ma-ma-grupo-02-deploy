@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.listeners;
 
+import ar.edu.utn.frba.dds.models.entities.enums.EstadoColeccion;
 import ar.edu.utn.frba.dds.models.events.FuentesAProcesarEvent;
 import ar.edu.utn.frba.dds.services.ColeccionService;
 import ar.edu.utn.frba.dds.services.ProcesadorFuentesService;
@@ -47,7 +48,7 @@ public class ColeccionListener {
                     if (event.recalcularConsenso()) {
                         coleccionService.refrescarHechosCurados(event.coleccionId());
                     }
-                    coleccionService.marcarColeccionComoDisponible(event.coleccionId());
+                    coleccionService.actualizarEstadoColeccion(event.coleccionId(), EstadoColeccion.DISPONIBLE);
                 }
             } catch (Exception e) {
                 log.error("Error al finalizar procesamiento", e);
