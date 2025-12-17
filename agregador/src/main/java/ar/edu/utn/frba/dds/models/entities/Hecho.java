@@ -16,7 +16,9 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "hecho")
+@Table(name = "hecho", indexes = {
+    @Index(name = "idx_hecho_eliminado", columnList = "eliminado") // Indice para velocidad
+})
 public class Hecho {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,6 +49,10 @@ public class Hecho {
 
   @ManyToMany(mappedBy = "hechosConsensuados", fetch = FetchType.LAZY)
   private Set<IConsensoStrategy> consensos;
+
+  @Builder.Default
+  @Column(nullable = false, columnDefinition = "boolean default false")
+  private Boolean eliminado = false;
 
   @Override
   public boolean equals(Object o) {

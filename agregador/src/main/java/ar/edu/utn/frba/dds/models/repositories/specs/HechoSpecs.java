@@ -42,14 +42,9 @@ public class HechoSpecs {
 
     public static Specification<Hecho> excluirEliminados() {
         return (root, query, cb) -> {
-            Subquery<Long> subquery = query.subquery(Long.class);
-            Root<Solicitud> subRoot = subquery.from(Solicitud.class);
-
-            subquery.select(subRoot.get("hecho").get("id"));
-            subquery.where(cb.equal(subRoot.get("estadoActual").get("estado"), TipoEstado.ACEPTADA));
-
-            // WHERE hecho.id NOT IN (subquery)
-            return cb.not(root.get("id").in(subquery));
+            return cb.or(
+                    cb.isFalse(root.get("eliminado")),
+                    cb.isNull(root.get("eliminado")));
         };
     }
 

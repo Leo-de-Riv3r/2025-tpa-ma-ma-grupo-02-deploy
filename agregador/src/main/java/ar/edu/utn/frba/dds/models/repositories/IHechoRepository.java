@@ -33,6 +33,7 @@ public interface IHechoRepository extends JpaRepository<Hecho, Long>, JpaSpecifi
                         "    SELECT MIN(h2.id) " +
                         "    FROM Hecho h2 JOIN h2.fuentes f " +
                         "    WHERE f.id IN :fuenteIds " +
+                        "    AND h2.eliminado = false " +
                         "    GROUP BY h2.titulo, h2.categoria, h2.descripcion, FUNCTION('DATE', h2.fechaAcontecimiento), "
                         +
                         "             h2.ubicacion.lugar.provincia, h2.ubicacion.lugar.municipio, h2.ubicacion.lugar.departamento "
@@ -48,11 +49,12 @@ public interface IHechoRepository extends JpaRepository<Hecho, Long>, JpaSpecifi
                         "    SELECT MIN(h2.id) " +
                         "    FROM Hecho h2 JOIN h2.fuentes f " +
                         "    WHERE f.id IN :fuenteIds " +
+                        "    AND h2.eliminado = false " +
                         "    GROUP BY h2.titulo " +
                         "    HAVING COUNT(DISTINCT f.id) >= :minimoConsenso " +
                         "       AND COUNT(DISTINCT h2.descripcion) = 1 " +
-                        "       AND COUNT(DISTINCT h2.categoria) = 1 " + 
-                        "       AND COUNT(DISTINCT FUNCTION('DATE', h2.fechaAcontecimiento)) = 1 " + 
+                        "       AND COUNT(DISTINCT h2.categoria) = 1 " +
+                        "       AND COUNT(DISTINCT FUNCTION('DATE', h2.fechaAcontecimiento)) = 1 " +
                         "       AND COUNT(DISTINCT h2.ubicacion.lugar.provincia) = 1 " +
                         "       AND COUNT(DISTINCT h2.ubicacion.lugar.municipio) = 1 " +
                         ")")

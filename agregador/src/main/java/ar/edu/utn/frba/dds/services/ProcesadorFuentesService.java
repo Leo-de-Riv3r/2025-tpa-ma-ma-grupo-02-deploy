@@ -84,6 +84,11 @@ public class ProcesadorFuentesService {
         if (idExt != null && mapaHechosActualesEnDB.containsKey(idExt)) {
           Hecho existente = mapaHechosActualesEnDB.get(idExt);
 
+          if (Boolean.TRUE.equals(existente.getEliminado())) {
+            mapaHechosActualesEnDB.remove(idExt);
+            continue;
+          }
+
           if (sonDiferentes(existente, nuevo)) {
             existente.setTitulo(nuevo.getTitulo());
             existente.setDescripcion(nuevo.getDescripcion());

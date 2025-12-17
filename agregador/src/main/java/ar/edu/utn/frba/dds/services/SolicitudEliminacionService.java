@@ -1,4 +1,5 @@
 package ar.edu.utn.frba.dds.services;
+
 import ar.edu.utn.frba.dds.ai.DetectorSpamAi;
 import ar.edu.utn.frba.dds.models.dtos.input.RevisionHechoDTO;
 import ar.edu.utn.frba.dds.models.dtos.input.SolicitudDTOEntrada;
@@ -82,8 +83,10 @@ public class SolicitudEliminacionService {
     Solicitud solicitud = this.getSolicitudEliminacionById(id);
     solicitud.aceptar();
     log.info("Solicitud aceptada, Id: {}, Titulo: {}", solicitud.getId(), solicitud.getTitulo());
+
+    Hecho hecho = solicitud.getHecho();
+    hecho.setEliminado(true);
     try {
-      Hecho hecho = solicitud.getHecho();
       List<Fuente> fuentesDelHecho = fuenteRepository.findFuentesByHechoId(hecho.getId());
 
       for (Fuente fuente : fuentesDelHecho) {
@@ -95,7 +98,7 @@ public class SolicitudEliminacionService {
             RevisionHechoDTO revision = new RevisionHechoDTO();
             revision.setSupervisor("Sistema de Eliminación Automática");
             revision.setComentario("Rechazado por solicitud de eliminación. Motivo: " + solicitud.getTexto());
-            
+
             log.info("PROPAGANDO ELIMINACIÓN: Llamando a {}", urlDestino);
             webClient.put()
                 .uri(urlDestino)
@@ -200,32 +203,32 @@ public class SolicitudEliminacionService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (authentication == null) {
-        throw new RuntimeException("No hay autenticación presente en el SecurityContext");
+      throw new RuntimeException("No hay autenticación presente en el SecurityContext");
     }
 
     if (authentication.getPrincipal() instanceof Jwt) {
-        Jwt jwt = (Jwt) authentication.getPrincipal();
-        return jwt.getTokenValue();
+      Jwt jwt = (Jwt) authentication.getPrincipal();
+      return jwt.getTokenValue();
     }
 
     if (authentication.getCredentials() instanceof String) {
-        return (String) authentication.getCredentials();
+      return (String) authentication.getCredentials();
     }
-    
+
     try {
-        var attr = (org.springframework.web.context.request.ServletRequestAttributes) 
-            org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
-        if (attr != null) {
-            String bearer = attr.getRequest().getHeader("Authorization");
-            if (bearer != null && bearer.startsWith("Bearer ")) {
-                return bearer.substring(7);
-            }
+      var attr = (org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder
+          .getRequestAttributes();
+      if (attr != null) {
+        String bearer = attr.getRequest().getHeader("Authorization");
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+          return bearer.substring(7);
         }
+      }
     } catch (Exception e) {
     }
 
-    throw new RuntimeException("No se encontró token. Principal es tipo: " 
-        + authentication.getPrincipal().getClass().getName() 
+    throw new RuntimeException("No se encontró token. Principal es tipo: "
+        + authentication.getPrincipal().getClass().getName()
         + " | Credentials es: " + authentication.getCredentials());
-}
+  }
 }
