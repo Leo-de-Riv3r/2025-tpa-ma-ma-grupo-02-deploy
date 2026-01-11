@@ -1,0 +1,75 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      routes:
+        # 1. AUTH MANAGER
+        - id: authManager
+          uri: lb://authManager
+          predicates:
+            - Path=/authManager/**
+          filters:
+            - StripPrefix=1
+        # 2. AGREGADOR
+        - id: agregador
+          uri: lb://agregador
+          predicates:
+            - Path=/agregador/**
+          filters:
+          # Quita /dinamica para que al micro le llegue solo /hechos
+            - StripPrefix=1
+
+        # 3. FUENTE PROXY (Controller espera: /api/hechos)
+        - id: fuente-proxy
+          uri: lb://fuente-proxy
+          predicates:
+            - Path=/proxy/**
+          filters:
+            - StripPrefix=1
+
+        # 4. FUENTE DINÁMICA (Controller espera: /hechos)
+        - id: fuente-dinamica
+          uri: lb://fuente-dinamica
+          predicates:
+            - Path=/dinamica/**
+          filters:
+            # Quita /dinamica para que al micro le llegue solo /hechos
+            - StripPrefix=1
+
+        # 5. FUENTE ESTÁTICA (Opcional, si existe separada)
+        - id: fuente-estatica
+          uri: lb://fuente-estatica
+          predicates:
+            - Path=/estatica/**
+          filters:
+            - StripPrefix=1
+        - id: estadisticas
+          uri: lb://estadisticas
+          predicates:
+            - Path=/estadisticas/**
+          filters:
+            - StripPrefix=1
+      default-filters:
+        - AddResponseHeader=X-Content-Type-Options, nosniff
+        - AddResponseHeader=X-Frame-Options, DENY
+        - AddResponseHeader=X-XSS-Protection, 1; mode=block
+        - AddResponseHeader=Referrer-Policy, strict-origin-when-cross-origin
+        - AddResponseHeader=Content-Security-Policy, >
+          default-src 'self';
+          script-src 'self';
+          object-src 'none';
+          base-uri 'none';
+          frame-ancestors 'none'
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

@@ -26,13 +26,15 @@
     </properties>
 
     <modules>
-        <module>fuente_estatica</module>
-        <module>fuente_dinamica</module>
-        <module>fuente_proxy</module>
+        <module>fuente-estatica</module>
+        <module>fuente-dinamica</module>
+        <module>fuente-proxy</module>
         <module>agregador</module>
         <module>estadisticas</module>
         <module>authManager</module>
         <module>ssr</module>
+        <module>discovery-service</module>
+        <module>api-gateway</module>
     </modules>
 
 
@@ -41,7 +43,11 @@
 
         <!-- https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom -->
 
-
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>4.2.2</version>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -73,10 +79,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -20,6 +20,11 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
     return http
         .csrf(AbstractHttpConfigurer::disable)
+        .headers(headers -> headers
+            .contentSecurityPolicy(csp -> csp
+                .policyDirectives("default-src 'self'")
+            )
+        )
         .authorizeHttpRequests(auth -> auth
             // modificar esto
             // Permitir GET libremente
@@ -32,8 +37,10 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.PUT, "/colecciones/**").authenticated()
             .requestMatchers(HttpMethod.DELETE, "/colecciones/**").authenticated()
             .anyRequest().authenticated())
+
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
         .build();
   }
 }

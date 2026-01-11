@@ -494,7 +494,7 @@
                             const hiddenInput = document.createElement('input');
                             hiddenInput.type = 'hidden';
                             hiddenInput.name = input.name;
-                            hiddenInput.value = FUENTE_ESTATICA_URL + "/api/fuentes/" + data.id;
+                            hiddenInput.value = data.id;
 
                             input.parentNode.replaceChild(hiddenInput, input);
                         }

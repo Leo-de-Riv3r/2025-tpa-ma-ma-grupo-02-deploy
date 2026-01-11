@@ -1,0 +1,108 @@
+@startuml
+!theme plain
+skinparam componentStyle uml2
+skinparam nodesep 60
+skinparam ranksep 80
+
+title Diagrama de Arquitectura de Microservicios - MetaMapa
+
+package "Security" {
+    node "Auth0 (SSO)" as auth0 <<Server>> {
+        component "Auth0" as auth0_comp
+    }
+}
+
+node "PC / Mobile" {
+    component "Browser" as browser
+}
+
+package "Orchestration" {
+    node "Service Registry Server" as registry_server <<Server>> {
+        component "Service Registry" as eureka
+    }
+
+    node "API Gateway Server" as gateway_server <<Server>> {
+        component "API Gateway" as gateway
+    }
+}
+
+package "Domain" {
+    node "Service I - Server" as s1_server {
+        component "Service I" as s1
+    }
+    node "Service II - Server" as s2_server {
+        component "Service II" as s2
+    }
+    node "Service III - Server" as s3_server {
+        component "Service III" as s3
+    }
+    node "Service IV - Server" as s4_server {
+        component "Service IV" as s4
+    }
+    node "Service V - Server" as s5_server {
+        component "Service V" as s5
+    }
+}
+
+package "Persistence" {
+    node "DB Server (Service I)" as db1_server {
+        database "MySQL 8" as db1
+    }
+    node "DB Server (Service II)" as db2_server {
+        database "MySQL 8" as db2
+    }
+    node "DB Server (Service III)" as db3_server {
+        database "MySQL 8" as db3
+    }
+    node "DB Server (Service IV)" as db4_server {
+        database "MySQL 8" as db4
+    }
+    node "DB Server (Service V)" as db5_server {
+        database "MySQL 8" as db5
+    }
+}
+
+' Externos
+node "Ministerio de Salud" as min_salud
+node "ChatGPT" as chatgpt
+
+' Relaciones de Frontend y Gateway
+browser -right-> gateway : HTTPS
+gateway -up-> eureka : HTTP
+auth0_comp <.down. gateway : JWT Validation
+
+' Relaciones Gateway a Servicios (Domain)
+gateway --> s1 : HTTP
+gateway --> s2 : HTTP
+gateway --> s3 : HTTP
+gateway --> s4 : HTTP
+gateway --> s5 : HTTP
+
+' Relaciones entre servicios
+s1 -down-> s2 : HTTP
+s2 -right-> s4 : HTTP
+s3 -up-> s2 : HTTP
+s3 -right-> s4 : HTTP
+s4 -down-> s5 : HTTP
+
+' Persistencia
+s1 -right-> db1 : TCP/IP
+s2 -right-> db2 : TCP/IP
+s3 -right-> db3 : TCP/IP
+s4 -right-> db4 : TCP/IP
+s5 -right-> db5 : TCP/IP
+
+' Conexiones Externas
+s3 -down-> min_salud : HTTPS - API REST
+s5 -down-> chatgpt : HTTPS
+
+' Notas (Labels del diagrama)
+note bottom of s1_server
+  * Service I - Personas Usuarias
+  * Service II - Catálogo y Vinculación
+  * Service III - Profesionales
+  * Service IV - Asignación
+  * Service V - Seguimiento
+end note
+
+@endum

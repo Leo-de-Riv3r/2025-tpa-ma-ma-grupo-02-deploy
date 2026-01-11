@@ -27,6 +27,11 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .csrf(AbstractHttpConfigurer::disable)
+        .headers(headers -> headers
+            .contentSecurityPolicy(csp -> csp
+                .policyDirectives("default-src 'self'")
+            )
+        )
         .authorizeHttpRequests(req -> req.requestMatchers("/auth/**", "/actuator/**", "/access/**")
             .permitAll()
             .anyRequest()
@@ -40,9 +45,9 @@ public class SecurityConfig {
             .addLogoutHandler(((request, response, authentication) -> {
               String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
             }))
-            .logoutSuccessHandler(((request, response, authentication) -> {
-              SecurityContextHolder.clearContext();
-            })));
+            .logoutSuccessHandler(((request, response, authentication) ->
+              SecurityContextHolder.clearContext()
+            )));
 
     return http.build();
   }

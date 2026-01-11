@@ -31,8 +31,8 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http, RateLimitFilter rateLimitFilter) throws Exception {
 
     http
-        .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class).
-        authorizeHttpRequests(
+        .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+        .authorizeHttpRequests(
             auth -> auth
                 // Recursos estáticos y login público
                 .requestMatchers("/", "/home/**","/registro", "/registrar", "/login", "/css/**", "/js/**", "/media/**", "/oauth2/**", "/crear-hecho", "/subir-hecho", "/actuator/**").permitAll()

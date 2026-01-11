@@ -1,13 +1,20 @@
 package ar.edu.utn.frba.dds.services;
 
+
+import ar.edu.utn.frba.dds.client.FuenteDinamicaClient;
+import ar.edu.utn.frba.dds.client.FuenteEstaticaClient;
+import ar.edu.utn.frba.dds.client.FuenteProxyClient;
+import ar.edu.utn.frba.dds.models.dtos.HechoDTOEntrada;
 import ar.edu.utn.frba.dds.models.entities.Fuente;
 import ar.edu.utn.frba.dds.models.entities.Hecho;
 import ar.edu.utn.frba.dds.models.entities.Origen;
+import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import ar.edu.utn.frba.dds.models.entities.utils.HechoConverter;
 import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.IHechoRepository;
 import ar.edu.utn.frba.dds.models.repositories.IOrigenRepository;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,25 +31,56 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
 @Service
 public class ProcesadorFuentesService {
-
   private final IHechoRepository hechoRepository;
   private final IOrigenRepository origenRepo;
   private final IFuenteRepository fuenteRepository;
   private final HechoConverter hechoConverter;
-  private final WebClient webClient;
+  private final FuenteProxyClient fuenteProxyClient;
+  private final FuenteDinamicaClient fuenteDinamicaClient;
+  private final FuenteEstaticaClient fuenteEstaticaClient;
 
   public ProcesadorFuentesService(IHechoRepository hechoRepository, IOrigenRepository origenRepo,
-      IFuenteRepository fuenteRepository, HechoConverter hechoConverter, WebClient.Builder webClientBuilder) {
+                                  IFuenteRepository fuenteRepository, HechoConverter hechoConverter, FuenteProxyClient fuenteProxyClient, FuenteDinamicaClient fuenteDinamicaClient, FuenteEstaticaClient fuenteEstaticaClient) {
     this.hechoRepository = hechoRepository;
     this.origenRepo = origenRepo;
     this.fuenteRepository = fuenteRepository;
     this.hechoConverter = hechoConverter;
-    this.webClient = webClientBuilder.build();
+    this.fuenteProxyClient = fuenteProxyClient;
+    this.fuenteDinamicaClient = fuenteDinamicaClient;
+    this.fuenteEstaticaClient = fuenteEstaticaClient;
+  }
+
+  @CircuitBreaker(name = "fuentesExternas", fallbackMethod = "fallbackHechos")
+  public Set<Hecho> obtenerHechosRefrescados(Fuente fuente) {
+    Set<Hecho> hechosExternos = new HashSet<>();
+    try {
+      if (fuente.getTipoFuente() == TipoFuente.DINAMICA) {
+        hechosExternos = fuenteDinamicaClient.getHechos().stream()
+            .map(dto -> hechoConverter.fromDTO(dto, fuente.getTipoFuente()))
+            .collect(Collectors.toSet());
+      }
+
+      if (fuente.getTipoFuente() == TipoFuente.PROXY_API) {
+        hechosExternos = fuenteProxyClient.getHechos().stream()
+            .map(dto -> hechoConverter.fromDTO(dto, fuente.getTipoFuente()))
+            .collect(Collectors.toSet());
+      }
+
+      if(fuente.getTipoFuente() == TipoFuente.ESTATICA) {
+        hechosExternos = fuenteEstaticaClient.getHechos((long) Integer.parseInt(fuente.getUrl())).stream()
+            .map(dto -> hechoConverter.fromDTO(dto, fuente.getTipoFuente()))
+            .collect(Collectors.toSet());
+      }
+
+      return hechosExternos;
+
+    } catch (Exception e) {
+      throw new RuntimeException("Error al tratar de obtener hechos de la fuente " + fuente.getTipoFuente().toString(), e);
+    }
   }
 
   @Async
@@ -53,7 +91,9 @@ public class ProcesadorFuentesService {
       Fuente fuente = fuenteRepository.findById(fuenteId).orElseThrow();
       log.info("ASYNC: Inicio sincronización fuente: {}", fuente.getUrl());
 
-      Set<Hecho> hechosEntrantes = fuente.obtenerHechosRefrescados(hechoConverter, webClient);
+      Set<Hecho> hechosEntrantes = obtenerHechosRefrescados(fuente);
+
+
       if (hechosEntrantes.isEmpty()) {
         log.info("Fuente vacía o sin cambios. Fin.");
         return CompletableFuture.completedFuture(null);
@@ -219,5 +259,11 @@ public class ProcesadorFuentesService {
     } else {
       return input;
     }
+  }
+
+  public Set<Hecho> fallbackHechos(Fuente fuente, Throwable e) {
+    log.error("Circuit Breaker activado para la fuente {}. Razón: {}", fuente.getTipoFuente(), e.getMessage());
+    // Retornamos un set vacío o datos cacheados para que el sistema siga funcionando
+    return new HashSet<>();
   }
 }
