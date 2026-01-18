@@ -14,6 +14,8 @@ import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import ar.edu.utn.frba.dds.models.entities.utils.SolicitudConverter;
 import ar.edu.utn.frba.dds.models.repositories.IFuenteRepository;
 import ar.edu.utn.frba.dds.models.repositories.ISolicitudEliminacionRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.oauth2.jwt.Jwt;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -64,6 +66,7 @@ public class SolicitudEliminacionService {
     }
   }
 
+  @CacheEvict
   private void marcarComoSpam(Long id) {
     Solicitud solicitud = this.getSolicitudEliminacionById(id);
     solicitud.marcarSpam();
@@ -71,6 +74,7 @@ public class SolicitudEliminacionService {
     solicitudesEliminacionRepo.save(solicitud);
   }
 
+  @CacheEvict
   public void rechazarSolicitudEliminacion(Long id) {
     Solicitud solicitud = this.getSolicitudEliminacionById(id);
     solicitud.rechazar();
@@ -79,6 +83,7 @@ public class SolicitudEliminacionService {
   }
 
   @Transactional
+  @CacheEvict
   public void aceptarSolicitudEliminacion(Long id) {
     Solicitud solicitud = this.getSolicitudEliminacionById(id);
     solicitud.aceptar();
@@ -125,6 +130,7 @@ public class SolicitudEliminacionService {
         solicitud.estaAceptada());
   }
 
+  @Cacheable(value = "solicitudes", key = "#page + '-' + #pendientes + '-' + #filterByCreator")
   public PaginacionDTOSalida<SolicitudEliminacionDTOSalida> getSolicitudesEliminacionDTO(
       Integer page,
       Boolean pendientes,
@@ -194,6 +200,7 @@ public class SolicitudEliminacionService {
         .orElseThrow(() -> new EntityNotFoundException("Solicitud no encontrada"));
   }
 
+  @Cacheable(value = "solicitud", key = "#id")
   public SolicitudDTOSalida getSolicitudEliminacionDTO(Long id) {
     Solicitud solicitud = getSolicitudEliminacionById(id);
     return solicitudConverter.fromEntityDetails(solicitud);

@@ -4,9 +4,11 @@ import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter @Getter
+@NoArgsConstructor
 public class HechoDetallesDTOSalida {
   private Long id;
   private String titulo;

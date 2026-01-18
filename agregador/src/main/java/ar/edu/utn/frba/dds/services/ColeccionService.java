@@ -33,6 +33,8 @@ import ar.edu.utn.frba.dds.models.repositories.specs.HechoSpecs;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -143,6 +145,7 @@ public class ColeccionService {
   }
 
   @Transactional
+  @CacheEvict(value = "colecciones", key = "#coleccionId")
   public void updateColeccion(String coleccionId, ColeccionDTOEntrada dto) {
     Coleccion coleccion = this.getColeccion(coleccionId);
     boolean recalcularConsenso = false;
@@ -211,6 +214,7 @@ public class ColeccionService {
   }
 
   @Transactional
+  @CacheEvict(value = "colecciones", key = "#coleccionId")
   public void refrescoFuentes() {
     List<Fuente> fuentes = fuenteRepository.findAll();
     if (fuentes.isEmpty())
@@ -299,7 +303,7 @@ public class ColeccionService {
     if (coleccion.getCriterios() != null && !coleccion.getCriterios().isEmpty()) {
       nuevosHechosConsensuados = hechosCrudos.stream()
           .filter(h -> h.cumpleFiltros(coleccion.getCriterios()))
-          .collect(Collectors.toList());
+          .toList();
     } else {
       nuevosHechosConsensuados = hechosCrudos;
     }
@@ -317,6 +321,7 @@ public class ColeccionService {
         aAgregar.size(), aEliminar.size());
   }
 
+  @Cacheable(value = "colecciones", key = "#coleccionId + '-' + #page + '-' + #navegacionCurada")
   @Transactional(readOnly = true)
   public PaginacionDTOSalida<HechoDTOSalida> getHechos(String coleccionId, boolean navegacionCurada, Integer page,
       Set<IFiltroStrategy> filtrosUsuario) {
@@ -357,30 +362,34 @@ public class ColeccionService {
 
     Page<Hecho> pageResult = hechoRepository.findAll(spec, pageable);
     List<HechoDTOSalida> dtos = pageResult.getContent().stream().map(hechoConverter::fromEntity)
-        .collect(Collectors.toList());
+        .toList();
 
     return new PaginacionDTOSalida<>(dtos, pageResult.getNumber() + 1, pageResult.getTotalPages());
   }
 
   @Transactional
+  @CacheEvict(value = "colecciones", key = "#coleccionId")
   public void deleteColeccion(String coleccionId) {
     coleccionRepository.deleteById(coleccionId);
     log.info("EVENTO_ELIMINACION - Colección eliminada. ID: {}", coleccionId);
   }
 
   @Transactional(readOnly = true)
+
   public List<ColeccionDTOSalida> getColeccionesDTO() {
     List<Coleccion> colecciones = coleccionRepository.findAll();
     return colecciones.stream().map(coleccionConverter::fromEntity).toList();
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "colecciones", key = "#coleccionId")
   public ColeccionDTOSalida getColeccionDTO(String coleccionId) {
     Coleccion coleccion = this.getColeccion(coleccionId);
     return coleccionConverter.fromEntity(coleccion);
   }
 
   @Transactional
+  @CacheEvict(value = "colecciones", key = "#coleccionId")
   public void addFuente(String coleccionId, FuenteDTO dto) {
     Fuente fuente = fuenteConverter.fromDTO(dto);
     Coleccion coleccion = this.getColeccion(coleccionId);
@@ -391,6 +400,7 @@ public class ColeccionService {
   }
 
   @Transactional
+  @CacheEvict(value = "colecciones", key = "#coleccionId")
   public void removeFuente(String coleccionId, String fuenteId) {
     Coleccion coleccion = this.getColeccion(coleccionId);
     coleccion.removeFuente(fuenteId);
@@ -400,6 +410,7 @@ public class ColeccionService {
   }
 
   @Transactional
+  @CacheEvict(value = "colecciones", key = "#coleccionId")
   public void updateAlgoritmoConsenso(String coleccionId, CambioAlgoritmoDTO algoritmoDTO) {
     ColeccionDTOEntrada dto = new ColeccionDTOEntrada();
     dto.setAlgoritmoConsenso(algoritmoDTO.getTipoAlgoritmo());
@@ -407,6 +418,7 @@ public class ColeccionService {
   }
 
   @Transactional
+  @CacheEvict(value = "colecciones", key = "#coleccionId")
   public void addCriterio(String id, IFiltroStrategy filtro) {
     Coleccion coleccion = this.getColeccion(id);
     coleccion.addCriterio(filtro);
@@ -416,6 +428,7 @@ public class ColeccionService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "hecho", key = "#idHecho")
   public HechoDetallesDTOSalida getHechoDTO(Long idHecho) {
     Hecho hecho = hechoRepository.findById(idHecho)
         .orElseThrow(() -> new EntityNotFoundException("Hecho no encontrado"));
@@ -423,6 +436,7 @@ public class ColeccionService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "resumen", key = "'general'")
   public ResumenActividadDTOSalida getResumenActividad() {
     ResumenActividadDTOSalida resumen = new ResumenActividadDTOSalida();
     resumen.setHechostotales(hechoRepository.count());
@@ -443,7 +457,7 @@ public class ColeccionService {
 
   @Transactional(readOnly = true)
   public List<String> obtenerTodosLosIdsColecciones() {
-    return coleccionRepository.findAll().stream().map(Coleccion::getId).collect(Collectors.toList());
+    return coleccionRepository.findAll().stream().map(Coleccion::getId).toList();
   }
 
   @Transactional
@@ -470,6 +484,7 @@ public class ColeccionService {
   }
 
   @Transactional
+  @CacheEvict(value = "colecciones", key = "#coleccionId")
   public void actualizarEstadoColeccion(String coleccionId, EstadoColeccion nuevoEstado) {
     Coleccion coleccion = coleccionRepository.findById(coleccionId)
         .orElseThrow(() -> new EntityNotFoundException("Coleccion no encontrada"));
@@ -478,19 +493,21 @@ public class ColeccionService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "colecciones", key = "#coleccionId")
   public Coleccion getColeccion(String coleccionId) {
-    return coleccionRepository.findById(coleccionId)
+    return this.coleccionRepository.findById(coleccionId)
         .orElseThrow(() -> new EntityNotFoundException("Coleccion con id " + coleccionId + " no encontrada"));
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "coleccionesSpams", key = "#coleccionId")
   public Integer solicitudesSpamPorColeccion(String coleccionId) {
     Set<Hecho> hechos = this.getColeccion(coleccionId).getHechos();
     AtomicReference<Integer> cantidadSolicitudesSpam = new AtomicReference<>(0);
-    hechos.forEach(h -> {
+    hechos.forEach(h ->
       cantidadSolicitudesSpam
-          .getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(h.getId()));
-    });
+          .getAndSet(cantidadSolicitudesSpam.get() + solicitudService.cantidadSolicitudesSpam(h.getId()))
+    );
     return cantidadSolicitudesSpam.get();
   }
 }

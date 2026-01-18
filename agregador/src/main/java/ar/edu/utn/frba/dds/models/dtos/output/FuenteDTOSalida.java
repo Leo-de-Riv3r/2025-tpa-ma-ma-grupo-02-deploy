@@ -2,8 +2,10 @@ package ar.edu.utn.frba.dds.models.dtos.output;
 
 import ar.edu.utn.frba.dds.models.entities.enums.TipoFuente;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class FuenteDTOSalida {
   private String id;
   private String tipoFuente;

@@ -1,9 +1,11 @@
 package ar.edu.utn.frba.dds.models.dtos.output;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter @Getter
+@NoArgsConstructor
 public class HechoDTOSalida {
   private Long id;
   private String titulo;
